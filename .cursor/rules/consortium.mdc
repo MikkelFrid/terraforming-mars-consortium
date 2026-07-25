@@ -1,0 +1,112 @@
+---
+description: Consortium expansion — invariants and conventions for this fork
+alwaysApply: true
+---
+
+# Consortium expansion
+
+This repo is a fork of terraforming-mars/terraforming-mars, adding a fan
+expansion called "Consortium". Module id: `consortium`.
+
+## Documentation is stale — do not trust wiki paths
+
+The wiki page "How to set up a new expansion" is from December 2021 and
+references `src/cards/`, `src/Game.ts`, `src/models/ServerModel.ts`. The repo
+was reorganized into `src/common/`, `src/server/`, `src/client/` afterwards.
+
+Treat the wiki as a list of concerns, never as a file reference. Always trace
+an existing module through the current codebase instead.
+
+Verified findings live in `docs/consortium/`. Read those before the wiki.
+
+## Reference modules
+
+- **Plumbing and card pipeline:** `starwars` — smallest cards-only expansion
+- **Board elements and persistent game state:** Ares or The Moon — `starwars`
+  does not touch the board, new state, or serialization and is not a valid
+  template for that work
+
+## Test baseline
+
+Green baseline as of environment setup:
+
+- 7049 server tests
+- 439 client tests
+- lint clean
+- Node 22.14.0
+
+Any phase must end at or above these numbers. A drop means something broke
+silently. During development, run only the scoped subset for the directories
+you touched; run the full suite before opening a PR.
+
+## Codegen is mandatory
+
+Generated card JSON is required before client tests pass. After adding or
+changing a card, a tag, or a module, rerun the generation step (`make:cards`
+and related scripts) before running client tests or trusting the UI.
+
+This is not documented in the wiki. Symptoms of forgetting: the client cannot
+see a card that exists on the server.
+
+## Card names
+
+`CardName.ts` has no duplicate detection, and TypeScript will not catch a
+repeated string value in a string enum. **Always grep before adding a name.**
+
+Known collisions to avoid:
+
+- `PROSPECTING` is taken (Underworld prelude). The tag name `prospecting` is
+  free; do not reuse the string for a card or standard project
+- Three `*Consortium` card names already exist. The module id `consortium` is
+  free
+- `megastructure` and `keystone` are free
+
+## Locked design decisions
+
+Do not relitigate these without being asked.
+
+- **Megastructures** are built cooperatively in segments. Global effect on
+  completion is deliberately weak; contributor bonus is deliberately strong.
+  The final segment ("keystone") always requires iridium
+- **Iridium** is a payment resource alongside MC/steel/titanium, and a hard
+  prerequisite on roughly 15-20% of cards. Fixed supply cap
+- **No iridium production**, with exactly one exception:
+  `Siderophile Extraction`, which deliberately has **no building tag** so it
+  falls outside Robotic Workforce. Never add a building tag to that card
+- **Three terrain types:** chasms (nothing may be placed — use the existing
+  `SpaceType.RESTRICTED` mechanism, as Amazonis does), crater fields (yield
+  iridium once), highlands (no ocean; foundation for structures)
+- **Board grows hybrid.** The frontier zone is unlocked by the bridge
+  megastructure
+- **Two new tags:** Structure and Prospecting
+- **Balance target:** 3-4 players
+
+## Highest-risk area: iridium
+
+There is no `PAYMENT_RESOURCES` list. Steel and titanium are hard-coded across
+Units, Payment and UI. Adding a fourth payment resource means finding every
+hard-coded path, not editing one list.
+
+Be pessimistic and exhaustive here. Flag anything that iterates resources
+generically. If the work exceeds its timebox, fall back to modelling iridium
+as a card resource instead of a player resource.
+
+## Working rules
+
+- One phase, one branch, one session
+- List the files you intend to change **before** changing them
+- Do not refactor outside the current scope. Note cleanup opportunities
+  instead of acting on them
+- Commit small: one card, one rule set
+- Code, card names, enum values, commit messages and code comments are in
+  **English**. Conversation may be in Danish
+- Serialization: new `GameOptions` fields need `?? default` in `deserialize`
+  so existing saved games still load
+- Verify cards visually at `localhost:8080/cards?search=` — fastest feedback
+  loop in the project
+- Keep the fork public. GPL-3.0
+
+## When uncertain
+
+Say so explicitly. A flagged unknown is more useful than a confident wrong
+path.
