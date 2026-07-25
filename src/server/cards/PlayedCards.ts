@@ -25,6 +25,8 @@ const NO_TAGS = {
   [Tag.MOON]: 0,
   [Tag.MARS]: 0,
   [Tag.CRIME]: 0,
+  [Tag.STRUCTURE]: 0,
+  [Tag.PROSPECTING]: 0,
   [Tag.WILD]: 0,
   [Tag.EVENT]: 0,
   [Tag.CLONE]: 0,
