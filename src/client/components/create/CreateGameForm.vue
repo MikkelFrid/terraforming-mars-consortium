@@ -707,7 +707,7 @@ export default defineComponent({
       return PLAYER_COLORS;
     },
     boards() {
-      return [
+      const boards: Array<BoardName | RandomBoardOption> = [
         BoardName.THARSIS,
         BoardName.HELLAS,
         BoardName.ELYSIUM,
@@ -720,8 +720,12 @@ export default defineComponent({
         BoardName.TERRA_CIMMERIA,
         BoardName.VASTITAS_BOREALIS,
         BoardName.HOLLANDIA,
-        RandomBoardOption.ALL,
       ];
+      if (this.expansions.consortium) {
+        boards.push(BoardName.CONSORTIUM);
+      }
+      boards.push(RandomBoardOption.ALL);
+      return boards;
     },
   },
   methods: {
@@ -933,6 +937,8 @@ export default defineComponent({
         return 'create-game-board-hexagon create-game-vastitas-borealis';
       case BoardName.HOLLANDIA:
         return 'create-game-board-hexagon create-game-hollandia';
+      case BoardName.CONSORTIUM:
+        return 'create-game-board-hexagon create-game-consortium';
       default:
         return 'create-game-board-hexagon create-game-random';
       }
@@ -956,6 +962,7 @@ export default defineComponent({
         [BoardName.TERRA_CIMMERIA]: 'terra-cimmeria',
         [BoardName.TERRA_CIMMERIA_NOVA]: 'terra-cimmeria-nova',
         [BoardName.HOLLANDIA]: 'hollandia',
+        [BoardName.CONSORTIUM]: 'consortium',
         [RandomBoardOption.OFFICIAL]: '',
         [RandomBoardOption.ALL]: '',
       };

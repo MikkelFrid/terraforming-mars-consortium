@@ -27,6 +27,7 @@ describe('ApiCreateGame', () => {
     expect(ApiCreateGame.boardOptions(RandomBoardOption.OFFICIAL)).deep.eq([BoardName.THARSIS, BoardName.HELLAS, BoardName.ELYSIUM]);
   });
   it('Fully random boards do include fan maps', () => {
+    // CONSORTIUM is included in ALL (fan-made); lobby gating is CreateGameForm-only.
     expect(ApiCreateGame.boardOptions(RandomBoardOption.ALL)).deep.eq([
       BoardName.THARSIS,
       BoardName.HELLAS,
@@ -39,6 +40,7 @@ describe('ApiCreateGame', () => {
       BoardName.AMAZONIS,
       BoardName.TERRA_CIMMERIA,
       BoardName.HOLLANDIA,
+      BoardName.CONSORTIUM,
     ]);
   });
 
