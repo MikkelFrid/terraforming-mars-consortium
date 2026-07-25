@@ -44,9 +44,12 @@ apply to a radius-6 hexagon). `SpaceId` accepts 3-digit ids (`001`–`127`).
 `.board-cont.board-consortium` is 891×860 with `mars_consortium.png`.
 Inner `.board` is full-size (hex margins include the generator OFFSET).
 Ocean / oxygen / temperature tracks and colony tiles are scaled from the
-Tharsis 620×600 chrome (`transform: scale(891/620, 860/600)`). Tharsis /
-Hellas / Elysium / Amazonis keep the default 600×488 / 670px container —
-pixel-identical.
+Tharsis 620×600 chrome (`transform: scale(891/620, 860/600)`), pinned to the
+`.board-cont` origin. Tharsis / Hellas / Elysium / Amazonis keep the default
+600×488 / 670px container — pixel-identical.
+
+At a typical 1280×800 viewport the 891×860 board does not leave room for the
+player panel without scrolling — the map may simply be too large.
 
 ## Lobby
 
