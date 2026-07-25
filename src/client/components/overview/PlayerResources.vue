@@ -21,18 +21,6 @@
       :value="player.titaniumValue"
       :resourceProtection="player.protectedResources.titanium"
       :productionProtection="player.protectedProduction.titanium"/>
-    <!--
-      Consortium iridium: stock only. No production row, no M€ value badge.
-      Sitting next to steel/titanium may imply universal spendability; it is
-      tag-gated (Structure/Prospecting). Payment dialog is the real gate —
-      no new UI this phase to clarify that.
-    -->
-    <div class="resource_item resource_item--iridium">
-      <div class="resource_item_stock">
-        <i class="resource_icon resource_icon--iridium tooltip tooltip-bottom" data-tooltip="Iridium"></i>
-        <div class="resource_item_stock_count" data-test="iridium-stock-count">{{ player.iridium }}</div>
-      </div>
-    </div>
     <PlayerResource
       :type="Resource.PLANTS"
       :count="player.plants"
@@ -52,6 +40,18 @@
       :value="canUseHeatAsMegaCredits ? 1 : 0"
       :resourceProtection="player.protectedResources.heat"
       :productionProtection="player.protectedProduction.heat"/>
+    <!--
+      Consortium iridium: LAST column (after heat), deliberately away from
+      steel/titanium so the panel does not imply universal spendability.
+      Stock only — no production, no M€ value badge. Tag-gated payment.
+      PlayerInfo uses this component for both the active player and opponents.
+    -->
+    <div class="resource_item resource_item--iridium">
+      <div class="resource_item_stock">
+        <i class="resource_icon resource_icon--iridium tooltip tooltip-bottom" data-tooltip="Iridium"></i>
+        <div class="resource_item_stock_count" data-test="iridium-stock-count">{{ player.iridium }}</div>
+      </div>
+    </div>
   </div>
 </template>
 

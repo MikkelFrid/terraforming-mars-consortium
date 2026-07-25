@@ -58,8 +58,9 @@ Gains and spends use the same pattern as corruption:
 ## UI notes
 
 - Player panel shows stock only (no production, **no M€ value badge**).
-- Sitting next to steel/titanium may still imply universal spendability; payment
-  dialog is the real gate. **No new clarifying UI in this phase.**
+- Column order: M€, steel, titanium, plants, energy, heat, **iridium last**.
+  Placing it after heat (not beside steel/titanium) avoids implying universal
+  spendability. Same `PlayerResources` component serves own panel and opponents.
 - Payment dialog offers iridium only for Structure / Prospecting cards.
 
 ## Art
@@ -74,7 +75,6 @@ Gains and spends use the same pattern as corruption:
    display an iridium cost or requirement icon. Needed for Siderophile Extraction
    and megastructure cards.
 2. **`SelectPaymentDeferred` `canUseIridium`** — for megastructure segment pays.
-3. Panel copy / tooltip clarifying tag-gated spendability (if playtests confuse).
 
 ## Files touched
 
