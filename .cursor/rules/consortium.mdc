@@ -28,9 +28,9 @@ Verified findings live in `docs/consortium/`. Read those before the wiki.
 
 ## Test baseline
 
-Green baseline as of structure/prospecting tags (feat/consortium-tags):
+Green baseline as of consortium terrain space types (feat/consortium-terrain):
 
-- 7056 server tests
+- 7061 server tests
 - 439 client tests
 - lint clean
 - Node 22.14.0
