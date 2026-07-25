@@ -88,6 +88,7 @@ export class JSONProcessor {
       starwars: json_constants.STARWARSEXPANSION,
       underworld: json_constants.UNDERWORLDEXPANSION,
       deltaProject: json_constants.DELTA_PROJECT_EXPANSION,
+      consortium: json_constants.CONSORTIUMEXPANSION,
     } as const;
     for (const expansion of Object.keys(oldExpansionFields)) {
       const x = oldExpansionFields[expansion as Expansion];

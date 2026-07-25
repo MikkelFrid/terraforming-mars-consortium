@@ -86,6 +86,8 @@ describe('PlayerTags', () => {
             ceo: false,
             starwars: false,
             underworld: false,
+            deltaProject: false,
+            consortium: false,
           },
           showTimers: false,
         },

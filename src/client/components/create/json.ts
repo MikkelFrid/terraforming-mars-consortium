@@ -19,5 +19,6 @@ export const MOONEXPANSION = 'moonExpansion';
 export const PATHFINDERSEXPANSION = 'pathfindersExpansion';
 export const CEOEXTENSION = 'ceoExtension';
 export const STARWARSEXPANSION = 'starWarsExpansion';
+export const CONSORTIUMEXPANSION = 'consortiumExpansion';
 export const UNDERWORLDEXPANSION = 'underworldExpansion';
 export const DELTA_PROJECT_EXPANSION = 'deltaProjectExpansion';
