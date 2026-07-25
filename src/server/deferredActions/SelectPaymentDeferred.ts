@@ -11,6 +11,8 @@ import {Units} from '../../common/Units';
 export type Options = {
   canUseSteel?: boolean;
   canUseTitanium?: boolean;
+  /** Consortium: megastructure segments (tag-gated spend target). */
+  canUseIridium?: boolean;
   canUseSeeds?: boolean,
   canUseAuroraiData?: boolean,
   canUseGraphene?: boolean;
@@ -37,6 +39,9 @@ export class SelectPaymentDeferred extends DeferredAction<Payment> {
       return false;
     }
     if ((this.options.canUseTitanium || this.player.canUseTitaniumAsMegacredits) && this.player.titanium > 0) {
+      return false;
+    }
+    if (this.options.canUseIridium && this.player.iridium > 0) {
       return false;
     }
     if (this.options.canUseGraphene && this.player.resourcesOnCard(CardName.CARBON_NANOSYSTEMS) > 0) {
@@ -80,6 +85,7 @@ export class SelectPaymentDeferred extends DeferredAction<Payment> {
       {
         steel: this.options.canUseSteel || false,
         titanium: this.options.canUseTitanium || false,
+        iridium: this.options.canUseIridium || false,
         heat: this.player.canUseHeatAsMegaCredits,
         seeds: this.options.canUseSeeds || false,
         auroraiData: this.options.canUseAuroraiData || false,

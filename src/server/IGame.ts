@@ -33,6 +33,7 @@ import {GlobalParameter} from '../common/GlobalParameter';
 import {UnderworldData} from './underworld/UnderworldData';
 import {OrOptions} from './inputs/OrOptions';
 import {IStandardProjectCard} from './cards/IStandardProjectCard';
+import {MegastructuresData} from './consortium/Megastructures';
 
 export interface Score {
   corporation: String;
@@ -91,6 +92,12 @@ export interface IGame extends Logger {
    * consortium is enabled; conserved with sum of player.iridium.
    */
   iridiumBank: number;
+
+  /**
+   * Consortium megastructure tracks in play. Undefined when consortium is off
+   * or on saves that predate megastructures.
+   */
+  megastructuresData: MegastructuresData | undefined;
 
   // Card-specific data
 

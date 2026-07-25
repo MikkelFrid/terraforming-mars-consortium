@@ -69,6 +69,7 @@ import {MarsBoard} from './boards/MarsBoard';
 import {UnderworldData} from './underworld/UnderworldData';
 import {UnderworldExpansion} from './underworld/UnderworldExpansion';
 import {Iridium} from './consortium/Iridium';
+import {Megastructures, MegastructuresData} from './consortium/Megastructures';
 import {SendDelegateToArea} from './deferredActions/SendDelegateToArea';
 import {BuildColony} from './deferredActions/BuildColony';
 import {newInitialDraft, newPreludeDraft, newCEOsDraft, newStandardDraft} from './Draft';
@@ -156,6 +157,7 @@ export class Game implements IGame, Logger {
   public pathfindersData: PathfindersData | undefined;
   public underworldData: UnderworldData = UnderworldExpansion.initializeGameWithoutUnderworld();
   public iridiumBank: number = 0;
+  public megastructuresData: MegastructuresData | undefined = undefined;
   public inTurmoil: boolean = false;
 
   // Card-specific data
@@ -361,6 +363,7 @@ export class Game implements IGame, Logger {
 
     if (gameOptions.consortiumExpansion) {
       game.iridiumBank = Iridium.initializeBank();
+      game.megastructuresData = Megastructures.initialize(rng);
     }
 
     // and 2 neutral cities and forests on board
@@ -521,6 +524,7 @@ export class Game implements IGame, Logger {
       tradeEmbargo: this.tradeEmbargo,
       underworldData: this.underworldData,
       iridiumBank: this.iridiumBank,
+      megastructuresData: Megastructures.serialize(this.megastructuresData),
       undoCount: this.undoCount,
       venusScaleLevel: this.venusScaleLevel,
       verminInEffect: this.verminInEffect,
@@ -1809,6 +1813,8 @@ export class Game implements IGame, Logger {
       game.underworldData = d.underworldData;
     }
     game.iridiumBank = d.iridiumBank ?? 0;
+    // Pre-megastructure saves omit this field; leave undefined when absent.
+    game.megastructuresData = Megastructures.deserialize(d.megastructuresData);
     game.passedPlayers = new Set<PlayerId>(d.passedPlayers);
     game.donePlayers = new Set<PlayerId>(d.donePlayers);
     game.researchedPlayers = new Set<PlayerId>(d.researchedPlayers);

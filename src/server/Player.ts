@@ -48,6 +48,7 @@ import {UndoActionOption} from './inputs/UndoActionOption';
 import {Turmoil} from './turmoil/Turmoil';
 import {PathfindersExpansion} from './pathfinders/PathfindersExpansion';
 import {Iridium} from './consortium/Iridium';
+import {Megastructures} from './consortium/Megastructures';
 import {ColoniesHandler} from './colonies/ColoniesHandler';
 import {MonsInsurance} from './cards/promo/MonsInsurance';
 import {InputResponse} from '../common/inputs/InputResponse';
@@ -1635,6 +1636,12 @@ export class Player implements IPlayer {
     const coloniesTradeAction = this.colonies.coloniesTradeAction();
     if (coloniesTradeAction !== undefined) {
       action.options.push(coloniesTradeAction);
+    }
+
+    // Consortium megastructure contribution
+    const megastructureAction = Megastructures.contributeAction(this);
+    if (megastructureAction !== undefined) {
+      action.options.push(megastructureAction);
     }
 
     // Add delegates

@@ -18,6 +18,7 @@ import {AwardName} from '../common/ma/AwardName';
 import {GlobalParameter} from '../common/GlobalParameter';
 import {MilestoneName} from '../common/ma/MilestoneName';
 import {Tag} from '../common/cards/Tag';
+import {SerializedMegastructuresData} from './consortium/SerializedMegastructuresData';
 
 export type SerializedGame = {
     activePlayer: PlayerId;
@@ -72,6 +73,8 @@ export type SerializedGame = {
     underworldData: UnderworldData;
     /** Consortium iridium bank. Absent on pre-consortium saves → deserialize as 0. */
     iridiumBank?: number;
+    /** Consortium megastructures. Absent on older saves → deserialize as undefined. */
+    megastructuresData?: SerializedMegastructuresData;
     venusScaleLevel: number;
     verminInEffect: boolean;
 }
