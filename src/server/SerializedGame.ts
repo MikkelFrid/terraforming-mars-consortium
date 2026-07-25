@@ -70,6 +70,8 @@ export type SerializedGame = {
     turmoil?: SerializedTurmoil;
     undoCount: number;
     underworldData: UnderworldData;
+    /** Consortium iridium bank. Absent on pre-consortium saves → deserialize as 0. */
+    iridiumBank?: number;
     venusScaleLevel: number;
     verminInEffect: boolean;
 }

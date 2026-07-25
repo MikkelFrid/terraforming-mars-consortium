@@ -71,6 +71,8 @@ export type PublicPlayerModel = {
   steel: number;
   steelProduction: number;
   steelValue: number;
+  /** Consortium iridium. Standalone stock; no production. Not universally spendable. */
+  iridium: number;
   tags: Record<Tag, number>
   terraformRating: number;
   timer: TimerModel;

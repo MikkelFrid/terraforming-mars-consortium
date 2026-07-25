@@ -14,6 +14,7 @@ Produces:
     assets/hex_chasm.png             46x50  RGBA
     assets/hex_crater_field.png      46x50  RGBA
     assets/hex_highland.png          46x50  RGBA
+    assets/resources/iridium.png     331x331 RGBA
 
 Design constraints, derived from the existing game assets:
 
@@ -24,11 +25,14 @@ Design constraints, derived from the existing game assets:
   Hexes    - the ring geometry is taken directly from assets/hex_black.png,
              so it is pixel-identical to every other space type. Only colour
              and interior fill differ.
+  Resources - 331x331, black field with a centred disc (matches steel /
+             titanium). Iridium reads cooler/whiter than titanium gray.
 
 Artwork derives from the official Terraforming Mars asset sources,
 CC BY-SA 4.0.
 """
 
+import math
 import os
 import sys
 from collections import deque
@@ -38,6 +42,8 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 HEX_SRC = os.path.join(ROOT, 'assets', 'hex_black.png')
 TAG_DIR = os.path.join(ROOT, 'assets', 'tags')
 ASSET_DIR = os.path.join(ROOT, 'assets')
+RESOURCE_DIR = os.path.join(ROOT, 'assets', 'resources')
+IRIDIUM_SIZE = 331
 
 S, SS = 116, 8
 W = S * SS
@@ -176,12 +182,58 @@ def _contours(img):
               fill=(214, 186, 138, 185), width=2)
 
 
+# ---------------------------------------------------------------- resources
+
+def build_iridium(path):
+    """
+    331x331 iridium resource icon. Black field + cool platinum disc with a
+    faceted crystal highlight so it reads apart from titanium's mid-gray disc.
+    """
+    s = IRIDIUM_SIZE
+    img = Image.new('RGBA', (s, s), (0, 0, 0, 255))
+    d = ImageDraw.Draw(img)
+    cx = cy = (s - 1) / 2
+    r = s * 0.42
+
+    # Radial cool-metal fill.
+    for y in range(s):
+        for x in range(s):
+            dx, dy = x - cx, y - cy
+            dist = (dx * dx + dy * dy) ** 0.5
+            if dist > r:
+                continue
+            t = dist / r
+            # Upper-left specular.
+            hl = max(0.0, 1.0 - (((dx + r * 0.35) ** 2 + (dy + r * 0.45) ** 2) ** 0.5) / (r * 1.1))
+            base = _lerp((168, 188, 210), (72, 88, 108), t ** 0.9)
+            rgb = _lerp(base, (236, 244, 255), hl * 0.55)
+            img.putpixel((x, y), rgb + (255,))
+
+    # Outer rim.
+    d.ellipse([cx - r, cy - r, cx + r, cy + r], outline=(20, 24, 30, 255), width=max(3, s // 80))
+
+    # Faceted crystal (octagon) — denser white metal core.
+    facet_r = r * 0.38
+    pts = []
+    for i in range(8):
+        a = math.radians(-90 + i * 45)
+        pts.append((cx + facet_r * math.cos(a), cy + facet_r * math.sin(a)))
+    d.polygon(pts, fill=(210, 224, 240, 255), outline=(40, 48, 60, 255))
+    # Inner sparkle.
+    d.ellipse([cx - facet_r * 0.28, cy - facet_r * 0.28,
+               cx + facet_r * 0.28, cy + facet_r * 0.28],
+              fill=(248, 252, 255, 255))
+
+    img.save(path)
+
+
 # --------------------------------------------------------------------- main
 
 def main():
     if not os.path.exists(HEX_SRC):
         sys.exit(f'missing {HEX_SRC} — run from the repository root')
     os.makedirs(TAG_DIR, exist_ok=True)
+    os.makedirs(RESOURCE_DIR, exist_ok=True)
 
     build_tag(os.path.join(TAG_DIR, 'structure.png'),
               (74, 104, 122), (128, 158, 174),
@@ -202,10 +254,12 @@ def main():
     build_hex(os.path.join(ASSET_DIR, 'hex_highland.png'), ring, interior,
               (201, 162, 107), 215, (190, 150, 95), 42, _contours)
 
+    build_iridium(os.path.join(RESOURCE_DIR, 'iridium.png'))
+
     print('generated:')
     for p in ('assets/tags/structure.png', 'assets/tags/prospecting.png',
               'assets/hex_chasm.png', 'assets/hex_crater_field.png',
-              'assets/hex_highland.png'):
+              'assets/hex_highland.png', 'assets/resources/iridium.png'):
         f = os.path.join(ROOT, p)
         im = Image.open(f)
         print(f'  {p:34} {im.size[0]}x{im.size[1]} {im.mode} '

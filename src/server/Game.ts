@@ -68,6 +68,7 @@ import {IGame, Score} from './IGame';
 import {MarsBoard} from './boards/MarsBoard';
 import {UnderworldData} from './underworld/UnderworldData';
 import {UnderworldExpansion} from './underworld/UnderworldExpansion';
+import {Iridium} from './consortium/Iridium';
 import {SendDelegateToArea} from './deferredActions/SendDelegateToArea';
 import {BuildColony} from './deferredActions/BuildColony';
 import {newInitialDraft, newPreludeDraft, newCEOsDraft, newStandardDraft} from './Draft';
@@ -154,6 +155,7 @@ export class Game implements IGame, Logger {
   public moonData: MoonData | undefined;
   public pathfindersData: PathfindersData | undefined;
   public underworldData: UnderworldData = UnderworldExpansion.initializeGameWithoutUnderworld();
+  public iridiumBank: number = 0;
   public inTurmoil: boolean = false;
 
   // Card-specific data
@@ -357,6 +359,10 @@ export class Game implements IGame, Logger {
       game.underworldData = UnderworldExpansion.initialize(rng);
     }
 
+    if (gameOptions.consortiumExpansion) {
+      game.iridiumBank = Iridium.initializeBank();
+    }
+
     // and 2 neutral cities and forests on board
     if (players.length === 1) {
       //  Setup solo player's starting tiles
@@ -514,6 +520,7 @@ export class Game implements IGame, Logger {
       temperature: this.temperature,
       tradeEmbargo: this.tradeEmbargo,
       underworldData: this.underworldData,
+      iridiumBank: this.iridiumBank,
       undoCount: this.undoCount,
       venusScaleLevel: this.venusScaleLevel,
       verminInEffect: this.verminInEffect,
@@ -1431,10 +1438,10 @@ export class Game implements IGame, Logger {
       this.grantSpaceBonuses(player, space);
     }
 
-    // Consortium crater field: one-time placement reward.
+    // Consortium crater field: one-time placement reward (1 iridium from the bank).
     if (space.spaceType === SpaceType.CRATER_FIELD && space.craterBonusClaimed !== true) {
       space.craterBonusClaimed = true;
-      // TODO(consortium): grant 1 iridium when the Iridium resource exists.
+      Iridium.grant(player, 1);
     }
 
     const adjacentOceanCount = this.board.getAdjacentSpaces(space).filter(Board.isOceanSpace).length;
@@ -1795,6 +1802,7 @@ export class Game implements IGame, Logger {
     if (d.underworldData !== undefined) {
       game.underworldData = d.underworldData;
     }
+    game.iridiumBank = d.iridiumBank ?? 0;
     game.passedPlayers = new Set<PlayerId>(d.passedPlayers);
     game.donePlayers = new Set<PlayerId>(d.donePlayers);
     game.researchedPlayers = new Set<PlayerId>(d.researchedPlayers);

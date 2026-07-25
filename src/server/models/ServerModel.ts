@@ -248,6 +248,7 @@ export class Server {
       steel: player.steel,
       steelProduction: player.production.steel,
       steelValue: player.getSteelValue(),
+      iridium: player.iridium,
       tags: player.tags.countAllTags(),
       terraformRating: player.terraformRating,
       timer: player.timer.serialize(),

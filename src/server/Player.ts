@@ -47,6 +47,7 @@ import {LogHelper} from './LogHelper';
 import {UndoActionOption} from './inputs/UndoActionOption';
 import {Turmoil} from './turmoil/Turmoil';
 import {PathfindersExpansion} from './pathfinders/PathfindersExpansion';
+import {Iridium} from './consortium/Iridium';
 import {ColoniesHandler} from './colonies/ColoniesHandler';
 import {MonsInsurance} from './cards/promo/MonsInsurance';
 import {InputResponse} from '../common/inputs/InputResponse';
@@ -174,6 +175,9 @@ export class Player implements IPlayer {
   public availableActionsThisRound = 2;
 
   public withinDeflectionZone = false;
+
+  /** Consortium iridium. Standalone field — not a Units member. No production. 0 VP. */
+  public iridium: number = 0;
 
   // Stats
   public actionsTakenThisGame: number = 0;
@@ -743,6 +747,8 @@ export class Player implements IPlayer {
       auroraiData: card.type === CardType.STANDARD_PROJECT,
       graphene: card.tags.includes(Tag.CITY) || card.tags.includes(Tag.SPACE),
       kuiperAsteroids: card.name === CardName.AQUIFER_STANDARD_PROJECT || card.name === CardName.ASTEROID_STANDARD_PROJECT,
+      // Iridium is tag-gated (Structure / Prospecting only). Not universal.
+      iridium: card.tags.includes(Tag.STRUCTURE) || card.tags.includes(Tag.PROSPECTING),
     };
   }
 
@@ -824,6 +830,12 @@ export class Player implements IPlayer {
     removeResourcesOnCard(CardName.SOYLENT_SEEDLING_SYSTEMS, payment.seeds);
     removeResourcesOnCard(CardName.AURORAI, payment.auroraiData);
     removeResourcesOnCard(CardName.KUIPER_COOPERATIVE, payment.kuiperAsteroids);
+
+    // Iridium: NOT a Units member. Return spent units to the shared bank in one place.
+    // Deliberately excluded from Sol Bank (steel/titanium/MC only).
+    if (payment.iridium > 0) {
+      Iridium.spend(this, payment.iridium);
+    }
 
     if (payment.megacredits > 0 || payment.steel > 0 || payment.titanium > 0) {
       PathfindersExpansion.addToSolBank(this);
@@ -1280,6 +1292,7 @@ export class Player implements IPlayer {
       titanium: this.titanium - reserveUnits.titanium,
       plants: this.plants - reserveUnits.plants,
       heat: this.availableHeat() - reserveUnits.heat,
+      iridium: this.iridium,
       floaters: this.getSpendable('floaters'),
       microbes: this.getSpendable('microbes'),
       lunaArchivesScience: this.getSpendable('lunaArchivesScience'),
@@ -1321,6 +1334,7 @@ export class Player implements IPlayer {
       titanium: options?.titanium ?? false,
       heat: this.canUseHeatAsMegaCredits,
       plants: options?.plants ?? false,
+      iridium: options?.iridium ?? false,
       microbes: options?.microbes ?? false,
       floaters: options?.floaters ?? false,
       lunaArchivesScience: options?.lunaArchivesScience ?? false,
@@ -1831,6 +1845,7 @@ export class Player implements IPlayer {
       // Standard Technology: Underworld
       standardProjectsThisGeneration: Array.from(this.standardProjectsThisGeneration),
       withinDeflectionZone: this.withinDeflectionZone,
+      iridium: this.iridium,
 
       name: this.name,
       color: this.color,
@@ -1941,6 +1956,7 @@ export class Player implements IPlayer {
       player.globalParameterSteps = {...DEFAULT_GLOBAL_PARAMETER_STEPS, ...d.globalParameterSteps};
     }
     player.withinDeflectionZone = d.withinDeflectionZone ?? false;
+    player.iridium = d.iridium ?? 0;
     return player;
   }
 

@@ -1,4 +1,4 @@
-import {DATA_VALUE, FLOATERS_VALUE, MICROBES_VALUE, GRAPHENE_VALUE, SEED_VALUE} from '../constants';
+import {DATA_VALUE, FLOATERS_VALUE, MICROBES_VALUE, GRAPHENE_VALUE, SEED_VALUE, IRIDIUM_VALUE} from '../constants';
 import {SpendableResource, SPENDABLE_RESOURCES} from './Spendable';
 
 /**
@@ -30,6 +30,7 @@ export const DEFAULT_PAYMENT_VALUES = {
   titanium: 3,
   heat: 1,
   plants: 3,
+  iridium: IRIDIUM_VALUE,
 
   microbes: MICROBES_VALUE,
   floaters: FLOATERS_VALUE,
@@ -48,6 +49,7 @@ export namespace Payment {
     steel: 0,
     titanium: 0,
     plants: 0,
+    iridium: 0,
     microbes: 0,
     floaters: 0,
     lunaArchivesScience: 0,
@@ -73,6 +75,7 @@ export namespace Payment {
       graphene: payment.graphene ?? 0,
       kuiperAsteroids: payment.kuiperAsteroids ?? 0,
       plants: payment.plants ?? 0,
+      iridium: payment.iridium ?? 0,
     };
   }
 }

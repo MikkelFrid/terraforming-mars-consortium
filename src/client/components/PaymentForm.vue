@@ -71,6 +71,7 @@ const DESCRIPTIONS: Record<SpendableResource, string> = {
   lunaArchivesScience: 'Science',
   microbes: 'Microbes',
   plants: 'Plants',
+  iridium: 'Iridium',
 };
 
 type DataModel = {

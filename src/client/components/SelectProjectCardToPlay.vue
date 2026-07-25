@@ -81,6 +81,7 @@ export default defineComponent({
       return ([
         'steel',
         'titanium',
+        'iridium',
         'heat',
         'plants',
         'microbes',
@@ -208,6 +209,7 @@ export default defineComponent({
         case 'floaters':
         case 'lunaArchivesScience':
         case 'graphene':
+        case 'iridium':
           return false;
         default: throw new Error('Unknown unit ' + unit);
         }
@@ -224,6 +226,9 @@ export default defineComponent({
         case 'titanium':
           return this.canUseTitaniumRegularly() ||
           this.playerinput.paymentOptions.lunaTradeFederationTitanium === true;
+        case 'iridium':
+          // Tag-gated: Structure or Prospecting only. Not universal.
+          return this.tags.includes(Tag.STRUCTURE) || this.tags.includes(Tag.PROSPECTING);
         case 'plants':
           return this.tags.includes(Tag.BUILDING) && this.playerinput.paymentOptions.plants === true;
         case 'microbes':

@@ -143,6 +143,9 @@ export default defineComponent({
         return ['card-underground-resources'];
       case RequirementType.CORRUPTION:
         return ['card-resource', 'card-resource-corruption'];
+      case RequirementType.IRIDIUM:
+        // Visual icon CSS is follow-up debt (no card-resource-iridium yet).
+        return ['card-resource', 'card-resource-iridium'];
       case RequirementType.PRODUCTION:
       case RequirementType.REMOVED_PLANTS:
         break;

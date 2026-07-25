@@ -21,6 +21,18 @@
       :value="player.titaniumValue"
       :resourceProtection="player.protectedResources.titanium"
       :productionProtection="player.protectedProduction.titanium"/>
+    <!--
+      Consortium iridium: stock only. No production row, no M€ value badge.
+      Sitting next to steel/titanium may imply universal spendability; it is
+      tag-gated (Structure/Prospecting). Payment dialog is the real gate —
+      no new UI this phase to clarify that.
+    -->
+    <div class="resource_item resource_item--iridium">
+      <div class="resource_item_stock">
+        <i class="resource_icon resource_icon--iridium tooltip tooltip-bottom" data-tooltip="Iridium"></i>
+        <div class="resource_item_stock_count" data-test="iridium-stock-count">{{ player.iridium }}</div>
+      </div>
+    </div>
     <PlayerResource
       :type="Resource.PLANTS"
       :count="player.plants"

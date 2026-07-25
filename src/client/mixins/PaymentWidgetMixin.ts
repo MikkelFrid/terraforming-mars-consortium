@@ -94,6 +94,7 @@ export const PaymentWidgetMixin = defineComponent({
         steel: this.available ? this.available.steel : thisPlayer.steel,
         titanium: this.available ? this.available.titanium : thisPlayer.titanium,
         plants: this.available ? this.available.plants : thisPlayer.plants,
+        iridium: thisPlayer.iridium,
         microbes: this.playerinput.microbes,
         floaters: this.playerinput.floaters,
         lunaArchivesScience: this.playerinput.type === 'projectCard' ? this.playerinput.lunaArchivesScience : 0,

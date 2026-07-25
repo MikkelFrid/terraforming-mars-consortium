@@ -52,6 +52,11 @@ export const CEO_CARDS_DEALT_PER_PLAYER = 3;
 // Promo
 export const GRAPHENE_VALUE = 4;
 
+// Consortium — iridium (standalone alloy; not a Units member). Balance knobs.
+export const IRIDIUM_VALUE = 4;
+export const IRIDIUM_BANK_CAPACITY = 28;
+export const CORE_SAMPLING_COST = 6;
+
 // Map specific
 export const HELLAS_BONUS_OCEAN_COST = 6;
 export const VASTITAS_BOREALIS_BONUS_TEMPERATURE_COST = 3;

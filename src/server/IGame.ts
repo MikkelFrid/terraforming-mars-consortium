@@ -86,6 +86,12 @@ export interface IGame extends Logger {
   pathfindersData: PathfindersData | undefined;
   underworldData: UnderworldData;
 
+  /**
+   * Shared Consortium iridium bank. Starts full at IRIDIUM_BANK_CAPACITY when
+   * consortium is enabled; conserved with sum of player.iridium.
+   */
+  iridiumBank: number;
+
   // Card-specific data
 
   /* An optimization to see if anyone owns Mons Insurance */

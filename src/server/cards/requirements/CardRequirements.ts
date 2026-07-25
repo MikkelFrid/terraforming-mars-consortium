@@ -26,6 +26,7 @@ import {TemperatureRequirement} from './TemperatureRequirement';
 import {VenusRequirement} from './VenusRequirement';
 import {CardRequirementDescriptor} from '../../../common/cards/CardRequirementDescriptor';
 import {CorruptionRequirement} from './CorruptionRequirement';
+import {IridiumRequirement} from './IridiumRequirement';
 import {IProjectCard} from '../IProjectCard';
 import {UndergroundTokenRequirement} from './UndergroundTokenRequirement';
 
@@ -113,6 +114,8 @@ export class CardRequirements {
       return new CorruptionRequirement({...descriptor, count: descriptor.corruption});
     } else if (descriptor.undergroundTokens !== undefined) {
       return new UndergroundTokenRequirement({...descriptor, count: descriptor.undergroundTokens});
+    } else if (descriptor.iridium !== undefined) {
+      return new IridiumRequirement({...descriptor, count: descriptor.iridium});
     } else {
       throw new Error('Unknown requirement: ' + JSON.stringify(descriptor));
     }

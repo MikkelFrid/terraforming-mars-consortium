@@ -14,6 +14,9 @@ export const SPENDABLE_STANDARD_RESOURCES = [
   'titanium',
   // Martian Lumber Corp lets players pay for building tags with plants.
   'plants',
+  // Consortium iridium: player-held scalar (NOT a Units key). Spendable only on
+  // Structure/Prospecting-tagged cards, megastructure segments, and Core Sampling.
+  'iridium',
 ] as const;
 
 /**

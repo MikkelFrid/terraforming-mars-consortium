@@ -85,4 +85,6 @@ export interface SerializedPlayer extends DeprecatedFields{
   user?: DiscordId;
   warmongerCards: number;
   withinDeflectionZone: boolean;
+  /** Consortium iridium. Absent on pre-consortium saves → deserialize as 0. */
+  iridium?: number;
 }

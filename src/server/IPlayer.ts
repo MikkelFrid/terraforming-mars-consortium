@@ -167,6 +167,12 @@ export interface IPlayer {
    */
   withinDeflectionZone: boolean;
 
+  /**
+   * Consortium iridium held by this player. Standalone field — not a Units member.
+   * No production. Worth 0 VP at game end.
+   */
+  iridium: number;
+
   // The number of actions a player can take this round.
   // It's almost always 2, but certain cards can change this value.
   //

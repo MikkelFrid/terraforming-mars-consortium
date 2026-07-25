@@ -143,6 +143,7 @@ export function fakePublicPlayerModel(overrides?: RecursivePartial<PublicPlayerM
     steel: 0,
     steelProduction: 0,
     steelValue: 2,
+    iridium: 0,
     tags: emptyTags(),
     terraformRating: 20,
     timer: fakeTimerModel(),
