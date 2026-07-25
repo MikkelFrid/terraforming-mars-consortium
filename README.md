@@ -145,3 +145,8 @@ GPLv3
 Russian Prototype font: https://fonts-online.ru/fonts/prototype-rus-daymarius (copyright 2001, free for personal use)
 Polish Prototype font: https://www.gry-planszowe.pl/viewtopic.php?p=1489006#p1489006 (copyright 2001, free for personal use)
 Baord Game Icons: http://www.kenney.nl/  (Creative Commons Zero, CC0)
+
+Consortium structure and prospecting tag icons derive from the official tag
+palette and construction in
+[terraforming-mars/terraforming-mars-assets-sources](https://github.com/terraforming-mars/terraforming-mars-assets-sources)
+(CC BY-SA 4.0).
