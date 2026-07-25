@@ -28,9 +28,9 @@ Verified findings live in `docs/consortium/`. Read those before the wiki.
 
 ## Test baseline
 
-Green baseline as of environment setup:
+Green baseline as of structure/prospecting tags (feat/consortium-tags):
 
-- 7049 server tests
+- 7056 server tests
 - 439 client tests
 - lint clean
 - Node 22.14.0
