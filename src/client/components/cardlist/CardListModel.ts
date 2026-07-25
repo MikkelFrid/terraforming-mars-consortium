@@ -136,6 +136,8 @@ export function hashToModel(windowLocationHash: string): CardListModel {
       moon: true,
       mars: true,
       crime: true,
+      structure: true,
+      prospecting: true,
       wild: true,
       event: true,
       clone: true,

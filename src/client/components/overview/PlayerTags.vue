@@ -108,6 +108,9 @@ const isInGame = (tag: InterfaceTagsType, game: GameModel): boolean => {
   case Tag.MOON:
   case Tag.MARS:
   case Tag.CRIME:
+  case Tag.STRUCTURE:
+  case Tag.PROSPECTING:
+    // Shown when any deck card carries the tag — not gated on an expansion flag.
     return game.tags.includes(tag);
   }
   return true;
