@@ -274,6 +274,7 @@ export class Game implements IGame, Logger {
         starwars: partialOptions.starWarsExpansion ?? false,
         underworld: partialOptions.underworldExpansion ?? false,
         deltaProject: partialOptions.deltaProjectExpansion ?? false,
+        consortium: partialOptions.consortiumExpansion ?? false,
       };
     }
     const gameOptions = {...DEFAULT_GAME_OPTIONS, ...partialOptions};
@@ -1700,6 +1701,11 @@ export class Game implements IGame, Logger {
   public static deserialize(d: SerializedGame): Game {
     const gameOptions = d.gameOptions;
     gameOptions.boardName = normalizeBoardName(gameOptions.boardName);
+    // Backward compatibility: games saved before Consortium was added.
+    gameOptions.consortiumExpansion = gameOptions.consortiumExpansion ?? false;
+    if (gameOptions.expansions !== undefined) {
+      gameOptions.expansions.consortium = gameOptions.expansions.consortium ?? gameOptions.consortiumExpansion;
+    }
     const players = d.players.map((element) => Player.deserialize(element));
     const first = players.find((player) => player.id === d.first);
     if (first === undefined) {
