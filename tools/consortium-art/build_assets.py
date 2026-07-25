@@ -172,14 +172,14 @@ def _craters(img):
     d = ImageDraw.Draw(img)
     for cx, cy, r in ((17, 21, 5), (28, 28, 3.5), (22, 34, 2.5)):
         d.ellipse([cx - r, cy - r, cx + r, cy + r],
-                  outline=(196, 210, 224, 190), width=2)
+                  outline=(228, 240, 252, 235), width=2)
 
 
 def _contours(img):
     d = ImageDraw.Draw(img)
     for w, y in ((13, 20), (9, 26), (5, 32)):
         d.arc([23 - w, y - 5, 23 + w, y + 5], 200, 340,
-              fill=(214, 186, 138, 185), width=2)
+              fill=(248, 226, 176, 235), width=2)
 
 
 # ---------------------------------------------------------------- resources
@@ -248,11 +248,11 @@ def main():
     interior = _interior(ring)
 
     build_hex(os.path.join(ASSET_DIR, 'hex_chasm.png'), ring, interior,
-              (38, 42, 54), 235, (14, 16, 24), 120)
+              (26, 29, 40), 255, (8, 9, 15), 150)
     build_hex(os.path.join(ASSET_DIR, 'hex_crater_field.png'), ring, interior,
-              (176, 196, 214), 215, (120, 150, 175), 48, _craters)
+              (108, 156, 196), 255, (36, 74, 112), 105, _craters)
     build_hex(os.path.join(ASSET_DIR, 'hex_highland.png'), ring, interior,
-              (201, 162, 107), 215, (190, 150, 95), 42, _contours)
+              (168, 116, 38), 255, (120, 78, 20), 100, _contours)
 
     build_iridium(os.path.join(RESOURCE_DIR, 'iridium.png'))
 

@@ -256,6 +256,31 @@
   text-align: center;
 }
 
+.preferences_panel_item--range {
+  margin: 8px 0 12px;
+  white-space: normal;
+
+  label {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    max-width: 260px;
+  }
+
+  input[type="range"] {
+    width: 100%;
+    margin: 0;
+    accent-color: #bb8760;
+  }
+
+  .preferences_range_value {
+    margin-left: auto;
+    font-family: Prototype, sans-serif;
+    color: #fff;
+  }
+}
+
 .preferences_panel {
   padding: 15px 15px 15px 20px;
   display: inline-block;

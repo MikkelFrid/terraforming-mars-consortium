@@ -23,6 +23,19 @@ describe('PreferencesManager', () => {
     expect(values.lang).eq('en');
     expect(values.enable_sounds).eq(true);
     expect(values.animated_title).eq(true);
+    expect(values.consortium_board_scale).eq(0.85);
+  });
+
+  it('consortium_board_scale stores numeric value and clamps', () => {
+    instance.set('consortium_board_scale', 1);
+    expect(instance.values().consortium_board_scale).eq(1);
+    expect(localStorage.getItem('consortium_board_scale')).eq('1');
+
+    instance.set('consortium_board_scale', 0.72);
+    expect(instance.values().consortium_board_scale).eq(0.7);
+
+    instance.set('consortium_board_scale', 1.5);
+    expect(instance.values().consortium_board_scale).eq(1);
   });
 
   it('setter updates storage and references', () => {

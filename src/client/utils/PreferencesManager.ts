@@ -20,10 +20,15 @@ export type Preferences = {
   symbol_overlay: boolean,
   animated_title: boolean,
   experimental_ui: boolean,
+  /** Display scale for the Consortium board (0.7–1.0, step 0.05). */
+  consortium_board_scale: number,
   lang: string,
 }
 
 export type Preference = keyof Preferences;
+
+/** Boolean preferences (everything except lang + numeric scale). */
+export type BooleanPreference = Exclude<Preference, 'lang' | 'consortium_board_scale'>;
 
 const defaults: Preferences = {
   learner_mode: true,
@@ -51,7 +56,22 @@ const defaults: Preferences = {
 
   experimental_ui: false,
   debug_view: false,
+
+  consortium_board_scale: 0.85,
 };
+
+const SCALE_MIN = 0.7;
+const SCALE_MAX = 1.0;
+const SCALE_STEP = 0.05;
+
+function clampConsortiumBoardScale(n: number): number {
+  if (!Number.isFinite(n)) {
+    return defaults.consortium_board_scale;
+  }
+  const clamped = Math.min(SCALE_MAX, Math.max(SCALE_MIN, n));
+  // Snap to 0.05 steps (toFixed avoids floating-point dust like 0.7000000001).
+  return Number((Math.round(clamped / SCALE_STEP) * SCALE_STEP).toFixed(2));
+}
 
 export class PreferencesManager {
   public static INSTANCE = new PreferencesManager();
@@ -69,15 +89,19 @@ export class PreferencesManager {
     this._values = {...defaults};
     for (const key of Object.keys(defaults) as Array<Preference>) {
       const value = this.localStorageSupported() ? localStorage.getItem(key) : undefined;
-      if (value) {
+      if (value !== null && value !== undefined) {
         this._set(key, value);
       }
     }
+    this.applyToDom();
   }
 
-  private _set(key: Preference, val: string | boolean) {
+  private _set(key: Preference, val: string | boolean | number) {
     if (key === 'lang') {
       this._values.lang = String(val);
+    } else if (key === 'consortium_board_scale') {
+      const n = typeof val === 'number' ? val : Number.parseFloat(String(val));
+      this._values.consortium_board_scale = clampConsortiumBoardScale(n);
     } else {
       this._values[key] = typeof(val) === 'boolean' ? val : (val === '1');
     }
@@ -89,7 +113,7 @@ export class PreferencesManager {
     return this._values;
   }
 
-  set(name: Preference, val: string | boolean, setOnChange = false): void {
+  set(name: Preference, val: string | boolean | number, setOnChange = false): void {
     // Don't set values if nothing has changed.
     if (setOnChange && this._values[name] === val) {
       return;
@@ -98,10 +122,24 @@ export class PreferencesManager {
     if (this.localStorageSupported()) {
       if (name === 'lang') {
         localStorage.setItem(name, this._values.lang);
+      } else if (name === 'consortium_board_scale') {
+        localStorage.setItem(name, String(this._values.consortium_board_scale));
       } else {
-        localStorage.setItem(name, val ? '1' : '0');
+        localStorage.setItem(name, this._values[name] ? '1' : '0');
       }
     }
+    if (name === 'consortium_board_scale') {
+      this.applyToDom();
+    }
+  }
+
+  /** Push CSS custom properties used by preference-driven layout. */
+  applyToDom(): void {
+    if (typeof document === 'undefined') {
+      return;
+    }
+    const target = document.getElementById('ts-preferences-target') ?? document.documentElement;
+    target.style.setProperty('--consortium-board-scale', String(this._values.consortium_board_scale));
   }
 }
 

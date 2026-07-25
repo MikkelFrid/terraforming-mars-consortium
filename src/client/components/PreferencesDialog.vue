@@ -12,6 +12,20 @@
           <i class="form-icon"></i> <span v-i18n>Smaller cards</span>
         </label>
       </div>
+      <div class="preferences_panel_item preferences_panel_item--range">
+        <label>
+          <span v-i18n>Consortium board scale</span>
+          <span class="preferences_range_value">{{ prefs.consortium_board_scale.toFixed(2) }}</span>
+          <input
+            type="range"
+            min="0.7"
+            max="1"
+            step="0.05"
+            v-model.number="prefs.consortium_board_scale"
+            @input="updatePreferences"
+            data-test="consortium_board_scale">
+        </label>
+      </div>
       <div class="preferences_panel_item">
         <label class="form-switch">
           <input type="checkbox" @change="updatePreferences" v-model="prefs.magnify_cards" data-test="magnify_cards">
@@ -109,7 +123,7 @@
 <script lang="ts">
 import {defineComponent} from 'vue';
 
-import {getPreferences, PreferencesManager, Preference} from '@/client/utils/PreferencesManager';
+import {getPreferences, PreferencesManager, Preference, BooleanPreference} from '@/client/utils/PreferencesManager';
 import BugReportDialog from '@/client/components/BugReportDialog.vue';
 
 
@@ -140,7 +154,7 @@ export default defineComponent({
     setBoolPreferencesCSS(
       target: HTMLElement,
       val: boolean,
-      name: Preference,
+      name: BooleanPreference,
     ): void {
       const cssClassSuffix = name;
       if (val) {
@@ -162,11 +176,13 @@ export default defineComponent({
       }
 
       for (const k of Object.keys(this.prefs) as Array<Preference>) {
-        if (k === 'lang') {
+        if (k === 'lang' || k === 'consortium_board_scale') {
           continue;
         }
         this.setBoolPreferencesCSS(target, this.prefs[k], k);
       }
+
+      this.preferencesManager.applyToDom();
 
       if (!target.classList.contains('language-' + this.prefs.lang)) {
         target.classList.add('language-' + this.prefs.lang);

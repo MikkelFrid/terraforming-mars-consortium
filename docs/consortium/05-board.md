@@ -48,8 +48,21 @@ Tharsis 620×600 chrome (`transform: scale(891/620, 860/600)`), pinned to the
 `.board-cont` origin. Tharsis / Hellas / Elysium / Amazonis keep the default
 600×488 / 670px container — pixel-identical.
 
-At a typical 1280×800 viewport the 891×860 board does not leave room for the
-player panel without scrolling — the map may simply be too large.
+### Board scale preference
+
+Settings → **Consortium board scale** (`consortium_board_scale`, default
+**0.85**, range 0.7–1.0 step 0.05). Applied as:
+
+```css
+transform: scale(var(--consortium-board-scale, 1));
+transform-origin: top center;
+margin-bottom: calc((var(--consortium-board-scale, 1) - 1) * 900px);
+```
+
+At 0.85 the board paints at ~757×731 and fits a 1080p page with the player
+panel; at 1.0 it is full size for 1440p+. Hit-testing uses element
+`onclick` on each space (no raw coordinates), so the CSS transform does not
+skew selection.
 
 ## Lobby
 

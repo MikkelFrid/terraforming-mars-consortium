@@ -32,6 +32,13 @@
   // Override shared mars backgrounds with the upscaled Consortium art.
   background: url(./assets/board/mars_consortium.png) no-repeat;
 
+  // User preference (settings panel). Default 0.85 fits 1080p; 1.0 for 1440p+.
+  // Layout height is recovered via margin-bottom so the player panel moves up.
+  // 900px ≈ board 860 + fixed gaps (block margin / hotkey anchor) that do not scale.
+  transform: scale(var(--consortium-board-scale, 1));
+  transform-origin: top center;
+  margin-bottom: calc((var(--consortium-board-scale, 1) - 1) * 900px);
+
   .board {
     // Hex CSS positions from build_board.py include OFFSET_X/Y (137, 134),
     // so the field is already centred on the 891 x 860 disc — no extra margin.
