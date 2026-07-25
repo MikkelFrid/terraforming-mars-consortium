@@ -167,7 +167,7 @@
                             <input type="checkbox" name="consortium" id="consortium-checkbox" v-model="expansions.consortium">
                             <label for="consortium-checkbox" class="expansion-button">
                                 <div class="create-game-expansion-icon expansion-icon-consortium"></div>
-                                <span v-i18n>Consortium</span>
+                                <span v-i18n>Consortium</span>&nbsp;<a :href="wikiUrls.consortium" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                             </label>
 
                             <input type="checkbox" name="ceo" id="underworld-checkbox" v-model="expansions.underworld">
