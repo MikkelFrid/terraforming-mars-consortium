@@ -74,7 +74,7 @@ Gains and spends use the same pattern as corruption:
    `CardRenderer.iridium()` / `.card-resource-iridium` CSS yet. Cards cannot
    display an iridium cost or requirement icon. Needed for Siderophile Extraction
    and megastructure cards.
-2. **`SelectPaymentDeferred` `canUseIridium`** — for megastructure segment pays.
+2. **`SelectPaymentDeferred` `canUseIridium`** — added in phase 06 for megastructure segment pays.
 
 ## Files touched
 
