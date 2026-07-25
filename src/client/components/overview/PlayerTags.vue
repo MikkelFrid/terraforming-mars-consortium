@@ -76,6 +76,8 @@ const ORDER: Array<InterfaceTagsType> = [
   Tag.MOON,
   Tag.MARS,
   Tag.CRIME,
+  Tag.STRUCTURE,
+  Tag.PROSPECTING,
   'separator',
   Tag.EVENT,
   SpecialTags.NONE,

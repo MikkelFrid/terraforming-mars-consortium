@@ -81,6 +81,16 @@
                 <div class="help-icon-label" v-i18n>Clone</div>
                 <div class="expansion-icon expansion-icon-pathfinders"></div>
             </div>
+            <div>
+                <div class="resource-tag tag-structure"></div>
+                <div class="help-icon-label" v-i18n>Structure</div>
+                <div class="expansion-icon expansion-icon-consortium"></div>
+            </div>
+            <div>
+                <div class="resource-tag tag-prospecting"></div>
+                <div class="help-icon-label" v-i18n>Prospecting</div>
+                <div class="expansion-icon expansion-icon-consortium"></div>
+            </div>
 
         </div>
 

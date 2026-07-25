@@ -79,6 +79,8 @@ const TAG_ABBREVIATIONS = {
   [Tag.CLONE]: 'f',
   none: 'g',
   [Tag.CRIME]: 'h',
+  [Tag.STRUCTURE]: 'i',
+  [Tag.PROSPECTING]: 'j',
 } satisfies Record<TagOption, string>;
 
 export function hashToModel(windowLocationHash: string): CardListModel {
