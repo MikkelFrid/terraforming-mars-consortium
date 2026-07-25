@@ -14,7 +14,8 @@ Base: `main` after iridium merge (`24b0137cf`)
 | `src/styles/board_positions.less` | 127 CSS margin rules (`.board-space-001` …) |
 | `src/server/boards/consortiumSpaces.json` | 127 space records |
 
-Confirmed: **127 spaces**, hex field **634×542**, types land 85 / crater 12 / chasm 24 / highland 6.
+Confirmed: **127 spaces**, hex field **634×542**, field origin **137, 134**
+(centred on the planet disc), types land 85 / crater 12 / chasm 24 / highland 6.
 
 Do not hand-edit generated files — change the generator and rerun.
 
@@ -40,9 +41,12 @@ apply to a radius-6 hexagon). `SpaceId` accepts 3-digit ids (`001`–`127`).
 
 ## CSS sizing (Consortium-scoped)
 
-`.board-cont.board-consortium` is 891px wide with `mars_consortium.png`.
-Inner `.board` is 634×542, centered on the image. Tharsis / Hellas / Elysium /
-Amazonis keep the default 600×488 / 670px container — pixel-identical.
+`.board-cont.board-consortium` is 891×860 with `mars_consortium.png`.
+Inner `.board` is full-size (hex margins include the generator OFFSET).
+Ocean / oxygen / temperature tracks and colony tiles are scaled from the
+Tharsis 620×600 chrome (`transform: scale(891/620, 860/600)`). Tharsis /
+Hellas / Elysium / Amazonis keep the default 600×488 / 670px container —
+pixel-identical.
 
 ## Lobby
 

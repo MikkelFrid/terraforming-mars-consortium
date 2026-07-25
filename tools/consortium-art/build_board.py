@@ -32,7 +32,7 @@ import json
 import math
 import os
 import sys
-from PIL import Image, ImageChops, ImageDraw, ImageFilter
+from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageStat
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 MARS_SRC = os.path.join(ROOT, 'assets', 'board', 'mars.png')
@@ -45,6 +45,8 @@ CHASM_HALF = 45.0           # degrees of chasm arc either side of a bridge
 SECTORS = [90.0, 210.0, 330.0]
 PITCH_X, PITCH_Y = 49, 41
 HEX_W, HEX_H = 46, 50
+# Centre the hex field on the upscaled planet disc (not pinned at 0,0).
+OFFSET_X, OFFSET_Y = 137, 134
 
 HIGHLANDS = [(0, -3), (1, -3), (0, -2), (-3, 1), (-3, 2), (-2, 1)]
 CORE_CRATERS = [(4, -2), (-2, 4), (-2, -2)]
@@ -113,8 +115,8 @@ def build_spaces():
     for i, (s, cx, cy) in enumerate(
             sorted(pts, key=lambda p: (round(p[2], 3), p[1])), start=1):
         s['id'] = i
-        s['x'] = round((cx - min_x) / math.sqrt(3) * PITCH_X)
-        s['y'] = round((cy - min_y) / 1.5 * PITCH_Y)
+        s['x'] = round((cx - min_x) / math.sqrt(3) * PITCH_X) + OFFSET_X
+        s['y'] = round((cy - min_y) / 1.5 * PITCH_Y) + OFFSET_Y
 
     return sorted(spaces, key=lambda s: s['id'])
 
@@ -143,7 +145,9 @@ def build_mars():
     rgb, alpha = src.convert('RGB'), src.split()[3]
 
     residual = ImageChops.difference(rgb, rgb.filter(ImageFilter.GaussianBlur(1.2)))
-    sigma = max(residual.convert('L').getextrema()[1] / 6.0, 6.0)
+    # Use residual stddev (≈10.3), not max/6 (≈34) — otherwise the upscaled
+    # disc is over-grained relative to Tharsis / Hellas / Elysium.
+    sigma = max(ImageStat.Stat(residual.convert('L')).stddev[0], 6.0)
 
     tw = round(src.width * 634 / 441)
     th = round(src.height * 542 / 378)
@@ -173,14 +177,15 @@ def main():
         zones[s['zone']] = zones.get(s['zone'], 0) + 1
     locked = sum(1 for s in spaces if s.get('locked'))
 
-    field_w = max(s['x'] for s in spaces) + HEX_W
-    field_h = max(s['y'] for s in spaces) + HEX_H
+    field_w = max(s['x'] for s in spaces) + HEX_W - OFFSET_X
+    field_h = max(s['y'] for s in spaces) + HEX_H - OFFSET_Y
 
     print(f'spaces      : {len(spaces)}')
     print(f'by type     : {counts}')
     print(f'by zone     : {zones}')
     print(f'locked      : {locked}   open frontier: {zones["frontier"] - locked}')
     print(f'hex field   : {field_w} x {field_h} px')
+    print(f'field origin: {OFFSET_X}, {OFFSET_Y}  (centred on the planet disc)')
     print(f'board image : {mars.size[0]} x {mars.size[1]} px  -> {MARS_DST}')
     print(f'css rules   : {len(spaces)}  -> {LESS_DST}')
     print(f'space data  : {JSON_DST}')
