@@ -36,4 +36,10 @@ export type Space = {
 
   /** This tile's co-owner. Used for The Moon's Hostile Takeover card. */
   coOwner?: IPlayer;
+
+  /**
+   * Consortium crater field: true after the one-time placement reward has been claimed.
+   * TODO(consortium): pair with Iridium grant when that resource exists.
+   */
+  craterBonusClaimed?: boolean;
 }

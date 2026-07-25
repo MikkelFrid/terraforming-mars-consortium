@@ -118,7 +118,7 @@ export class UnderworldExpansion {
       }
     }
 
-    if (space.spaceType === SpaceType.COLONY || space.spaceType === SpaceType.RESTRICTED) {
+    if (space.spaceType === SpaceType.COLONY || Board.isUnplaceableSpaceType(space.spaceType)) {
       return false;
     }
     return true;
@@ -192,7 +192,7 @@ export class UnderworldExpansion {
 
     // Compute any space that any player can excavate.
     const anyExcavatableSpaces = board.spaces.filter((space) => {
-      if (space.spaceType === SpaceType.COLONY || space.spaceType === SpaceType.RESTRICTED) {
+      if (space.spaceType === SpaceType.COLONY || Board.isUnplaceableSpaceType(space.spaceType)) {
         return false;
       }
 

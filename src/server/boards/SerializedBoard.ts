@@ -23,4 +23,6 @@ export interface SerializedSpace {
   undergroundResources?: UndergroundResourceToken;
   excavator?: PlayerId;
   coOwner?: PlayerId;
+  /** Consortium crater field one-time reward claimed. */
+  craterBonusClaimed?: true;
 }

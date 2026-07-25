@@ -221,9 +221,31 @@ export abstract class Board {
     return true;
   }
 
+  /**
+   * Land-like space types that accept standard land tiles (city, greenery, specials).
+   * Includes Consortium crater field and highland. Does not include cove / deflection
+   * (those are folded in via board-specific `getSpaces(LAND)` overrides).
+   */
+  public static isTileableLandSpaceType(spaceType: SpaceType): boolean {
+    return spaceType === SpaceType.LAND ||
+      spaceType === SpaceType.CRATER_FIELD ||
+      spaceType === SpaceType.HIGHLAND;
+  }
+
+  /** Amazonis hole and Consortium chasm: nothing may be placed. */
+  public static isUnplaceableSpaceType(spaceType: SpaceType): boolean {
+    return spaceType === SpaceType.RESTRICTED || spaceType === SpaceType.CHASM;
+  }
+
   public getAvailableSpacesOnLand(player: IPlayer, canAffordOptions?: CanAffordOptions): ReadonlyArray<Space> {
     // Does this also apply to cove spaces?
-    const landSpaces = this.getSpaces(SpaceType.LAND).filter((space) => {
+    // getSpaces(LAND) may include board-specific land-likes (cove, deflection zone).
+    // Consortium crater field / highland are always included.
+    const landSpaces = [
+      ...this.getSpaces(SpaceType.LAND),
+      ...this.getSpaces(SpaceType.CRATER_FIELD),
+      ...this.getSpaces(SpaceType.HIGHLAND),
+    ].filter((space) => {
       // A space is available if it doesn't have a player marker on it, or it belongs to |player|
       if (space.player !== undefined && space.player !== player) {
         return false;
@@ -273,7 +295,9 @@ export abstract class Board {
   }
 
   public canPlaceTile(space: Space): boolean {
-    return space.tile === undefined && space.spaceType === SpaceType.LAND && space.id !== this.noctisCitySpaceId;
+    return space.tile === undefined &&
+      Board.isTileableLandSpaceType(space.spaceType) &&
+      space.id !== this.noctisCitySpaceId;
   }
 
   public static isCitySpace(space: Space): boolean {
@@ -344,6 +368,9 @@ export abstract class Board {
         if (space.volcanic) {
           serialized.volcanic = true;
         }
+        if (space.craterBonusClaimed === true) {
+          serialized.craterBonusClaimed = true;
+        }
         return serialized;
       }),
     };
@@ -385,6 +412,9 @@ export abstract class Board {
     }
     if (serialized.volcanic !== undefined) {
       space.volcanic = serialized.volcanic;
+    }
+    if (serialized.craterBonusClaimed === true) {
+      space.craterBonusClaimed = true;
     }
     return space;
   }

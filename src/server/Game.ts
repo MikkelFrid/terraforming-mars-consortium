@@ -1352,6 +1352,16 @@ export class Game implements IGame, Logger {
       throw new Error('This space is land claimed by ' + space.player.name);
     }
 
+    // Consortium chasm (and Amazonis RESTRICTED): nothing may be placed.
+    if (Board.isUnplaceableSpaceType(space.spaceType)) {
+      throw new Error('Selected space is unplaceable: ' + space.id);
+    }
+
+    // Consortium highland: oceans may not be placed (Artificial Lake / Small Comet / etc.).
+    if (tile.tileType === TileType.OCEAN && space.spaceType === SpaceType.HIGHLAND) {
+      throw new Error('Oceans may not be placed on highland: ' + space.id);
+    }
+
     if (!MarsBoard.canCover(space, tile)) {
       throw new Error('Selected space is occupied: ' + space.id);
     }
@@ -1419,6 +1429,12 @@ export class Game implements IGame, Logger {
   public grantPlacementBonuses(player: IPlayer, space: Space, coveringExistingTile: boolean = false, arcadianCommunityBonus: boolean = false) {
     if (!coveringExistingTile) {
       this.grantSpaceBonuses(player, space);
+    }
+
+    // Consortium crater field: one-time placement reward.
+    if (space.spaceType === SpaceType.CRATER_FIELD && space.craterBonusClaimed !== true) {
+      space.craterBonusClaimed = true;
+      // TODO(consortium): grant 1 iridium when the Iridium resource exists.
     }
 
     const adjacentOceanCount = this.board.getAdjacentSpaces(space).filter(Board.isOceanSpace).length;

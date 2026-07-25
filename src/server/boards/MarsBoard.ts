@@ -264,7 +264,11 @@ export class MarsBoard extends Board {
       if (space.id === this.noctisCitySpaceId) {
         return false;
       }
-      return (space.spaceType === SpaceType.LAND || space.spaceType === SpaceType.COVE || space.spaceType === SpaceType.DEFLECTION_ZONE) &&
+      return (space.spaceType === SpaceType.LAND ||
+        space.spaceType === SpaceType.COVE ||
+        space.spaceType === SpaceType.DEFLECTION_ZONE ||
+        space.spaceType === SpaceType.CRATER_FIELD ||
+        space.spaceType === SpaceType.HIGHLAND) &&
         (space.tile === undefined || AresHandler.hasHazardTile(space)) &&
         space.player === undefined;
     });

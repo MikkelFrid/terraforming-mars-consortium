@@ -70,6 +70,27 @@ export class BoardBuilder {
     return this;
   }
 
+  /** Consortium: unplaceable until a bridge megastructure unlocks it (future). */
+  chasm(): this {
+    this.spaceTypes.push(SpaceType.CHASM);
+    this.bonuses.push([]);
+    return this;
+  }
+
+  /** Consortium: land-like; first tile grants iridium once (stubbed). */
+  craterField(...bonus: Array<SpaceBonus>): this {
+    this.spaceTypes.push(SpaceType.CRATER_FIELD);
+    this.bonuses.push(bonus);
+    return this;
+  }
+
+  /** Consortium: land-like; oceans forbidden. */
+  highland(...bonus: Array<SpaceBonus>): this {
+    this.spaceTypes.push(SpaceType.HIGHLAND);
+    this.bonuses.push(bonus);
+    return this;
+  }
+
   deflectionZone(...bonus: Array<SpaceBonus>): this {
     this.spaceTypes.push(SpaceType.DEFLECTION_ZONE);
     this.bonuses.push(bonus);

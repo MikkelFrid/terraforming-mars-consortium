@@ -6,6 +6,7 @@ import {PlacementType} from '../boards/PlacementType';
 import {Space} from '../boards/Space';
 import {CardName} from '../../common/cards/CardName';
 import {Message} from '../../common/logs/Message';
+import {SpaceType} from '../../common/boards/SpaceType';
 
 type Options = {
   title?: string | Message,
@@ -42,6 +43,10 @@ export class PlaceOceanTile extends DeferredAction<Space | undefined> {
     } else {
       const on = this.options?.on || 'ocean';
       availableSpaces = this.player.game.board.getAvailableSpacesForType(this.player, on);
+      // Consortium highland: oceans may not be placed (including ocean-on-land cards).
+      if (on === 'land') {
+        availableSpaces = availableSpaces.filter((space) => space.spaceType !== SpaceType.HIGHLAND);
+      }
       title = this.options?.title ?? this.getTitle(on);
     }
 

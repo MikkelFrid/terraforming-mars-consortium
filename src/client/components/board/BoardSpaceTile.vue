@@ -171,6 +171,15 @@ export default defineComponent({
           break;
         case SpaceType.RESTRICTED:
           break;
+        case SpaceType.CHASM:
+          css += ' board-space-type-chasm';
+          break;
+        case SpaceType.CRATER_FIELD:
+          css += ' board-space-type-crater-field';
+          break;
+        case SpaceType.HIGHLAND:
+          css += ' board-space-type-highland';
+          break;
         default:
           css += ' board-space-type-land';
 
