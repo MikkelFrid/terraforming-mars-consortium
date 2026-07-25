@@ -502,7 +502,9 @@ export default defineComponent({
       }
     },
     getGameBoardClassName(): string {
-      return this.expansions.venus ? 'board-cont board-with-venus' : 'board-cont board-without-venus';
+      const venus = this.expansions.venus ? 'board-with-venus' : 'board-without-venus';
+      const consortium = this.boardName === BoardName.CONSORTIUM ? ' board-consortium' : '';
+      return `board-cont ${venus}${consortium}`;
     },
   },
   computed: {

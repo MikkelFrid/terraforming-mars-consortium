@@ -25,4 +25,8 @@ export interface SerializedSpace {
   coOwner?: PlayerId;
   /** Consortium crater field one-time reward claimed. */
   craterBonusClaimed?: true;
+  q?: number;
+  r?: number;
+  locked?: true;
+  bridge?: number;
 }

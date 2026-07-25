@@ -24,6 +24,26 @@
   background: url(./assets/board/mars-without-venus.png) no-repeat;
 }
 
+// Consortium board only — Tharsis / Hellas / Elysium / Amazonis stay pixel-identical.
+.board-cont.board-consortium {
+  width: 891px;
+  // Override shared mars backgrounds with the upscaled Consortium art.
+  background: url(./assets/board/mars_consortium.png) no-repeat;
+
+  .board {
+    // Hex field from build_board.py: 634 x 542.
+    width: 634px;
+    height: 542px;
+    // Center the field on the 891 x 860 board image.
+    margin: 159px 0 0 128px;
+  }
+
+  .board-legend {
+    width: 891px;
+    height: 860px;
+  }
+}
+
 .board-legend {
   position: absolute;
   margin: -67px 0 0 -100px;

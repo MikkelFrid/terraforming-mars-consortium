@@ -39,7 +39,18 @@ export type Space = {
 
   /**
    * Consortium crater field: true after the one-time placement reward has been claimed.
-   * TODO(consortium): pair with Iridium grant when that resource exists.
    */
   craterBonusClaimed?: boolean;
+
+  /** Axial hex coordinates (Consortium board). Used for adjacency. */
+  q?: number;
+  r?: number;
+
+  /**
+   * Consortium frontier: unplaceable until its bridge megastructure completes.
+   * Bridges do not exist yet — see ConsortiumBoard.isFrontierUnlocked.
+   */
+  locked?: boolean;
+  /** Bridge sector index (0–2) for locked frontier spaces. */
+  bridge?: number;
 }

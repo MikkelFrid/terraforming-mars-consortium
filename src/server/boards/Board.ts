@@ -371,6 +371,18 @@ export abstract class Board {
         if (space.craterBonusClaimed === true) {
           serialized.craterBonusClaimed = true;
         }
+        if (space.q !== undefined) {
+          serialized.q = space.q;
+        }
+        if (space.r !== undefined) {
+          serialized.r = space.r;
+        }
+        if (space.locked === true) {
+          serialized.locked = true;
+        }
+        if (space.bridge !== undefined) {
+          serialized.bridge = space.bridge;
+        }
         return serialized;
       }),
     };
@@ -415,6 +427,18 @@ export abstract class Board {
     }
     if (serialized.craterBonusClaimed === true) {
       space.craterBonusClaimed = true;
+    }
+    if (serialized.q !== undefined) {
+      space.q = serialized.q;
+    }
+    if (serialized.r !== undefined) {
+      space.r = serialized.r;
+    }
+    if (serialized.locked === true) {
+      space.locked = true;
+    }
+    if (serialized.bridge !== undefined) {
+      space.bridge = serialized.bridge;
     }
     return space;
   }

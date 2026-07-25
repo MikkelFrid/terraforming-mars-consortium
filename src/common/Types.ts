@@ -4,7 +4,9 @@ export type SpectatorId = `s${string}`;
 export type ParticipantId = PlayerId | SpectatorId;
 type Digit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
 type TwoDigits = `${Digit}${Digit}`;
-export type SpaceId = `${TwoDigits}` | `m${TwoDigits}`;
+type ThreeDigits = `${Digit}${TwoDigits}`;
+/** Two-digit Mars/colony ids, three-digit Consortium hex ids, or Moon `mNN`. */
+export type SpaceId = `${TwoDigits}` | `${ThreeDigits}` | `m${TwoDigits}`;
 export type Named<T> = {name: T};
 
 export function isPlayerId(object: any): object is PlayerId {
@@ -20,7 +22,7 @@ export function isSpectatorId(object: string): object is SpectatorId {
 }
 
 export function isSpaceId(object: string): object is SpaceId {
-  return /^m?[0-9][0-9]$/.test(object);
+  return /^(m?[0-9]{2}|[0-9]{3})$/.test(object);
 }
 
 export function safeCast<T>(object: any, tester: (object: any) => object is T) {

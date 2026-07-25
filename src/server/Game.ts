@@ -1364,6 +1364,12 @@ export class Game implements IGame, Logger {
       throw new Error('Selected space is unplaceable: ' + space.id);
     }
 
+    // Consortium locked frontier: unplaceable until bridge megastructure completes.
+    if (space.locked === true) {
+      // TODO(consortium): allow when isFrontierUnlocked(space) once bridges exist.
+      throw new Error('Selected space is locked frontier: ' + space.id);
+    }
+
     // Consortium highland: oceans may not be placed (Artificial Lake / Small Comet / etc.).
     if (tile.tileType === TileType.OCEAN && space.spaceType === SpaceType.HIGHLAND) {
       throw new Error('Oceans may not be placed on highland: ' + space.id);
