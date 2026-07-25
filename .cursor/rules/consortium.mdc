@@ -91,6 +91,15 @@ Be pessimistic and exhaustive here. Flag anything that iterates resources
 generically. If the work exceeds its timebox, fall back to modelling iridium
 as a card resource instead of a player resource.
 
+## Artwork — never fabricate
+
+Never create, redraw, or reconstruct binary art assets (icons, tiles, board
+images, tag PNGs, hex PNGs, expansion icons, etc.). Artwork is authored
+outside this repo and arrives via commits (for example an `art/*` branch).
+
+If artwork is missing, stop and ask. Do not approximate it from screenshots,
+descriptions, or existing assets.
+
 ## Working rules
 
 - One phase, one branch, one session
