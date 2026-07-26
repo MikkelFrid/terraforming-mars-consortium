@@ -100,7 +100,8 @@
     "test:client": "cross-env NODE_ENV=development mochapack --require tests/client/components/setup.ts \"tests/client/**/*.spec.ts\"",
     "test:client:watch": "cross-env NODE_ENV=development mochapack --watch --require tests/client/components/setup.ts \"tests/client/**/*.spec.ts\"",
     "dev:client": "cross-env NODE_ENV=development webpack --watch",
-    "dev:server": "cross-env NODE_ENV=development tsx watch --clear-screen=false src/server/server.ts"
+    "dev:server": "cross-env NODE_ENV=development tsx watch --clear-screen=false src/server/server.ts",
+    "validate:consortium": "npx tsx tools/consortium/validate.ts --games=200 --out=docs/consortium/16-validation.md"
   },
   "repository": {
     "type": "git",

@@ -50,6 +50,12 @@ export class PlaceOceanTile extends DeferredAction<Space | undefined> {
       title = this.options?.title ?? this.getTitle(on);
     }
 
+    // Boards with no ocean spaces (e.g. Consortium) must not construct SelectSpace([]),
+    // which throws. Soft-skip so ocean effects become no-ops instead of crashing.
+    if (availableSpaces.length === 0) {
+      return undefined;
+    }
+
     return new SelectSpace(title, availableSpaces)
       .andThen((space) => {
         this.creditedPlayer.game.addOcean(this.creditedPlayer, space);
