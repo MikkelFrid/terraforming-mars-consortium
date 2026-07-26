@@ -44,6 +44,7 @@ immediately after the crater iridium grant.
 ## Acceptance evidence
 
 - Lint + stylelint clean.
+- Server tests **7317** (above 7242); client **457** (above 455).
 - Unit file per card; Ledger of Claims category + floor(/3); RW for Standard
   Gauge (Building production). Joint Venture / Charter Revision have no
   Building tag — not RW targets.

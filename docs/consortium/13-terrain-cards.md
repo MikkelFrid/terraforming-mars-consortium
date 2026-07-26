@@ -59,5 +59,7 @@ on Scarp Foundry.
 - Server tests **7317** (above 7242); client **457** (above 455).
 - Unit file per card; Scarp Foundry + Iridium Reserve composition; Talus
   former-chasm gate; Impact Glass Works cap; RW for production Building cards.
-- Codegen rerun; screenshots under `/opt/cursor/artifacts/screenshots/`.
+- Codegen rerun.
+- Screenshot: `/opt/cursor/artifacts/screenshots/terrain-cards-all-nine.png`
+  (plus per-card `terrain-card-00`…`08.png`).
 - Branch: `feat/consortium-terrain-general`; no PR (merged to main when green).
