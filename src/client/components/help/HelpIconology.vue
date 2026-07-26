@@ -125,6 +125,11 @@
                 <div class="help-icon-resource heat"></div>
                 <div class="help-icon-label" v-i18n>Heat</div>
             </div>
+            <div>
+                <div class="help-icon-resource iridium"></div>
+                <div class="help-icon-label" v-i18n>Iridium</div>
+                <div class="expansion-icon expansion-icon-consortium"></div>
+            </div>
             <br>
             <div>
                 <div class="help-icon-sublabel" v-i18n>Resources on Cards</div>

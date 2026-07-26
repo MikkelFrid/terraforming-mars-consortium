@@ -65,6 +65,15 @@ describe('ServeAsset', () => {
     expect(res.content.startsWith('<!DOCTYPE html>'));
   });
 
+  it('serves Consortium player rulebook HTML', async () => {
+    scaffolding.url = '/assets/consortium/rulebook.html';
+    scaffolding.req.headers['accept-encoding'] = '';
+    await scaffolding.get(instance, res);
+    expect(res.statusCode).eq(statusCode.ok);
+    expect(String(res.content)).to.include('Consortium');
+    expect(String(res.content)).to.include('Iridium');
+  });
+
   it('styles.css', async () => {
     instance = new ServeAsset(undefined, false, fileApi);
     scaffolding.url = '/styles.css';

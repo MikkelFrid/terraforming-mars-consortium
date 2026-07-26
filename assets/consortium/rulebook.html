@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Consortium — Player Rulebook</title>
+  <style>
+    :root {
+      --ink: #1c2430;
+      --muted: #4a5564;
+      --paper: #f7f4ef;
+      --panel: #fffdf9;
+      --line: #d5cfc4;
+      --accent: #2f5d50;
+      --accent-soft: #e4efe9;
+      --warn: #7a3e1d;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, #efe7d8 0%, transparent 40%),
+        linear-gradient(180deg, #f3eee5 0%, var(--paper) 45%, #ebe4d8 100%);
+      font-family: Georgia, "Times New Roman", serif;
+      line-height: 1.55;
+    }
+    main {
+      max-width: 46rem;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 4rem;
+    }
+    h1 {
+      font-size: 2.2rem;
+      letter-spacing: 0.02em;
+      margin: 0 0 0.35rem;
+      color: var(--accent);
+    }
+    .lede {
+      color: var(--muted);
+      font-size: 1.05rem;
+      margin: 0 0 1.75rem;
+    }
+    h2 {
+      font-size: 1.35rem;
+      margin: 2rem 0 0.65rem;
+      padding-bottom: 0.25rem;
+      border-bottom: 2px solid var(--accent);
+      color: var(--accent);
+    }
+    h3 {
+      font-size: 1.05rem;
+      margin: 1.25rem 0 0.4rem;
+    }
+    p, li { font-size: 1rem; }
+    ul, ol { padding-left: 1.25rem; }
+    li + li { margin-top: 0.35rem; }
+    .callout {
+      background: var(--accent-soft);
+      border-left: 4px solid var(--accent);
+      padding: 0.85rem 1rem;
+      margin: 1rem 0;
+    }
+    .warn {
+      background: #f7ebe3;
+      border-left: 4px solid var(--warn);
+      padding: 0.85rem 1rem;
+      margin: 1rem 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0.75rem 0 1rem;
+      background: var(--panel);
+      font-size: 0.95rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 0.45rem 0.6rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #efe8db; }
+    .toc {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      padding: 1rem 1.1rem;
+      margin: 0 0 1.5rem;
+    }
+    .toc ol { margin: 0.4rem 0 0; }
+    .toc a { color: var(--accent); }
+    footer {
+      margin-top: 2.5rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Consortium</h1>
+  <p class="lede">
+    A fan expansion for Terraforming Mars. If you already know the base game,
+    this page is everything you need before you sit down.
+  </p>
+
+  <nav class="toc" aria-label="Contents">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#setup">Setup</a></li>
+      <li><a href="#iridium">Iridium</a></li>
+      <li><a href="#tags">New tags</a></li>
+      <li><a href="#terrain">New space types</a></li>
+      <li><a href="#megastructures">Megastructures</a></li>
+      <li><a href="#bridges">Bridges and the frontier</a></li>
+      <li><a href="#core-sampling">Core Sampling</a></li>
+      <li><a href="#milestones-awards">Milestones and awards</a></li>
+    </ol>
+  </nav>
+
+  <h2 id="setup">Setup</h2>
+  <p>
+    Enable <strong>Consortium</strong> in the lobby. Use the Consortium map.
+    The expansion adds a shared iridium bank, two new card tags, three new
+    terrain types, cooperative megastructures (including three Bridges), a
+    Core Sampling standard project, and its own milestones and awards.
+  </p>
+  <p>
+    Recommended player count is 3–4. Play otherwise follows the base rules
+    unless this rulebook says otherwise.
+  </p>
+
+  <h2 id="iridium">Iridium</h2>
+  <p>
+    Iridium is a new player resource — a metal stockpile like steel or titanium,
+    shown on your player board after heat. It is <em>not</em> a production
+    track.
+  </p>
+
+  <h3>Where it comes from</h3>
+  <ul>
+    <li>
+      <strong>Crater fields:</strong> when you place a tile on a crater-field
+      space, you gain 1 iridium the first time that space is claimed (once per
+      space for the game).
+    </li>
+    <li>
+      <strong>Core Sampling:</strong> a Consortium standard project — pay 6 M€
+      to take 1 iridium from the bank (see below).
+    </li>
+    <li>
+      Some Consortium cards and megastructure effects also grant iridium.
+    </li>
+  </ul>
+
+  <h3>The bank and the 28 cap</h3>
+  <p>
+    All iridium in the game comes from one shared bank that starts with
+    <strong>28</strong> iridium. When you gain iridium, it leaves the bank.
+    When you spend it, it returns to the bank. Nothing creates new iridium
+    beyond that pool.
+  </p>
+  <div class="callout">
+    If the bank is empty, crater fields still mark their bonus as claimed but
+    grant nothing, and Core Sampling cannot be used until someone spends
+    iridium back into the bank.
+  </div>
+
+  <h3>What it can pay for</h3>
+  <p>
+    Iridium is worth <strong>4 M€</strong> per unit when paying, but only for:
+  </p>
+  <ul>
+    <li>Cards with the <strong>Structure</strong> tag</li>
+    <li>Cards with the <strong>Prospecting</strong> tag</li>
+    <li>Megastructure segments (including keystones)</li>
+  </ul>
+  <p>
+    You cannot spend iridium as general-purpose money on ordinary cards the
+    way titanium works for space cards. Held iridium is worth
+    <strong>0 VP</strong> at game end — it is currency, not score.
+  </p>
+
+  <h3>Why there is no production</h3>
+  <p>
+    Iridium has no production row. Supply is deliberately scarce and shared.
+    The only card that breaks this pattern is
+    <em>Siderophile Extraction</em>, a special exception — treat it as unique,
+    not as the start of an iridium economy.
+  </p>
+
+  <h2 id="tags">New tags</h2>
+  <table>
+    <thead>
+      <tr><th>Tag</th><th>Meaning</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Structure</strong></td>
+        <td>
+          Engineering and construction cards tied to megastructures and
+          durable works. Iridium may be spent when playing these cards.
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Prospecting</strong></td>
+        <td>
+          Surveying and mineral cards. Iridium may be spent when playing
+          these cards.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <p>
+    Both tags count for ordinary tag effects (Diversifier-style checks,
+    tag-based cards, and so on) just like Building or Science.
+  </p>
+
+  <h2 id="terrain">New space types</h2>
+  <table>
+    <thead>
+      <tr><th>Space</th><th>Placement</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Chasm</strong></td>
+        <td>Nothing may be placed</td>
+        <td>
+          Deep rifts. They stay empty until a Bridge opens their frontier
+          sector, at which point former chasms become ordinary land.
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Crater field</strong></td>
+        <td>Like land (city, greenery, special tiles)</td>
+        <td>
+          First tile placed here grants 1 iridium (bank permitting), once
+          per space.
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Highland</strong></td>
+        <td>Like land, but <em>no oceans</em></td>
+        <td>
+          Elevated ground. Some megastructures require you to own a tile on
+          a highland before you can start contributing to them.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2 id="megastructures">Megastructures</h2>
+  <p>
+    Each game has <strong>five</strong> megastructures on a shared track panel:
+  </p>
+  <ul>
+    <li><strong>Three Bridges</strong> — always present, one for each frontier sector</li>
+    <li><strong>Two grand structures</strong> — drawn at random from Space Elevator, L1 Magnetic Shield, Mohole, Solar Mirror, and Arcology</li>
+  </ul>
+
+  <h3>Contributing segments</h3>
+  <p>
+    On your turn, as a standard action, you may contribute
+    <strong>one segment</strong> to one megastructure. Pay the listed cost
+    (M€, and you may use steel, titanium, and iridium toward that payment).
+    Your cube marks ownership of that segment.
+  </p>
+  <ul>
+    <li>Bridges have 4 segments (first three cost 12 M€; keystone 8 M€).</li>
+    <li>Grand structures have 6 segments (first five cost 16 M€; keystone 12 M€).</li>
+  </ul>
+
+  <h3>The keystone</h3>
+  <p>
+    The last segment on every structure is the <strong>keystone</strong>.
+    In addition to its M€ cost, the keystone always requires a
+    <strong>minimum iridium spend</strong> (2 on a Bridge, 3 on a grand
+    structure). You cannot finish a structure without iridium.
+  </p>
+
+  <h3>Foundation gates</h3>
+  <p>
+    Before you place your <em>first</em> segment on Space Elevator, Mohole, or
+    Solar Mirror, you must already own a tile on a highland space. Bridges,
+    L1 Magnetic Shield, and Arcology have no foundation requirement.
+  </p>
+
+  <h3>What completion grants</h3>
+  <p>
+    When the keystone is placed, the structure completes immediately:
+  </p>
+  <ol>
+    <li>Each contributor scores <strong>1 VP per segment</strong> they paid for.</li>
+    <li>The keystone player scores an extra <strong>2 VP</strong>.</li>
+    <li>A global effect applies to everyone, and each contributor gets a stronger personal bonus (see the track tooltips in play).</li>
+  </ol>
+  <div class="warn">
+    <strong>Half-finished structures score nothing.</strong> Segments on an
+    incomplete megastructure at game end are sunk cost — 0 VP. Finish them or
+    write them off.
+  </div>
+
+  <h3>Completion effects (summary)</h3>
+  <table>
+    <thead>
+      <tr><th>Structure</th><th>Everyone</th><th>Contributors</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Bridge</td>
+        <td>Opens its frontier sector</td>
+        <td>+1 M€ production per segment owned</td>
+      </tr>
+      <tr>
+        <td>Space Elevator</td>
+        <td>−2 M€ on space-tag cards</td>
+        <td>Titanium production from segments owned</td>
+      </tr>
+      <tr>
+        <td>L1 Magnetic Shield</td>
+        <td>Greenery costs 1 fewer plant</td>
+        <td>Plant production from segments owned</td>
+      </tr>
+      <tr>
+        <td>Mohole</td>
+        <td>+1 heat production</td>
+        <td>Iridium now, and a trickle each generation</td>
+      </tr>
+      <tr>
+        <td>Solar Mirror</td>
+        <td>Temperature +1 step</td>
+        <td>Heat production from segments owned</td>
+      </tr>
+      <tr>
+        <td>Arcology</td>
+        <td>+1 M€ production</td>
+        <td>Extra end-game VP per segment</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2 id="bridges">Bridges and the frontier</h2>
+  <p>
+    The Consortium map has a <strong>frontier</strong> beyond the main disc —
+    locked spaces that begin the game unplaceable. Completing a Bridge opens
+    exactly one sector:
+  </p>
+  <ul>
+    <li>Frontier spaces tied to that Bridge become placeable.</li>
+    <li>Chasms in that sector become ordinary land.</li>
+    <li>Other sectors stay locked until their Bridge finishes.</li>
+  </ul>
+  <p>
+    Racing a Bridge opens new land and ocean opportunities. Ignoring Bridges
+    keeps the map cramped. Incomplete Bridges still score nothing if unfinished.
+  </p>
+
+  <h2 id="core-sampling">Core Sampling</h2>
+  <p>
+    Consortium adds a standard project: <strong>Core Sampling</strong>.
+  </p>
+  <ul>
+    <li>Cost: <strong>6 M€</strong></li>
+    <li>Effect: gain <strong>1 iridium</strong> from the bank</li>
+    <li>Unavailable when the bank is empty</li>
+  </ul>
+  <p>
+    Use it when you need iridium for a Structure/Prospecting play or a
+    keystone and the board has no free crater fields left.
+  </p>
+
+  <h2 id="milestones-awards">Milestones and awards</h2>
+  <p>
+    On the Consortium map, the three milestones and three awards are:
+  </p>
+  <table>
+    <thead>
+      <tr><th>Type</th><th>Name</th><th>Condition</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Milestone</td>
+        <td><strong>Mason</strong></td>
+        <td>Contribute at least 5 megastructure segments</td>
+      </tr>
+      <tr>
+        <td>Milestone</td>
+        <td><strong>Pathfinder</strong></td>
+        <td>Own at least 3 tiles in frontier zones</td>
+      </tr>
+      <tr>
+        <td>Milestone</td>
+        <td><strong>Assayer</strong></td>
+        <td>Have at least 6 Prospecting + Structure tags combined</td>
+      </tr>
+      <tr>
+        <td>Award</td>
+        <td><strong>Underwriter</strong></td>
+        <td>Most megastructure segments contributed</td>
+      </tr>
+      <tr>
+        <td>Award</td>
+        <td><strong>Cartographer</strong></td>
+        <td>Most owned tiles in frontier zones</td>
+      </tr>
+      <tr>
+        <td>Award</td>
+        <td><strong>Refiner</strong></td>
+        <td>Most iridium spent over the game</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <footer>
+    Consortium fan expansion for Terraforming Mars · served from this game
+    instance at <code>/assets/consortium/rulebook.html</code>
+  </footer>
+</main>
+</body>
+</html>

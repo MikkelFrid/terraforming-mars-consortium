@@ -192,6 +192,15 @@ export class ServeAsset extends Handler {
           return {file: resolvedFile};
         }
       }
+
+      // Consortium player rulebook (and future local HTML help under that folder).
+      if (urlPath.endsWith('.html') && urlPath.startsWith('assets/consortium/')) {
+        const assetsRoot = path.resolve('./assets');
+        const resolvedFile = path.resolve(path.normalize(urlPath));
+        if (resolvedFile.startsWith(assetsRoot)) {
+          return {file: resolvedFile};
+        }
+      }
     }
 
     return {};

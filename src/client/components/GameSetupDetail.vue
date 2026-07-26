@@ -17,7 +17,7 @@
               <a v-if="gameOptions.expansions.underworld" :href="rulebookUrls.underworld" class="tooltip" data-tooltip="Underworld rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-underworld"></div></a>
               <a v-if="gameOptions.expansions.starwars" :href="rulebookUrls.starwars" class="tooltip" data-tooltip="Star Wars rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-starwars"></div></a>
               <a v-if="gameOptions.expansions.deltaProject" :href="rulebookUrls.deltaProject" class="tooltip" data-tooltip="Delta Project rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-deltaProject"></div></a>
-              <div v-if="gameOptions.expansions.consortium" class="create-game-expansion-icon expansion-icon-consortium" title="Consortium"></div>
+              <a v-if="gameOptions.expansions.consortium" :href="rulebookUrls.consortium" class="tooltip" data-tooltip="Consortium rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-consortium"></div></a>
             </li>
 
             <li><div class="setup-item" v-i18n>Board:</div>

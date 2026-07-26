@@ -19,8 +19,8 @@ export const RULEBOOK_URLS: Record<GameModule, string> = {
   starwars: `${WIKI}/StarWars`,
   underworld: `${WIKI}/Underworld`,
   deltaProject: `${WIKI}/Delta-Project`,
-  // Placeholder — Consortium rulebook page does not exist upstream yet.
-  consortium: `${WIKI}/Consortium`,
+  // Served from this instance (see assets/consortium/rulebook.html).
+  consortium: '/assets/consortium/rulebook.html',
 };
 
 export const WIKI_URLS = {
