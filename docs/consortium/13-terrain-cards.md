@@ -56,7 +56,7 @@ on Scarp Foundry.
 ## Acceptance evidence
 
 - Lint + stylelint clean.
-- Server tests above 7242; client above 455.
+- Server tests **7317** (above 7242); client **457** (above 455).
 - Unit file per card; Scarp Foundry + Iridium Reserve composition; Talus
   former-chasm gate; Impact Glass Works cap; RW for production Building cards.
 - Codegen rerun; screenshots under `/opt/cursor/artifacts/screenshots/`.
