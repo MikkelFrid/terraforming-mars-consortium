@@ -17,4 +17,19 @@ describe('CardRenderTileComponent', () => {
     });
     expect(wrapper.exists()).to.be.true;
   });
+
+  it('renders Highland Anchor with its card symbol class', () => {
+    const wrapper = shallowMount(CardRenderTileComponent, {
+      ...globalConfig,
+      props: {
+        item: {
+          is: 'tile',
+          tile: TileType.HIGHLAND_ANCHOR,
+          hasSymbol: true,
+        },
+      },
+    });
+    const html = wrapper.html();
+    expect(html).to.include('card-tile-symbol-highland-anchor');
+  });
 });

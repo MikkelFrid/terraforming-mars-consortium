@@ -3,6 +3,7 @@ import {expect} from 'chai';
 import {globalConfig} from '../getLocalVue';
 import BoardSpaceTile from '@/client/components/board/BoardSpaceTile.vue';
 import {SpaceType} from '@/common/boards/SpaceType';
+import {TileType} from '@/common/TileType';
 
 describe('BoardSpaceTile', () => {
   it('mounts without errors', () => {
@@ -23,5 +24,25 @@ describe('BoardSpaceTile', () => {
       },
     });
     expect(wrapper.exists()).to.be.true;
+  });
+
+  it('renders Highland Anchor with its board CSS class', () => {
+    const wrapper = shallowMount(BoardSpaceTile, {
+      ...globalConfig,
+      props: {
+        space: {
+          id: '02',
+          x: 1,
+          y: 0,
+          bonus: [],
+          color: 'blue',
+          tileType: TileType.HIGHLAND_ANCHOR,
+          spaceType: SpaceType.HIGHLAND,
+          highlight: undefined,
+        },
+        aresExtension: false,
+      },
+    });
+    expect(wrapper.classes().some((c) => c.includes('highland_anchor'))).to.be.true;
   });
 });
