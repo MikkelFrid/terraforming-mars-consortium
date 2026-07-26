@@ -156,6 +156,15 @@ const TILE_CLASSES: Record<TileType, Classes> = {
   [TileType.HIGHLAND_ANCHOR]: {
     symbol: 'card-tile-symbol-highland-anchor',
   },
+  [TileType.TRAILHEAD_CAMP]: {
+    symbol: 'card-tile-symbol-trailhead-camp',
+  },
+  [TileType.RIM_OUTPOST]: {
+    symbol: 'card-tile-symbol-rim-outpost',
+  },
+  [TileType.CHASM_DESCENT]: {
+    symbol: 'card-tile-symbol-chasm-descent',
+  },
 };
 
 export default defineComponent({

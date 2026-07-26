@@ -375,6 +375,55 @@ def build_highland_anchor(path):
     out.save(path)
 
 
+def _recolor_special(src_name, path, rf, gf, bf, draw_fn=None):
+    src = os.path.join(SPECIAL_TILE_DIR, src_name)
+    img = Image.open(src).convert('RGBA')
+    r, g, b, a = img.split()
+    r = r.point(lambda x: max(0, min(255, int(x * rf))))
+    g = g.point(lambda x: max(0, min(255, int(x * gf))))
+    b = b.point(lambda x: max(0, min(255, int(x * bf))))
+    out = Image.merge('RGBA', (r, g, b, a))
+    if draw_fn is not None:
+        draw_fn(ImageDraw.Draw(out), out.size)
+    out.save(path)
+
+
+def build_trailhead_camp(path):
+    """152x152: tent-like mark on a cooler natural_preserve base."""
+    def glyph(draw, size):
+        w, h = size
+        cx, cy = w // 2, h // 2 + 4
+        fill = (230, 220, 190, 230)
+        draw.polygon([(cx, cy - 28), (cx - 22, cy + 16), (cx + 22, cy + 16)], fill=fill)
+        draw.line([(cx, cy - 28), (cx, cy + 16)], fill=(40, 40, 40, 200), width=2)
+    _recolor_special('natural_preserve.png', path, 0.85, 0.95, 1.10, glyph)
+
+
+def build_rim_outpost(path):
+    """152x152: outpost tower on restricted_area base."""
+    def glyph(draw, size):
+        w, h = size
+        cx, cy = w // 2, h // 2
+        fill = (235, 225, 200, 230)
+        draw.rectangle([cx - 8, cy - 22, cx + 8, cy + 18], fill=fill)
+        draw.polygon([(cx - 14, cy - 22), (cx, cy - 36), (cx + 14, cy - 22)], fill=fill)
+        draw.ellipse([cx - 4, cy - 8, cx + 4, cy], fill=(40, 60, 90, 220))
+    _recolor_special('restricted_area.png', path, 0.90, 0.88, 1.05, glyph)
+
+
+def build_chasm_descent(path):
+    """152x152: descent chevrons on a darker mohole base."""
+    def glyph(draw, size):
+        w, h = size
+        cx, cy = w // 2, h // 2 - 6
+        fill = (200, 210, 230, 230)
+        for i, y in enumerate((cy - 18, cy - 2, cy + 14)):
+            half = 16 - i * 3
+            draw.polygon([(cx, y + 10), (cx - half, y - 6), (cx + half, y - 6)],
+                         outline=fill)
+    _recolor_special('mohole_area.png', path, 0.70, 0.75, 0.95, glyph)
+
+
 # --------------------------------------------------------------------- main
 
 def main():
@@ -407,6 +456,9 @@ def main():
     build_iridium(os.path.join(RES_DIR, 'iridium.png'))
     build_impact_basin(os.path.join(SPECIAL_TILE_DIR, 'impact_basin.png'))
     build_highland_anchor(os.path.join(SPECIAL_TILE_DIR, 'highland_anchor.png'))
+    build_trailhead_camp(os.path.join(SPECIAL_TILE_DIR, 'trailhead_camp.png'))
+    build_rim_outpost(os.path.join(SPECIAL_TILE_DIR, 'rim_outpost.png'))
+    build_chasm_descent(os.path.join(SPECIAL_TILE_DIR, 'chasm_descent.png'))
 
     emblem_paths = []
     for stem, rgb, shape in _MEGASTRUCTURE_PLACEHOLDERS:
@@ -420,6 +472,9 @@ def main():
               'assets/hex_highland.png', 'assets/resources/iridium.png',
               'assets/tiles/special_tile_icons/impact_basin.png',
               'assets/tiles/special_tile_icons/highland_anchor.png',
+              'assets/tiles/special_tile_icons/trailhead_camp.png',
+              'assets/tiles/special_tile_icons/rim_outpost.png',
+              'assets/tiles/special_tile_icons/chasm_descent.png',
               *emblem_paths):
         f = os.path.join(ROOT, p)
         im = Image.open(f)

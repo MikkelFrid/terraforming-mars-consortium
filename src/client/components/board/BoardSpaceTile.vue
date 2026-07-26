@@ -61,6 +61,9 @@ const tileTypeToCssClass: Record<TileType, string> = {
   [TileType.NEURAL_INSTANCE]: 'neural-instance',
   [TileType.IMPACT_BASIN_CLAIM]: 'impact_basin_claim',
   [TileType.HIGHLAND_ANCHOR]: 'highland_anchor',
+  [TileType.TRAILHEAD_CAMP]: 'trailhead_camp',
+  [TileType.RIM_OUTPOST]: 'rim_outpost',
+  [TileType.CHASM_DESCENT]: 'chasm_descent',
 };
 
 const tileTypeToCssClassAresOverride = new Map<TileType, string>([
@@ -106,6 +109,9 @@ const descriptions: Record<TileType, string> = {
   [TileType.NEURAL_INSTANCE]: 'Neural Instance: MarsBot gains VP for adjacent non-human spaces',
   [TileType.IMPACT_BASIN_CLAIM]: 'Impact Basin Claim: special tile on a crater field',
   [TileType.HIGHLAND_ANCHOR]: 'Highland Anchor: special tile on a highland space',
+  [TileType.TRAILHEAD_CAMP]: 'Trailhead Camp: special tile on a frontier space',
+  [TileType.RIM_OUTPOST]: 'Rim Outpost: special tile on a frontier space',
+  [TileType.CHASM_DESCENT]: 'Chasm Descent: special tile on a former chasm',
 };
 
 export default defineComponent({
