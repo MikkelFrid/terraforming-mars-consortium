@@ -48,9 +48,14 @@ export type Space = {
 
   /**
    * Consortium frontier: unplaceable until its bridge megastructure completes.
-   * Bridges do not exist yet — see ConsortiumBoard.isFrontierUnlocked.
+   * Cleared when that sector's bridge completes.
    */
   locked?: boolean;
   /** Bridge sector index (0–2) for locked frontier spaces. */
   bridge?: number;
+  /**
+   * Consortium board sector (0–2). Present on chasms (belt arc) and locked
+   * frontier so bridge completion can convert the right chasms.
+   */
+  sector?: number;
 }

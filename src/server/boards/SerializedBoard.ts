@@ -29,4 +29,6 @@ export interface SerializedSpace {
   r?: number;
   locked?: true;
   bridge?: number;
+  /** Consortium board sector (0–2); used for chasm conversion on bridge unlock. */
+  sector?: number;
 }

@@ -383,6 +383,9 @@ export abstract class Board {
         if (space.bridge !== undefined) {
           serialized.bridge = space.bridge;
         }
+        if (space.sector !== undefined) {
+          serialized.sector = space.sector;
+        }
         return serialized;
       }),
     };
@@ -439,6 +442,9 @@ export abstract class Board {
     }
     if (serialized.bridge !== undefined) {
       space.bridge = serialized.bridge;
+    }
+    if (serialized.sector !== undefined) {
+      space.sector = serialized.sector;
     }
     return space;
   }

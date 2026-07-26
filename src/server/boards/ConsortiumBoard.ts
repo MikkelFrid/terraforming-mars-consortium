@@ -52,15 +52,26 @@ function spaceBonuses(_entry: ConsortiumSpaceJson): Array<SpaceBonus> {
 }
 
 /**
- * TODO(consortium): Bridge megastructures unlock locked frontier spaces.
- * Until bridges exist, this always returns false for locked spaces.
+ * Locked frontier spaces become placeable when their bridge completes and
+ * clears {@link Space.locked}. Until then they remain unplaceable.
  */
 export function isFrontierUnlocked(space: Space): boolean {
-  if (space.locked !== true) {
-    return true;
+  return space.locked !== true;
+}
+
+/**
+ * Open one bridge sector: unlock its locked frontier spaces and convert its
+ * belt chasms to LAND. Other sectors are untouched.
+ */
+export function unlockBridgeSector(spaces: ReadonlyArray<Space>, sector: number): void {
+  for (const space of spaces) {
+    if (space.locked === true && space.bridge === sector) {
+      space.locked = false;
+    }
+    if (space.spaceType === SpaceType.CHASM && space.sector === sector) {
+      space.spaceType = SpaceType.LAND;
+    }
   }
-  // TODO(consortium): return true when space.bridge's megastructure is complete.
-  return false;
 }
 
 export class ConsortiumBoard extends MarsBoard {
@@ -82,6 +93,10 @@ export class ConsortiumBoard extends MarsBoard {
         r: entry.r,
         bonus: spaceBonuses(entry),
       };
+      // Sector is needed on chasms (belt) and locked frontier for bridge unlock.
+      if (entry.type === 'chasm' || entry.locked === true) {
+        space.sector = entry.sector;
+      }
       if (entry.locked === true) {
         space.locked = true;
         space.bridge = entry.bridge;
