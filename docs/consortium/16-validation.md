@@ -1,26 +1,30 @@
 # Consortium — Phase 16: Full-game validation
 
+> The validation harness measures crashes and invariants. It does not
+> measure balance. Its actor is not a player. Never cite its output as
+> evidence about game balance.
+
 Branch: `feat/consortium-harness-honesty`
 Date: 2026-07-26
 Harness: `tools/consortium/validate.ts` (TypeScript via `npx tsx`)
 
 ## What this harness can and cannot tell us
 
-**This harness measures crashes and state invariants.** It drives solo
-games to `Phase.END` through real `player.process` calls and fails the
-run if an exception escapes or an invariant breaks.
+**Can:** drive solo games to `Phase.END` through real `player.process`
+calls, and fail the run if an exception escapes or a state invariant
+breaks.
 
-It **cannot** tell us whether Consortium is balanced. Ocean counts,
-bridge completion rates, game length, card play rates, and similar
-numbers reflect the actor's choice distribution, not the game's design.
-A preference-weighted actor that scores megastructure contribute at 5.5
-and standard projects at 1.5 will starve oceans and over-complete bridges;
-that is harness bias, not evidence about the map or the economy.
-Do not cite this document for balance decisions.
+**Cannot:** say whether Consortium is balanced. Ocean counts, bridge
+completion rates, game length, card play rates, and similar numbers
+reflect the actor's choice distribution, not the game's design. A
+preference-weighted actor that scores megastructure contribute at 5.5
+and standard projects at 1.5 will starve oceans and over-complete
+bridges; that is harness bias, not evidence about the map or the
+economy.
 
 Default actor mode is **`random`**: uniform choice over legal options at
 every decision point. Mode **`weighted`** keeps the old heuristic for
-comparison only.
+comparison only. Neither mode is a substitute for human play.
 
 ## Method
 

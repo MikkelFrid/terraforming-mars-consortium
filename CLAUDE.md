@@ -90,6 +90,7 @@ Pluggable backends in `src/server/database/`: `SQLite`, `PostgreSQL`, `LocalFile
 - Server card tests: instantiate the card, call `canPlay()`/`play()`/`action()`, assert state changes.
 - Client tests: use `@vue/test-utils` mount/shallowMount with JSDOM setup from `tests/client/components/setup.ts`.
 - Test framework: Mocha + Chai (expect style). Client tests use mochapack.
+- **Consortium validation harness** (`tools/consortium/validate.ts`, `docs/consortium/16-validation.md`): measures crashes and invariants only. It does not measure balance. Its actor is not a player. Never cite its output as evidence about game balance.
 
 ### Internationalization
 

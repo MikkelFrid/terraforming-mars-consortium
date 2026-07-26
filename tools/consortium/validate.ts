@@ -1,9 +1,13 @@
 /**
  * Consortium full-game validation harness.
  *
- * This is a crash / invariant harness, not a balance study. The default actor
- * picks uniformly among legal options so games reach states a preference-driven
- * bot never would. A weighted mode is kept only for comparison.
+ * The validation harness measures crashes and invariants. It does not measure
+ * balance. Its actor is not a player. Never cite its output as evidence about
+ * game balance.
+ *
+ * Default actor (`random`) picks uniformly among legal options so games reach
+ * states a preference-driven bot never would. Mode `weighted` keeps the old
+ * heuristic for comparison only.
  *
  * Usage:
  *   npx tsx tools/consortium/validate.ts
@@ -770,6 +774,10 @@ function writeReport(
   const now = new Date().toISOString().slice(0, 10);
   lines.push('# Consortium — Phase 16: Full-game validation');
   lines.push('');
+  lines.push('> The validation harness measures crashes and invariants. It does not');
+  lines.push('> measure balance. Its actor is not a player. Never cite its output as');
+  lines.push('> evidence about game balance.');
+  lines.push('');
   lines.push('Branch: `feat/consortium-harness-honesty`');
   lines.push(`Date: ${now}`);
   lines.push('Harness: `tools/consortium/validate.ts` (TypeScript via `npx tsx`)');
@@ -777,21 +785,21 @@ function writeReport(
 
   lines.push('## What this harness can and cannot tell us');
   lines.push('');
-  lines.push('**This harness measures crashes and state invariants.** It drives solo');
-  lines.push('games to `Phase.END` through real `player.process` calls and fails the');
-  lines.push('run if an exception escapes or an invariant breaks.');
+  lines.push('**Can:** drive solo games to `Phase.END` through real `player.process`');
+  lines.push('calls, and fail the run if an exception escapes or a state invariant');
+  lines.push('breaks.');
   lines.push('');
-  lines.push('It **cannot** tell us whether Consortium is balanced. Ocean counts,');
-  lines.push('bridge completion rates, game length, card play rates, and similar');
-  lines.push('numbers reflect the actor\'s choice distribution, not the game\'s design.');
-  lines.push('A preference-weighted actor that scores megastructure contribute at 5.5');
-  lines.push('and standard projects at 1.5 will starve oceans and over-complete bridges;');
-  lines.push('that is harness bias, not evidence about the map or the economy.');
-  lines.push('Do not cite this document for balance decisions.');
+  lines.push('**Cannot:** say whether Consortium is balanced. Ocean counts, bridge');
+  lines.push('completion rates, game length, card play rates, and similar numbers');
+  lines.push('reflect the actor\'s choice distribution, not the game\'s design. A');
+  lines.push('preference-weighted actor that scores megastructure contribute at 5.5');
+  lines.push('and standard projects at 1.5 will starve oceans and over-complete');
+  lines.push('bridges; that is harness bias, not evidence about the map or the');
+  lines.push('economy.');
   lines.push('');
   lines.push('Default actor mode is **`random`**: uniform choice over legal options at');
   lines.push('every decision point. Mode **`weighted`** keeps the old heuristic for');
-  lines.push('comparison only.');
+  lines.push('comparison only. Neither mode is a substitute for human play.');
   lines.push('');
 
   lines.push('## Method');

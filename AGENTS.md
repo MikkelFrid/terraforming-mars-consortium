@@ -15,3 +15,9 @@ python3 tools/consortium-art/build_assets.py
 
 Standard commands for this repo (lint, test, build, dev) are documented in
 `CLAUDE.md` and `.cursor/rules/consortium.mdc`.
+
+### Consortium validation harness
+
+The validation harness (`tools/consortium/validate.ts`) measures crashes and
+invariants. It does not measure balance. Its actor is not a player. Never cite
+its output as evidence about game balance.
