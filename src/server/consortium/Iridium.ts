@@ -1,4 +1,6 @@
 import {IRIDIUM_BANK_CAPACITY} from '../../common/constants';
+import {CardName} from '../../common/cards/CardName';
+import {Resource} from '../../common/Resource';
 import {IPlayer} from '../IPlayer';
 
 /**
@@ -30,6 +32,12 @@ export class Iridium {
     player.iridium += granted;
     if (options?.log !== false) {
       player.game.log('${0} gained ${1} iridium', (b) => b.player(player).number(granted));
+    }
+    // Iridium Authority: 1 M€ whenever any player takes iridium from the bank.
+    for (const p of player.game.playersInGenerationOrder) {
+      if (p.tableau.has(CardName.IRIDIUM_AUTHORITY)) {
+        p.stock.add(Resource.MEGACREDITS, 1, {log: true});
+      }
     }
     return granted;
   }

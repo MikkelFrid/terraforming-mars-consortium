@@ -787,8 +787,11 @@ export class Player implements IPlayer {
       auroraiData: card.type === CardType.STANDARD_PROJECT,
       graphene: card.tags.includes(Tag.CITY) || card.tags.includes(Tag.SPACE),
       kuiperAsteroids: card.name === CardName.AQUIFER_STANDARD_PROJECT || card.name === CardName.ASTEROID_STANDARD_PROJECT,
-      // Iridium is tag-gated (Structure / Prospecting only). Not universal.
-      iridium: card.tags.includes(Tag.STRUCTURE) || card.tags.includes(Tag.PROSPECTING),
+      // Iridium is tag-gated (Structure / Prospecting only), unless Siderite Holdings
+      // lifts the gate for this player alone.
+      iridium: card.tags.includes(Tag.STRUCTURE) ||
+        card.tags.includes(Tag.PROSPECTING) ||
+        this.tableau.has(CardName.SIDERITE_HOLDINGS),
     };
   }
 

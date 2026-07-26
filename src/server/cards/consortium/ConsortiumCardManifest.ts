@@ -56,6 +56,12 @@ import {JointVenture} from './JointVenture';
 import {CharterRevision} from './CharterRevision';
 import {GuildArbitration} from './GuildArbitration';
 import {LedgerOfClaims} from './LedgerOfClaims';
+import {SideriteHoldings} from './corporations/SideriteHoldings';
+import {KeystoneConsortium} from './corporations/KeystoneConsortium';
+import {RimwardExpeditions} from './corporations/RimwardExpeditions';
+import {MassifGroup} from './corporations/MassifGroup';
+import {IridiumAuthority} from './corporations/IridiumAuthority';
+import {CharterSyndicate} from './corporations/CharterSyndicate';
 
 export const CONSORTIUM_CARD_MANIFEST = new ModuleManifest({
   module: 'consortium',
@@ -115,6 +121,14 @@ export const CONSORTIUM_CARD_MANIFEST = new ModuleManifest({
     [CardName.CHARTER_REVISION]: {Factory: CharterRevision},
     [CardName.GUILD_ARBITRATION]: {Factory: GuildArbitration},
     [CardName.LEDGER_OF_CLAIMS]: {Factory: LedgerOfClaims},
+  },
+  corporationCards: {
+    [CardName.SIDERITE_HOLDINGS]: {Factory: SideriteHoldings, compatibility: 'consortium'},
+    [CardName.KEYSTONE_CONSORTIUM]: {Factory: KeystoneConsortium, compatibility: 'consortium'},
+    [CardName.RIMWARD_EXPEDITIONS]: {Factory: RimwardExpeditions, compatibility: 'consortium'},
+    [CardName.MASSIF_GROUP]: {Factory: MassifGroup, compatibility: 'consortium'},
+    [CardName.IRIDIUM_AUTHORITY]: {Factory: IridiumAuthority, compatibility: 'consortium'},
+    [CardName.CHARTER_SYNDICATE]: {Factory: CharterSyndicate, compatibility: 'consortium'},
   },
   standardProjects: {
     [CardName.CORE_SAMPLING_STANDARD_PROJECT]: {Factory: CoreSamplingStandardProject},
