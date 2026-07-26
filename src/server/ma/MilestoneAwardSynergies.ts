@@ -551,6 +551,11 @@ const synergiesData: Array<[MilestoneName | AwardName, MilestoneName | AwardName
   ['Risktaker', 'Kingpin', 9],
   // ['Tunneler', 'Excavator', 8],
   // ['Excavator', 'Edgedancer', 9],
+
+  // Consortium — high overlap pairs for fan/random MA
+  ['C. Architect', 'C. Founder', 9],
+  ['Pathfinder', 'Cartographer', 9],
+  ['Assayer', 'Refiner', 2],
 ];
 
 // This map uses keys of the format "X|Y" where X and Y are MA names. Entries are stored as "X|Y"

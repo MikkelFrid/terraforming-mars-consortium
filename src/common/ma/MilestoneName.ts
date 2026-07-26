@@ -72,6 +72,11 @@ export const milestoneNames = [
   'Tunneler',
   'Risktaker',
 
+  // Consortium (Architect is taken by Terra Cimmeria Nova → C. Architect)
+  'C. Architect',
+  'Pathfinder',
+  'Assayer',
+
   // Ares Extreme
   'Purifier',
 

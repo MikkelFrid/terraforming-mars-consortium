@@ -69,6 +69,11 @@ export const awardNames = [
   'Kingpin',
   'Excavator',
 
+  // Consortium (Founder is taken by modular/TC Nova → C. Founder)
+  'C. Founder',
+  'Cartographer',
+  'Refiner',
+
   // Ares Extreme
   'Rugged',
 
