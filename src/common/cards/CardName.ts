@@ -1065,6 +1065,18 @@ export enum CardName {
   // Consortium Standard Projects
   CORE_SAMPLING_STANDARD_PROJECT = 'Core Sampling:SP',
 
+  // Consortium Project Cards
+  SIDEROPHILE_EXTRACTION = 'Siderophile Extraction',
+  SALVAGE_CLAIM = 'Salvage Claim',
+  ASSAY_RIGHTS = 'Assay Rights',
+  CORE_SAMPLE_SURVEY = 'Core Sample Survey',
+  DEEP_CRUST_MAPPING = 'Deep Crust Mapping',
+  IMPACT_BASIN_CLAIM = 'Impact Basin Claim',
+  REGOLITH_SIFTERS = 'Regolith Sifters',
+  PROSPECTORS_CAMP = 'Prospector\'s Camp',
+  METEORITIC_REFINERY = 'Meteoritic Refinery',
+  IRIDIUM_CARTEL = 'Iridium Cartel',
+
   // Underworld Replacement Cards
   STANDARD_TECHNOLOGY_UNDERWORLD = 'Standard Technology:u',
   HACKERS_UNDERWORLD = 'Hackers:u',

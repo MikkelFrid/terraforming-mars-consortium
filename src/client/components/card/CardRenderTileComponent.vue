@@ -150,6 +150,9 @@ const TILE_CLASSES: Record<TileType, Classes> = {
   [TileType.NEURAL_INSTANCE]: {
     tile: 'card-tile-neural-instance',
   },
+  [TileType.IMPACT_BASIN_CLAIM]: {
+    symbol: 'card-tile-symbol-impact-basin-claim',
+  },
 };
 
 export default defineComponent({

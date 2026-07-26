@@ -20,8 +20,7 @@ export class CoreSamplingStandardProject extends StandardProjectCard {
         b.standardProject(
           `Spend ${CORE_SAMPLING_COST} M€ to gain 1 iridium from the bank (if any remains).`,
           (eb) => {
-            // No card-render item for iridium yet — text until that follow-up lands.
-            eb.megacredits(CORE_SAMPLING_COST).startAction.text('1 iridium');
+            eb.megacredits(CORE_SAMPLING_COST).startAction.iridium(1);
           }),
       ),
     },

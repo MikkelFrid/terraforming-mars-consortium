@@ -63,6 +63,9 @@ export enum TileType {
 
     // Automa
     NEURAL_INSTANCE, // 44
+
+    // Consortium
+    IMPACT_BASIN_CLAIM, // 45
   }
 
 export const tileTypeToString: Record<TileType, string> = {
@@ -112,6 +115,7 @@ export const tileTypeToString: Record<TileType, string> = {
   [TileType.MAN_MADE_VOLCANO]: CardName.MAN_MADE_VOLCANO,
   [TileType.NEW_HOLLAND]: CardName.NEW_HOLLAND,
   [TileType.NEURAL_INSTANCE]: 'Neural Instance',
+  [TileType.IMPACT_BASIN_CLAIM]: CardName.IMPACT_BASIN_CLAIM,
 } as const;
 
 export const HAZARD_TILES = new Set([TileType.DUST_STORM_MILD, TileType.DUST_STORM_SEVERE, TileType.EROSION_MILD, TileType.EROSION_SEVERE]);

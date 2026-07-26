@@ -301,6 +301,32 @@ def build_megastructure_emblem(path, rgb, shape):
     img.save(path)
 
 
+# --------------------------------------------------------------------- special tiles
+
+SPECIAL_TILE_DIR = os.path.join(ROOT, 'assets', 'tiles', 'special_tile_icons')
+
+
+def build_impact_basin(path):
+    """152x152 special-tile icon: cooler mining_area with impact rings."""
+    src = os.path.join(SPECIAL_TILE_DIR, 'mining_area.png')
+    img = Image.open(src).convert('RGBA')
+    r, g, b, a = img.split()
+    r = r.point(lambda x: int(x * 0.75))
+    g = g.point(lambda x: int(x * 0.82))
+    b = b.point(lambda x: min(255, int(x * 1.05 + 12)))
+    out = Image.merge('RGBA', (r, g, b, a))
+    draw = ImageDraw.Draw(out)
+    w, h = out.size
+    cx, cy = w // 2, h // 2
+    for rad, width, fill in (
+        (int(min(w, h) * 0.28), 3, (220, 230, 240, 200)),
+        (int(min(w, h) * 0.18), 2, (180, 200, 220, 180)),
+    ):
+        draw.ellipse([cx - rad, cy - rad, cx + rad, cy + rad],
+                     outline=fill, width=width)
+    out.save(path)
+
+
 # --------------------------------------------------------------------- main
 
 def main():
@@ -309,6 +335,7 @@ def main():
     os.makedirs(TAG_DIR, exist_ok=True)
     os.makedirs(RESOURCE_DIR, exist_ok=True)
     os.makedirs(MEGASTRUCTURE_EMBLEM_DIR, exist_ok=True)
+    os.makedirs(SPECIAL_TILE_DIR, exist_ok=True)
 
     build_tag(os.path.join(TAG_DIR, 'structure.png'),
               (74, 104, 122), (128, 158, 174),
@@ -330,6 +357,7 @@ def main():
               (168, 116, 38), 255, (120, 78, 20), 100, _contours)
 
     build_iridium(os.path.join(RESOURCE_DIR, 'iridium.png'))
+    build_impact_basin(os.path.join(SPECIAL_TILE_DIR, 'impact_basin.png'))
 
     emblem_paths = []
     for stem, rgb, shape in _MEGASTRUCTURE_PLACEHOLDERS:
@@ -341,6 +369,7 @@ def main():
     for p in ('assets/tags/structure.png', 'assets/tags/prospecting.png',
               'assets/hex_chasm.png', 'assets/hex_crater_field.png',
               'assets/hex_highland.png', 'assets/resources/iridium.png',
+              'assets/tiles/special_tile_icons/impact_basin.png',
               *emblem_paths):
         f = os.path.join(ROOT, p)
         im = Image.open(f)
