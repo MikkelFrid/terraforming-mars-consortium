@@ -105,4 +105,24 @@ describe('BoardSpaceTile', () => {
     });
     expect(wrapper.classes().some((c) => c.includes('massif_group'))).to.be.true;
   });
+
+  it('renders an empty Consortium ocean space with the ocean type class', () => {
+    const wrapper = shallowMount(BoardSpaceTile, {
+      ...globalConfig,
+      props: {
+        space: {
+          id: '06',
+          x: 5,
+          y: 0,
+          bonus: [],
+          color: undefined,
+          tileType: undefined,
+          spaceType: SpaceType.OCEAN,
+          highlight: undefined,
+        },
+        aresExtension: false,
+      },
+    });
+    expect(wrapper.classes()).to.include('board-space-type-ocean');
+  });
 });

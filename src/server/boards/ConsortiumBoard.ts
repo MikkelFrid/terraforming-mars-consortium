@@ -14,7 +14,7 @@ type ConsortiumSpaceJson = {
   r: number;
   ring: number;
   sector: number;
-  type: 'land' | 'highland' | 'crater' | 'chasm';
+  type: 'land' | 'highland' | 'crater' | 'chasm' | 'ocean';
   zone: string;
   id: number;
   x: number;
@@ -28,6 +28,7 @@ const TYPE_MAP: Record<ConsortiumSpaceJson['type'], SpaceType> = {
   highland: SpaceType.HIGHLAND,
   crater: SpaceType.CRATER_FIELD,
   chasm: SpaceType.CHASM,
+  ocean: SpaceType.OCEAN,
 };
 
 /** Axial neighbor offsets (q, r), clockwise from top-left. */
