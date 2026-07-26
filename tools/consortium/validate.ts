@@ -1,14 +1,14 @@
 /**
  * Consortium full-game validation harness.
  *
- * Chosen as TypeScript (run via `npx tsx`) rather than Python because the game
- * engine, PlayerInput resolution, and seeded Game.newInstance are TypeScript.
- * Driving real player.process keeps validation on the same code path as production.
+ * This is a crash / invariant harness, not a balance study. The default actor
+ * picks uniformly among legal options so games reach states a preference-driven
+ * bot never would. A weighted mode is kept only for comparison.
  *
  * Usage:
  *   npx tsx tools/consortium/validate.ts
- *   npx tsx tools/consortium/validate.ts --games=200 --out=docs/consortium/16-validation.md
- *   npx tsx tools/consortium/validate.ts --quick
+ *   npx tsx tools/consortium/validate.ts --games=200 --modes=random,weighted
+ *   npx tsx tools/consortium/validate.ts --mode=weighted --quick
  */
 import * as fs from 'fs';
 import * as path from 'path';
@@ -24,6 +24,7 @@ import {Player} from '../../src/server/Player';
 import {IPlayer} from '../../src/server/IPlayer';
 import {Phase} from '../../src/common/Phase';
 import {BoardName} from '../../src/common/boards/BoardName';
+import {SpaceType} from '../../src/common/boards/SpaceType';
 import {Color} from '../../src/common/Color';
 import {CardName} from '../../src/common/cards/CardName';
 import {Payment} from '../../src/common/inputs/Payment';
@@ -51,10 +52,11 @@ import {SelectResources} from '../../src/server/inputs/SelectResources';
 import {SelectGlobalEvent} from '../../src/server/inputs/SelectGlobalEvent';
 import {ShiftAresGlobalParameters} from '../../src/server/inputs/ShiftAresGlobalParameters';
 import {CONSORTIUM_CARD_MANIFEST} from '../../src/server/cards/consortium/ConsortiumCardManifest';
-import {Iridium} from '../../src/server/consortium/Iridium';
+import {Megastructures} from '../../src/server/consortium/Megastructures';
+import {MEGASTRUCTURE_BALANCE} from '../../src/common/consortium/MegastructureConstants';
 import {MegastructureKind} from '../../src/common/consortium/MegastructureKind';
 import {Message} from '../../src/common/logs/Message';
-import {IRIDIUM_BANK_CAPACITY, MAX_OCEAN_TILES} from '../../src/common/constants';
+import {IRIDIUM_BANK_CAPACITY} from '../../src/common/constants';
 import {IStandardProjectCard} from '../../src/server/cards/IStandardProjectCard';
 import {IProjectCard} from '../../src/server/cards/IProjectCard';
 
@@ -78,7 +80,6 @@ const FAKE_DATABASE: IDatabase = {
   compressCompletedGames: () => Promise.resolve(),
   stats: () => Promise.resolve({}),
   storeParticipants: () => Promise.resolve(),
-  getParticipants: () => Promise.resolve([]),
   createSession: () => Promise.resolve(),
   deleteSession: () => Promise.resolve(),
   getSessions: () => Promise.resolve([]),
@@ -86,13 +87,16 @@ const FAKE_DATABASE: IDatabase = {
 
 Database.getInstance = () => FAKE_DATABASE;
 GameLoader.getInstance = () => ({
-  add: () => {},
+  add: async () => {},
   getGame: async () => undefined,
   getIds: async () => [],
-  isReady: async () => {},
-  saveGame: () => {},
+  restoreGameAt: async () => {
+    throw new Error('restoreGameAt not supported in validation harness');
+  },
+  mark: () => {},
+  saveGame: async () => {},
   completeGame: async () => {},
-  saveGameResults: () => {},
+  maintenance: async () => {},
 } as unknown as IGameLoader);
 globalInitialize();
 
@@ -100,21 +104,15 @@ globalInitialize();
 // Types
 // ---------------------------------------------------------------------------
 
+type ActorMode = 'random' | 'weighted';
+
 const CONSORTIUM_PROJECT_CARDS: ReadonlyArray<CardName> = Object.keys(
   CONSORTIUM_CARD_MANIFEST.projectCards,
 ) as Array<CardName>;
 
-const ALL_KINDS: ReadonlyArray<MegastructureKind> = [
-  'bridge',
-  'space_elevator',
-  'l1_magnetic_shield',
-  'mohole',
-  'solar_mirror',
-  'arcology',
-];
-
 type CrashRecord = {
   config: string;
+  mode: ActorMode;
   seed: number;
   generation: number;
   phase: string;
@@ -122,23 +120,24 @@ type CrashRecord = {
   error: string;
 };
 
-type MegaCompletion = {kind: MegastructureKind; generation: number};
+type InvariantFailure = {
+  config: string;
+  mode: ActorMode;
+  seed: number;
+  generation: number;
+  phase: string;
+  invariant: string;
+  detail: string;
+};
 
 type GameResult = {
   config: string;
+  mode: ActorMode;
   seed: number;
   generations: number;
   crashed: boolean;
   crash?: CrashRecord;
-  playableSeen: Set<CardName>;
-  kindsInPlay: Array<MegastructureKind>;
-  megaCompletions: Array<MegaCompletion>;
-  bridgeCompletedCount: number;
-  oceansPlaced: number;
-  iridiumGranted: number;
-  iridiumSpent: number;
-  iridiumLowWater: number;
-  iridiumHitZero: boolean;
+  invariantFailures: Array<InvariantFailure>;
 };
 
 type ConfigSpec = {
@@ -151,13 +150,6 @@ type ConfigSpec = {
     turmoilExtension: boolean;
     boardName: BoardName;
   };
-};
-
-type IridiumCounters = {
-  granted: number;
-  spent: number;
-  lowWater: number;
-  hitZero: boolean;
 };
 
 // ---------------------------------------------------------------------------
@@ -174,14 +166,18 @@ function pick<T>(rng: SeededRandom, items: ReadonlyArray<T>): T {
   return items[rng.nextInt(items.length)];
 }
 
-function sampleIndices(rng: SeededRandom, n: number, min: number, max: number): Array<number> {
-  const count = Math.min(n, Math.max(min, min + (max > min ? rng.nextInt(max - min + 1) : 0)));
+function shuffleIndices(rng: SeededRandom, n: number): Array<number> {
   const idxs = Array.from({length: n}, (_, i) => i);
   for (let i = idxs.length - 1; i > 0; i--) {
     const j = rng.nextInt(i + 1);
     [idxs[i], idxs[j]] = [idxs[j], idxs[i]];
   }
-  return idxs.slice(0, count).sort((a, b) => a - b);
+  return idxs;
+}
+
+function sampleIndices(rng: SeededRandom, n: number, min: number, max: number): Array<number> {
+  const count = Math.min(n, Math.max(min, min + (max > min ? rng.nextInt(max - min + 1) : 0)));
+  return shuffleIndices(rng, n).slice(0, count).sort((a, b) => a - b);
 }
 
 function paymentForCost(
@@ -212,7 +208,6 @@ function paymentForCost(
     remaining = Math.max(0, remaining - iridium * iridiumRate);
   }
 
-  // Prefer MC when affordable — simplest valid payment.
   if (player.megaCredits >= remaining) {
     return Payment.of({megacredits: remaining, iridium});
   }
@@ -238,25 +233,135 @@ function paymentForCost(
   return Payment.of({megacredits: remaining, steel, titanium, heat, iridium});
 }
 
-function installIridiumHooks(counters: IridiumCounters, getBank: () => number): () => void {
-  const origGrant = Iridium.grant.bind(Iridium);
-  const origSpend = Iridium.spend.bind(Iridium);
-  Iridium.grant = ((player, count, options) => {
-    const before = getBank();
-    const n = origGrant(player, count, options);
-    counters.granted += n;
-    const after = getBank();
-    counters.lowWater = Math.min(counters.lowWater, after);
-    if (before > 0 && after === 0) counters.hitZero = true;
-    return n;
-  }) as typeof Iridium.grant;
-  Iridium.spend = ((player, count, options) => {
-    origSpend(player, count, options);
-    counters.spent += count;
-  }) as typeof Iridium.spend;
+function expectedSegmentCount(kind: MegastructureKind): number {
+  return kind === 'bridge' ?
+    MEGASTRUCTURE_BALANCE.BRIDGE_SEGMENT_COUNT :
+    MEGASTRUCTURE_BALANCE.GRAND_SEGMENT_COUNT;
+}
+
+function keystoneMinIridium(kind: MegastructureKind): number {
+  return kind === 'bridge' ?
+    MEGASTRUCTURE_BALANCE.BRIDGE_KEYSTONE_MIN_IRIDIUM :
+    MEGASTRUCTURE_BALANCE.GRAND_KEYSTONE_MIN_IRIDIUM;
+}
+
+// ---------------------------------------------------------------------------
+// Invariants
+// ---------------------------------------------------------------------------
+
+class InvariantError extends Error {
+  constructor(readonly invariant: string, detail: string) {
+    super(`${invariant}: ${detail}`);
+    this.name = 'InvariantError';
+  }
+}
+
+function assertInvariants(game: Game): void {
+  const bank = game.iridiumBank;
+  if (bank < 0 || bank > IRIDIUM_BANK_CAPACITY) {
+    throw new InvariantError(
+      'iridium-bank-bounds',
+      `iridiumBank=${bank} outside [0, ${IRIDIUM_BANK_CAPACITY}]`,
+    );
+  }
+
+  for (const structure of game.megastructuresData?.structures ?? []) {
+    const expected = expectedSegmentCount(structure.kind);
+    if (structure.segments.length !== expected) {
+      throw new InvariantError(
+        'megastructure-segment-count',
+        `${structure.id} has ${structure.segments.length} slots, expected ${expected}`,
+      );
+    }
+    const filled = structure.segments.filter((s) => s.owner !== undefined).length;
+    if (filled > expected) {
+      throw new InvariantError(
+        'megastructure-segment-count',
+        `${structure.id} has ${filled} filled segments > ${expected}`,
+      );
+    }
+    // No gaps: once a later segment is owned, earlier ones must be owned.
+    let sawEmpty = false;
+    for (let i = 0; i < structure.segments.length; i++) {
+      const owned = structure.segments[i].owner !== undefined;
+      if (!owned) sawEmpty = true;
+      else if (sawEmpty) {
+        throw new InvariantError(
+          'megastructure-segment-count',
+          `${structure.id} has owned segment ${i} after an empty earlier slot`,
+        );
+      }
+    }
+    if (structure.completed && filled !== expected) {
+      throw new InvariantError(
+        'megastructure-segment-count',
+        `${structure.id} completed with ${filled}/${expected} segments`,
+      );
+    }
+  }
+
+  for (const space of game.board.spaces) {
+    if (space.spaceType === SpaceType.CHASM && space.tile !== undefined) {
+      throw new InvariantError(
+        'no-tile-on-unconverted-chasm',
+        `tile on chasm space ${space.id}`,
+      );
+    }
+    if (space.locked === true && space.tile !== undefined) {
+      throw new InvariantError(
+        'no-tile-on-locked-frontier',
+        `tile on locked frontier space ${space.id}`,
+      );
+    }
+  }
+}
+
+/** Strip volatile fields so serialize → deserialize → serialize is comparable. */
+function normalizeSerialized(raw: SerializedGame): unknown {
+  const copy = JSON.parse(JSON.stringify(raw)) as SerializedGame & {
+    players: Array<SerializedGame['players'][number] & {timer?: {startedAt?: number}}>;
+  };
+  for (const p of copy.players) {
+    if (p.timer !== undefined) {
+      p.timer.startedAt = 0;
+    }
+  }
+  return copy;
+}
+
+function assertSerializeRoundTrip(game: Game): void {
+  const first = game.serialize();
+  const restored = Game.deserialize(first);
+  const second = restored.serialize();
+  const a = JSON.stringify(normalizeSerialized(first));
+  const b = JSON.stringify(normalizeSerialized(second));
+  if (a !== b) {
+    throw new InvariantError(
+      'serialization-round-trip',
+      'deserialize(serialize(game)).serialize() lost or altered state',
+    );
+  }
+  // Re-check board/consortium invariants on the restored game too.
+  assertInvariants(restored);
+}
+
+function installKeystoneGuard(): () => void {
+  const orig = Megastructures.placeSegment.bind(Megastructures);
+  Megastructures.placeSegment = ((player, structure, payment, alreadyPaid = false) => {
+    const index = Megastructures.nextSegmentIndex(structure);
+    if (index >= 0 && Megastructures.isKeystone(structure, index)) {
+      const min = keystoneMinIridium(structure.kind);
+      if (payment.iridium < min) {
+        throw new InvariantError(
+          'keystone-min-iridium',
+          `${structure.id} keystone with payment.iridium=${payment.iridium} < min ${min}`,
+        );
+      }
+    }
+    return orig(player, structure, payment, alreadyPaid);
+  }) as typeof Megastructures.placeSegment;
   return () => {
-    Iridium.grant = origGrant;
-    Iridium.spend = origSpend;
+    Megastructures.placeSegment = orig;
   };
 }
 
@@ -268,60 +373,29 @@ function buildResponse(
   input: PlayerInput,
   player: IPlayer,
   rng: SeededRandom,
-  playableSeen: Set<CardName>,
-  preferPass = false,
+  mode: ActorMode,
 ): InputResponse {
   if (input instanceof SelectInitialCards) {
     return {
       type: 'initialCards',
-      responses: input.options.map((o) => buildResponse(o, player, rng, playableSeen)),
+      responses: input.options.map((o) => buildResponse(o, player, rng, mode)),
     };
   }
   if (input instanceof AndOptions) {
     return {
       type: 'and',
-      responses: input.options.map((o) => buildResponse(o, player, rng, playableSeen)),
+      responses: input.options.map((o) => buildResponse(o, player, rng, mode)),
     };
   }
   if (input instanceof OrOptions) {
-    const passIdx = input.options.findIndex((o) => titleOf(o).toLowerCase().includes('pass'));
-    if (preferPass && passIdx >= 0) {
-      return {
-        type: 'or',
-        index: passIdx,
-        response: buildResponse(input.options[passIdx], player, rng, playableSeen),
-      };
-    }
-
-    const ranked = input.options.map((opt, index) => {
-      let score = rng.next();
-      const title = titleOf(opt).toLowerCase();
-      if (opt instanceof SelectProjectCardToPlay) {
-        score += 6;
-        if (opt.cards.some((c) => CONSORTIUM_PROJECT_CARDS.includes(c.name))) score += 4;
-      } else if (opt instanceof SelectStandardProjectToPlay) {
-        // Prefer Core Sampling; avoid risky city/greenery near end-game.
-        if (opt.cards.some((c) => c.name === CardName.CORE_SAMPLING_STANDARD_PROJECT)) score += 3;
-        else score += 0.5;
-      } else if (title.includes('megastructure') || title.includes('contribute')) {
-        score += 5;
-      } else if (title.includes('pass')) {
-        score -= 4;
-      } else if (title.includes('sell patents')) {
-        score -= 2;
-      } else if (title.includes('research') || title.includes('buy')) {
-        // Buy cards early so more Consortium projects enter hand.
-        score += player.game.generation <= 6 ? 4 : 1.5;
-      }
-      return {index, score, opt};
-    });
-    ranked.sort((a, b) => b.score - a.score);
-    // Caller retries on failure; return best guess.
-    const best = ranked[0];
+    // Single-shot path; tryProcess uses orCandidates for retries.
+    const idx = mode === 'random' ?
+      rng.nextInt(input.options.length) :
+      weightedOrIndex(input, player, rng);
     return {
       type: 'or',
-      index: best.index,
-      response: buildResponse(best.opt, player, rng, playableSeen),
+      index: idx,
+      response: buildResponse(input.options[idx], player, rng, mode),
     };
   }
 
@@ -336,10 +410,12 @@ function buildResponse(
       }) !== undefined;
     });
     const pool = affordable.length > 0 ? affordable : cards;
-    const consortium = pool.filter((c) => CONSORTIUM_PROJECT_CARDS.includes(c.name));
-    const card = pick(rng, consortium.length > 0 && rng.next() < 0.75 ? consortium : pool);
-    if (CONSORTIUM_PROJECT_CARDS.includes(card.name)) {
-      playableSeen.add(card.name);
+    let card: IProjectCard;
+    if (mode === 'weighted') {
+      const consortium = pool.filter((c) => CONSORTIUM_PROJECT_CARDS.includes(c.name));
+      card = pick(rng, consortium.length > 0 && rng.next() < 0.75 ? consortium : pool);
+    } else {
+      card = pick(rng, pool);
     }
     const cost = player.getCardCost(card);
     const opts = player.paymentOptionsForCard(card);
@@ -355,19 +431,23 @@ function buildResponse(
       return (c as IStandardProjectCard).canAct?.(player) !== false;
     }) as Array<IStandardProjectCard>;
     if (cards.length === 0) throw new Error('No standard projects');
-    // Prefer Core Sampling / Power Plant; deprioritize tile projects late.
-    const scored = cards.map((c) => {
-      let s = rng.next();
-      if (c.name === CardName.CORE_SAMPLING_STANDARD_PROJECT) s += 5;
-      if (c.name === CardName.AQUIFER_STANDARD_PROJECT) s += 4; // exercise ocean parameter
-      if (c.name === CardName.POWER_PLANT_STANDARD_PROJECT) s += 2;
-      if (c.name === CardName.SELL_PATENTS_STANDARD_PROJECT) s -= 1;
-      if (c.name === CardName.CITY_STANDARD_PROJECT || c.name === CardName.GREENERY_STANDARD_PROJECT) {
-        s -= player.game.generation > 10 ? 3 : 0;
-      }
-      return {c, s};
-    }).sort((a, b) => b.s - a.s);
-    const card = scored[0].c;
+    let card: IStandardProjectCard;
+    if (mode === 'weighted') {
+      const scored = cards.map((c) => {
+        let s = rng.next();
+        if (c.name === CardName.CORE_SAMPLING_STANDARD_PROJECT) s += 5;
+        if (c.name === CardName.AQUIFER_STANDARD_PROJECT) s += 4;
+        if (c.name === CardName.POWER_PLANT_STANDARD_PROJECT) s += 2;
+        if (c.name === CardName.SELL_PATENTS_STANDARD_PROJECT) s -= 1;
+        if (c.name === CardName.CITY_STANDARD_PROJECT || c.name === CardName.GREENERY_STANDARD_PROJECT) {
+          s -= player.game.generation > 10 ? 3 : 0;
+        }
+        return {c, s};
+      }).sort((a, b) => b.s - a.s);
+      card = scored[0].c;
+    } else {
+      card = pick(rng, cards);
+    }
     const cost = card.getAdjustedCost(player);
     const canPay = card.canPayWith(player);
     const payment = paymentForCost(player, cost, {
@@ -458,34 +538,62 @@ function buildResponse(
   throw new Error(`Unsupported PlayerInput type=${input.type} title=${titleOf(input)}`);
 }
 
-/**
- * Build candidate OrOptions responses (best first), then pass, for retries.
- */
+/** Preference scores for the weighted comparison actor (not the default). */
+function weightedOrIndex(input: OrOptions, player: IPlayer, rng: SeededRandom): number {
+  const ranked = input.options.map((opt, index) => {
+    let score = rng.next();
+    const title = titleOf(opt).toLowerCase();
+    if (opt instanceof SelectProjectCardToPlay) {
+      score += 6;
+      if (opt.cards.some((c) => CONSORTIUM_PROJECT_CARDS.includes(c.name))) score += 4;
+    } else if (opt instanceof SelectStandardProjectToPlay) {
+      if (opt.cards.some((c) => c.name === CardName.CORE_SAMPLING_STANDARD_PROJECT)) score += 3;
+      else score += 0.5;
+    } else if (title.includes('megastructure') || title.includes('contribute')) {
+      score += 5;
+    } else if (title.includes('pass')) {
+      score -= 4;
+    } else if (title.includes('sell patents')) {
+      score -= 2;
+    } else if (title.includes('research') || title.includes('buy')) {
+      score += player.game.generation <= 6 ? 4 : 1.5;
+    }
+    return {index, score};
+  });
+  ranked.sort((a, b) => b.score - a.score);
+  return ranked[0].index;
+}
+
 function orCandidates(
   input: OrOptions,
   player: IPlayer,
   rng: SeededRandom,
-  playableSeen: Set<CardName>,
+  mode: ActorMode,
 ): Array<InputResponse> {
   const out: Array<InputResponse> = [];
-  const ranked = input.options.map((opt, index) => {
-    let score = rng.next();
-    const title = titleOf(opt).toLowerCase();
-    if (opt instanceof SelectProjectCardToPlay) score += 6;
-    else if (title.includes('megastructure') || title.includes('contribute')) score += 5;
-    else if (title.includes('research') || title.includes('buy')) {
-      score += player.game.generation <= 6 ? 4 : 1;
-    } else if (opt instanceof SelectStandardProjectToPlay) score += 1;
-    else if (title.includes('pass')) score -= 10;
-    return {index, score, opt};
-  }).sort((a, b) => b.score - a.score);
+  let order: Array<number>;
+  if (mode === 'random') {
+    order = shuffleIndices(rng, input.options.length);
+  } else {
+    order = input.options.map((opt, index) => {
+      let score = rng.next();
+      const title = titleOf(opt).toLowerCase();
+      if (opt instanceof SelectProjectCardToPlay) score += 6;
+      else if (title.includes('megastructure') || title.includes('contribute')) score += 5;
+      else if (title.includes('research') || title.includes('buy')) {
+        score += player.game.generation <= 6 ? 4 : 1;
+      } else if (opt instanceof SelectStandardProjectToPlay) score += 1;
+      else if (title.includes('pass')) score -= 10;
+      return {index, score};
+    }).sort((a, b) => b.score - a.score).map((x) => x.index);
+  }
 
-  for (const cand of ranked) {
+  for (const index of order) {
     try {
       out.push({
         type: 'or',
-        index: cand.index,
-        response: buildResponse(cand.opt, player, rng, playableSeen),
+        index,
+        response: buildResponse(input.options[index], player, rng, mode),
       });
     } catch {
       // skip unbuildable option
@@ -494,13 +602,17 @@ function orCandidates(
   return out;
 }
 
-function tryProcess(player: IPlayer, waiting: PlayerInput, rng: SeededRandom, playableSeen: Set<CardName>): string {
+function tryProcess(
+  player: IPlayer,
+  waiting: PlayerInput,
+  rng: SeededRandom,
+  mode: ActorMode,
+): string {
   const attempts: Array<InputResponse> = [];
   if (waiting instanceof OrOptions) {
-    attempts.push(...orCandidates(waiting, player, rng, playableSeen));
+    attempts.push(...orCandidates(waiting, player, rng, mode));
   } else {
-    attempts.push(buildResponse(waiting, player, rng, playableSeen));
-    // Soft fallback: if it's somehow optional
+    attempts.push(buildResponse(waiting, player, rng, mode));
     if (waiting.type === 'option') attempts.push({type: 'option'});
   }
 
@@ -510,6 +622,7 @@ function tryProcess(player: IPlayer, waiting: PlayerInput, rng: SeededRandom, pl
       player.process(response);
       return `${waiting.type}:${titleOf(waiting)}`;
     } catch (e) {
+      if (e instanceof InvariantError) throw e;
       lastErr = e instanceof Error ? e : new Error(String(e));
     }
   }
@@ -520,47 +633,31 @@ function tryProcess(player: IPlayer, waiting: PlayerInput, rng: SeededRandom, pl
 // One game
 // ---------------------------------------------------------------------------
 
-function recordPlayable(player: IPlayer, playableSeen: Set<CardName>): void {
-  try {
-    for (const card of player.getPlayableCards()) {
-      if (CONSORTIUM_PROJECT_CARDS.includes(card.name)) playableSeen.add(card.name);
-    }
-  } catch { /* ignore */ }
-}
-
-function snapshotMega(
-  game: Game,
-  seen: Map<string, number>,
-  out: Array<MegaCompletion>,
-): void {
-  for (const s of game.megastructuresData?.structures ?? []) {
-    if (s.completed && !seen.has(s.id)) {
-      seen.set(s.id, game.generation);
-      out.push({kind: s.kind, generation: game.generation});
-    }
-  }
-}
-
-function runOneGame(config: ConfigSpec, seed: number): GameResult {
-  const playableSeen = new Set<CardName>();
-  const megaCompletions: Array<MegaCompletion> = [];
-  const megaSeen = new Map<string, number>();
-  const iridium: IridiumCounters = {
-    granted: 0, spent: 0, lowWater: IRIDIUM_BANK_CAPACITY, hitZero: false,
-  };
-
-  const player = new Player('Validator', 'blue' as Color, false, 0, `p-val-${seed}`);
-  let uninstall = () => {};
+function runOneGame(config: ConfigSpec, seed: number, mode: ActorMode): GameResult {
+  const player = new Player('Validator', 'blue' as Color, false, 0, `p-val-${mode}-${seed}`);
+  let uninstallKeystone = () => {};
   let game: Game | undefined;
   let lastAction = 'start';
-  let kindsInPlay: Array<MegastructureKind> = [];
+  const invariantFailures: Array<InvariantFailure> = [];
+
+  const recordInvariant = (e: InvariantError) => {
+    invariantFailures.push({
+      config: config.name,
+      mode,
+      seed,
+      generation: game?.generation ?? 0,
+      phase: game ? String(game.phase) : '?',
+      invariant: e.invariant,
+      detail: e.message,
+    });
+  };
 
   try {
     game = Game.newInstance(
-      `g-val-${seed}` as any,
+      `g-val-${mode}-${seed}` as any,
       [player],
       player,
-      `s-val-${seed}` as any,
+      `s-val-${mode}-${seed}` as any,
       {
         ...config.options,
         draftVariant: false,
@@ -571,11 +668,10 @@ function runOneGame(config: ConfigSpec, seed: number): GameResult {
       },
       seed,
     );
-    kindsInPlay = (game.megastructuresData?.structures ?? []).map((s) => s.kind);
-    uninstall = installIridiumHooks(iridium, () => game!.iridiumBank);
-    iridium.lowWater = game.iridiumBank;
+    uninstallKeystone = installKeystoneGuard();
+    assertInvariants(game);
 
-    const actorRng = new SeededRandom(seed ^ 0xC0FFEE);
+    const actorRng = new SeededRandom(seed ^ (mode === 'random' ? 0xA11CE : 0xC0FFEE));
     let steps = 0;
     const MAX_STEPS = 25_000;
 
@@ -583,12 +679,10 @@ function runOneGame(config: ConfigSpec, seed: number): GameResult {
       if (++steps > MAX_STEPS) {
         throw new Error(`Exceeded ${MAX_STEPS} steps (gen ${game.generation}, phase ${game.phase})`);
       }
-      snapshotMega(game, megaSeen, megaCompletions);
-      recordPlayable(player, playableSeen);
 
-      // Drain deferred actions that produce waitingFor via the real queue runner.
       if (player.getWaitingFor() === undefined && game.deferredActions.length > 0) {
         game.deferredActions.runAll(() => {});
+        assertInvariants(game);
         continue;
       }
 
@@ -596,63 +690,66 @@ function runOneGame(config: ConfigSpec, seed: number): GameResult {
       if (waiting === undefined) {
         if (game.phase === Phase.ACTION && game.activePlayer === player) {
           player.takeAction();
+          assertInvariants(game);
           continue;
         }
         throw new Error(`Stalled (gen ${game.generation}, phase ${game.phase})`);
       }
 
-      if (waiting instanceof SelectProjectCardToPlay) {
-        for (const c of waiting.cards) {
-          if (CONSORTIUM_PROJECT_CARDS.includes(c.name)) playableSeen.add(c.name);
-        }
-      }
-
-      lastAction = tryProcess(player, waiting, actorRng, playableSeen);
+      lastAction = tryProcess(player, waiting, actorRng, mode);
+      assertInvariants(game);
     }
 
-    snapshotMega(game, megaSeen, megaCompletions);
-    uninstall();
+    assertSerializeRoundTrip(game);
+    assertInvariants(game);
+    uninstallKeystone();
     return {
       config: config.name,
+      mode,
       seed,
       generations: game.generation,
       crashed: false,
-      playableSeen,
-      kindsInPlay,
-      megaCompletions,
-      bridgeCompletedCount: (game.megastructuresData?.structures ?? [])
-        .filter((s) => s.kind === 'bridge' && s.completed).length,
-      oceansPlaced: game.board.getOceanSpaces().length,
-      iridiumGranted: iridium.granted,
-      iridiumSpent: iridium.spent,
-      iridiumLowWater: iridium.lowWater,
-      iridiumHitZero: iridium.hitZero,
+      invariantFailures,
     };
   } catch (e) {
-    uninstall();
+    uninstallKeystone();
+    if (e instanceof InvariantError) {
+      recordInvariant(e);
+      return {
+        config: config.name,
+        mode,
+        seed,
+        generations: game?.generation ?? 0,
+        crashed: true,
+        crash: {
+          config: config.name,
+          mode,
+          seed,
+          generation: game?.generation ?? 0,
+          phase: game ? String(game.phase) : '?',
+          action: lastAction,
+          error: e.message,
+        },
+        invariantFailures,
+      };
+    }
     const err = e instanceof Error ? e : new Error(String(e));
     return {
       config: config.name,
+      mode,
       seed,
       generations: game?.generation ?? 0,
       crashed: true,
       crash: {
         config: config.name,
+        mode,
         seed,
         generation: game?.generation ?? 0,
         phase: game ? String(game.phase) : '?',
         action: lastAction,
         error: err.message,
       },
-      playableSeen,
-      kindsInPlay,
-      megaCompletions,
-      bridgeCompletedCount: 0,
-      oceansPlaced: game?.board.getOceanSpaces().length ?? 0,
-      iridiumGranted: iridium.granted,
-      iridiumSpent: iridium.spent,
-      iridiumLowWater: iridium.lowWater,
-      iridiumHitZero: iridium.hitZero,
+      invariantFailures,
     };
   }
 }
@@ -661,214 +758,170 @@ function runOneGame(config: ConfigSpec, seed: number): GameResult {
 // Report
 // ---------------------------------------------------------------------------
 
-function mean(nums: Array<number>): number {
-  return nums.length === 0 ? 0 : nums.reduce((a, b) => a + b, 0) / nums.length;
-}
-function pct(n: number, d: number): string {
-  return d === 0 ? 'n/a' : `${((100 * n) / d).toFixed(1)}%`;
-}
-
 function writeReport(
   outPath: string,
   configs: Array<ConfigSpec>,
-  resultsByConfig: Map<string, Array<GameResult>>,
+  modes: Array<ActorMode>,
+  resultsByKey: Map<string, Array<GameResult>>,
   gamesPerConfig: number,
   seedBase: number,
-): {totalCrashes: number; failingConfigs: Array<string>} {
+): {totalCrashes: number; totalInvariantFailures: number; failingKeys: Array<string>} {
   const lines: Array<string> = [];
   const now = new Date().toISOString().slice(0, 10);
   lines.push('# Consortium — Phase 16: Full-game validation');
   lines.push('');
-  lines.push('Branch: `feat/consortium-ocean-fix`');
+  lines.push('Branch: `feat/consortium-harness-honesty`');
   lines.push(`Date: ${now}`);
   lines.push('Harness: `tools/consortium/validate.ts` (TypeScript via `npx tsx`)');
   lines.push('');
-  lines.push('## Why TypeScript');
+
+  lines.push('## What this harness can and cannot tell us');
   lines.push('');
-  lines.push('The game engine, `PlayerInput` resolution, and seeded `Game.newInstance`');
-  lines.push('are TypeScript. A `tsx` harness drives the same code path as production');
-  lines.push('and reuses the fake-DB pattern from `tests/testing/setup.ts`.');
+  lines.push('**This harness measures crashes and state invariants.** It drives solo');
+  lines.push('games to `Phase.END` through real `player.process` calls and fails the');
+  lines.push('run if an exception escapes or an invariant breaks.');
   lines.push('');
-  lines.push('## Method');
+  lines.push('It **cannot** tell us whether Consortium is balanced. Ocean counts,');
+  lines.push('bridge completion rates, game length, card play rates, and similar');
+  lines.push('numbers reflect the actor\'s choice distribution, not the game\'s design.');
+  lines.push('A preference-weighted actor that scores megastructure contribute at 5.5');
+  lines.push('and standard projects at 1.5 will starve oceans and over-complete bridges;');
+  lines.push('that is harness bias, not evidence about the map or the economy.');
+  lines.push('Do not cite this document for balance decisions.');
   lines.push('');
-  lines.push(`- Solo games to \`Phase.END\`, fixed seed set starting at **${seedBase}**`);
-  lines.push(`- **${gamesPerConfig}** games per configuration`);
-  lines.push('- Random actor biased toward Consortium plays, Core Sampling, megastructure contributions');
-  lines.push('- Retries alternate `OrOptions` on actor payment failures before counting a crash');
-  lines.push('- "Legally playable" = appeared in `getPlayableCards()` or a play-card menu');
-  lines.push('- **Board note:** Consortium map has **13 core ocean spaces** (ocean-fix).');
-  lines.push('  `PlaceOceanTile` still soft-skips empty boards as a degrade path.');
+  lines.push('Default actor mode is **`random`**: uniform choice over legal options at');
+  lines.push('every decision point. Mode **`weighted`** keeps the old heuristic for');
+  lines.push('comparison only.');
   lines.push('');
 
-  lines.push('## 1. Crashes');
+  lines.push('## Method');
   lines.push('');
-  lines.push('| Config | Games | Crashes | Notes |');
-  lines.push('|--------|------:|--------:|-------|');
+  lines.push(`- Solo games to \`Phase.END\`, seed base **${seedBase}**`);
+  lines.push(`- **${gamesPerConfig}** games per configuration × mode`);
+  lines.push(`- Modes run: ${modes.map((m) => `\`${m}\``).join(', ')}`);
+  lines.push('- Retries alternate `OrOptions` on actor payment failures before counting a crash');
+  lines.push('- After every step: iridium bank bounds, megastructure segment counts,');
+  lines.push('  chasm/locked tile bans');
+  lines.push('- Keystone placements assert minimum iridium on the payment');
+  lines.push('- End of every game: serialize → deserialize → serialize without loss');
+  lines.push('');
+
+  lines.push('## Crashes');
+  lines.push('');
+  lines.push('Zero crashes is the primary pass criterion.');
+  lines.push('');
+  lines.push('| Mode | Config | Games | Crashes | Notes |');
+  lines.push('|------|--------|------:|--------:|-------|');
   let totalCrashes = 0;
-  const failingConfigs: Array<string> = [];
+  const failingKeys: Array<string> = [];
   const allCrashes: Array<CrashRecord> = [];
-  for (const cfg of configs) {
-    const results = resultsByConfig.get(cfg.name) ?? [];
-    const crashes = results.filter((r) => r.crashed);
-    totalCrashes += crashes.length;
-    if (crashes.length > 0) failingConfigs.push(cfg.name);
-    for (const c of crashes) if (c.crash) allCrashes.push(c.crash);
-    lines.push(`| ${cfg.name} | ${results.length} | ${crashes.length} | ${crashes.length === 0 ? 'ok' : crashes.slice(0, 3).map((c) => `seed ${c.seed}`).join(', ')} |`);
+  for (const mode of modes) {
+    for (const cfg of configs) {
+      const key = `${mode}::${cfg.name}`;
+      const results = resultsByKey.get(key) ?? [];
+      const crashes = results.filter((r) => r.crashed);
+      totalCrashes += crashes.length;
+      if (crashes.length > 0) failingKeys.push(key);
+      for (const c of crashes) if (c.crash) allCrashes.push(c.crash);
+      lines.push(
+        `| ${mode} | ${cfg.name} | ${results.length} | ${crashes.length} | ` +
+        `${crashes.length === 0 ? 'ok' : crashes.slice(0, 3).map((c) => `seed ${c.seed}`).join(', ')} |`,
+      );
+    }
   }
   lines.push('');
   if (allCrashes.length === 0) {
-    lines.push('**Zero crashes across all configurations.**');
+    lines.push('**Zero crashes across all configurations and modes.**');
   } else {
     lines.push('### Crash details');
     lines.push('');
-    lines.push('| Config | Seed | Gen | Phase | Action | Error |');
-    lines.push('|--------|-----:|----:|-------|--------|-------|');
+    lines.push('| Mode | Config | Seed | Gen | Phase | Action | Error |');
+    lines.push('|------|--------|-----:|----:|-------|--------|-------|');
     for (const c of allCrashes.slice(0, 80)) {
       const err = c.error.replace(/\|/g, '\\|').slice(0, 100);
       const act = c.action.replace(/\|/g, '\\|').slice(0, 40);
-      lines.push(`| ${c.config} | ${c.seed} | ${c.generation} | ${c.phase} | ${act} | ${err} |`);
+      lines.push(
+        `| ${c.mode} | ${c.config} | ${c.seed} | ${c.generation} | ${c.phase} | ${act} | ${err} |`,
+      );
     }
     if (allCrashes.length > 80) lines.push(`\n…and ${allCrashes.length - 80} more.`);
   }
   lines.push('');
 
-  lines.push('## 2. Unreachable cards');
+  lines.push('## Invariants');
   lines.push('');
-  lines.push('Union of playable Consortium project cards across all Consortium-enabled runs.');
-  lines.push('Listed cards were **never** legally playable in any run (may be legitimately rare).');
+  lines.push('These must hold regardless of how well the actor plays:');
   lines.push('');
-  const consortiumConfigs = configs.filter((c) => c.options.consortiumExpansion);
-  const seenUnion = new Set<CardName>();
-  for (const cfg of consortiumConfigs) {
-    for (const r of resultsByConfig.get(cfg.name) ?? []) {
-      for (const name of r.playableSeen) {
-        if (CONSORTIUM_PROJECT_CARDS.includes(name)) seenUnion.add(name);
-      }
+  lines.push('1. No exceptions in any configuration or mode');
+  lines.push(`2. Iridium bank stays in \`[0, ${IRIDIUM_BANK_CAPACITY}]\``);
+  lines.push('3. No megastructure exceeds its segment count (or fills with gaps)');
+  lines.push('4. No keystone is placed without the minimum iridium payment');
+  lines.push('5. No tile is placed on a chasm that has not been converted');
+  lines.push('6. No locked frontier space receives a tile before its bridge completes');
+  lines.push('7. Serialization round-trips at end of game without loss');
+  lines.push('');
+
+  const allInvariantFailures: Array<InvariantFailure> = [];
+  for (const results of resultsByKey.values()) {
+    for (const r of results) allInvariantFailures.push(...r.invariantFailures);
+  }
+  const totalInvariantFailures = allInvariantFailures.length;
+
+  lines.push('| Mode | Config | Games | Invariant failures |');
+  lines.push('|------|--------|------:|-------------------:|');
+  for (const mode of modes) {
+    for (const cfg of configs) {
+      const key = `${mode}::${cfg.name}`;
+      const results = resultsByKey.get(key) ?? [];
+      const fails = results.reduce((n, r) => n + r.invariantFailures.length, 0);
+      if (fails > 0 && !failingKeys.includes(key)) failingKeys.push(key);
+      lines.push(`| ${mode} | ${cfg.name} | ${results.length} | ${fails} |`);
     }
   }
-  const unreachable = CONSORTIUM_PROJECT_CARDS.filter((c) => !seenUnion.has(c));
-  lines.push('| Metric | Value |');
-  lines.push('|--------|------:|');
-  lines.push(`| Consortium project cards | ${CONSORTIUM_PROJECT_CARDS.length} |`);
-  lines.push(`| Seen as playable (≥1 run) | ${seenUnion.size} |`);
-  lines.push(`| Never playable | ${unreachable.length} |`);
   lines.push('');
-  if (unreachable.length === 0) {
-    lines.push('Every Consortium project card was legally playable in at least one run.');
+  if (totalInvariantFailures === 0) {
+    lines.push('**All invariants held in every game.**');
   } else {
-    lines.push('| Card |');
-    lines.push('|------|');
-    for (const c of unreachable) lines.push(`| ${c} |`);
-  }
-  lines.push('');
-  lines.push('Note: solo random-actor coverage is incomplete by design — cards that need');
-  lines.push('multi-player interaction or rare tags will still appear here.');
-  lines.push('');
-
-  lines.push('## 3. Megastructure completion rate');
-  lines.push('');
-  lines.push('| Kind | Appearances (in play) | Completions | Rate | Mean gen when completed |');
-  lines.push('|------|----------------------:|------------:|-----:|------------------------:|');
-  const present = new Map<MegastructureKind, number>();
-  const complete = new Map<MegastructureKind, number>();
-  const gens = new Map<MegastructureKind, Array<number>>();
-  for (const k of ALL_KINDS) {
-    present.set(k, 0); complete.set(k, 0); gens.set(k, []);
-  }
-  for (const cfg of consortiumConfigs) {
-    for (const r of resultsByConfig.get(cfg.name) ?? []) {
-      if (r.crashed) continue;
-      for (const k of r.kindsInPlay) present.set(k, (present.get(k) ?? 0) + 1);
-      for (const m of r.megaCompletions) {
-        complete.set(m.kind, (complete.get(m.kind) ?? 0) + 1);
-        gens.get(m.kind)!.push(m.generation);
-      }
+    lines.push('### Invariant failure details');
+    lines.push('');
+    lines.push('| Mode | Config | Seed | Gen | Invariant | Detail |');
+    lines.push('|------|--------|-----:|----:|-----------|--------|');
+    for (const f of allInvariantFailures.slice(0, 80)) {
+      const detail = f.detail.replace(/\|/g, '\\|').slice(0, 100);
+      lines.push(
+        `| ${f.mode} | ${f.config} | ${f.seed} | ${f.generation} | ${f.invariant} | ${detail} |`,
+      );
+    }
+    if (allInvariantFailures.length > 80) {
+      lines.push(`\n…and ${allInvariantFailures.length - 80} more.`);
     }
   }
-  for (const k of ALL_KINDS) {
-    const p = present.get(k) ?? 0;
-    const c = complete.get(k) ?? 0;
-    const g = gens.get(k) ?? [];
-    lines.push(`| ${k} | ${p} | ${c} | ${pct(c, p)} | ${g.length ? mean(g).toFixed(1) : '—'} |`);
-  }
   lines.push('');
 
-  lines.push('## 4. Bridge completion rate');
+  lines.push('## Why balance-shaped metrics are omitted');
   lines.push('');
-  lines.push('| Config | Games (ok) | Games with ≥1 bridge | Rate ≥1 | Mean bridges completed / game |');
-  lines.push('|--------|-----------:|---------------------:|--------:|------------------------------:|');
-  for (const cfg of consortiumConfigs) {
-    const ok = (resultsByConfig.get(cfg.name) ?? []).filter((r) => !r.crashed);
-    const withBridge = ok.filter((r) => r.bridgeCompletedCount > 0);
-    lines.push(`| ${cfg.name} | ${ok.length} | ${withBridge.length} | ${pct(withBridge.length, ok.length)} | ${mean(ok.map((r) => r.bridgeCompletedCount)).toFixed(2)} |`);
-  }
-  lines.push('');
-  const coloniesBridges = (resultsByConfig.get('consortium+colonies') ?? [])
-    .filter((r) => !r.crashed && r.bridgeCompletedCount > 0).length;
-  const coloniesOk = (resultsByConfig.get('consortium+colonies') ?? []).filter((r) => !r.crashed).length;
-  if (coloniesOk > 0 && coloniesBridges / coloniesOk < 0.25) {
-    lines.push(`**Design signal:** \`consortium+colonies\` completed ≥1 bridge in only ${pct(coloniesBridges, coloniesOk)} of games.`);
-    lines.push('If this holds under human play, the frontier cluster is starved when Colonies competes for M€.');
-    lines.push('');
-  }
-
-  lines.push('## 5. Iridium flow');
-  lines.push('');
-  lines.push(`Bank capacity: **${IRIDIUM_BANK_CAPACITY}**.`);
-  lines.push('');
-  lines.push('| Config | Mean granted | Mean spent | Mean low-water | Games bank hit 0 |');
-  lines.push('|--------|-------------:|-----------:|---------------:|-----------------:|');
-  for (const cfg of consortiumConfigs) {
-    const ok = (resultsByConfig.get(cfg.name) ?? []).filter((r) => !r.crashed);
-    lines.push(`| ${cfg.name} | ${mean(ok.map((r) => r.iridiumGranted)).toFixed(1)} | ${mean(ok.map((r) => r.iridiumSpent)).toFixed(1)} | ${mean(ok.map((r) => r.iridiumLowWater)).toFixed(1)} | ${ok.filter((r) => r.iridiumHitZero).length} |`);
-  }
-  lines.push('');
-
-  lines.push('## 6. Game length (generations)');
-  lines.push('');
-  lines.push('| Config | Games (ok) | Mean gen | Median gen | Min | Max |');
-  lines.push('|--------|-----------:|---------:|-----------:|----:|----:|');
-  for (const cfg of configs) {
-    const ok = (resultsByConfig.get(cfg.name) ?? []).filter((r) => !r.crashed);
-    const gs = ok.map((r) => r.generations).sort((a, b) => a - b);
-    const median = gs.length === 0 ? 0 : gs[Math.floor(gs.length / 2)];
-    lines.push(`| ${cfg.name} | ${ok.length} | ${mean(gs).toFixed(2)} | ${median} | ${gs[0] ?? '—'} | ${gs[gs.length - 1] ?? '—'} |`);
-  }
-  lines.push('');
-  const baseline = (resultsByConfig.get('baseline-no-consortium') ?? []).filter((r) => !r.crashed);
-  const consortiumOnly = (resultsByConfig.get('consortium') ?? []).filter((r) => !r.crashed);
-  if (baseline.length && consortiumOnly.length) {
-    lines.push(`Consortium vs baseline mean generation delta: **${(mean(consortiumOnly.map((r) => r.generations)) - mean(baseline.map((r) => r.generations))).toFixed(2)}**.`);
-  }
-  lines.push('');
-
-  lines.push('## 7. Ocean parameter (post ocean-fix)');
-  lines.push('');
-  lines.push(`Board now has **13** core ocean spaces; game needs **${MAX_OCEAN_TILES}** oceans to max the parameter.`);
-  lines.push('`PlaceOceanTile` soft-skip remains as a degrade path, but must not fire on Consortium.');
-  lines.push('');
-  lines.push('| Config | Mean oceans placed | Games with all 9 | Rate all 9 |');
-  lines.push('|--------|-------------------:|-----------------:|-----------:|');
-  for (const cfg of configs) {
-    const ok = (resultsByConfig.get(cfg.name) ?? []).filter((r) => !r.crashed);
-    const allNine = ok.filter((r) => r.oceansPlaced >= MAX_OCEAN_TILES);
-    lines.push(`| ${cfg.name} | ${mean(ok.map((r) => r.oceansPlaced)).toFixed(2)} | ${allNine.length} | ${pct(allNine.length, ok.length)} |`);
-  }
-  lines.push('');
-  const plateauSeen = [...seenUnion].includes(CardName.PLATEAU_RESERVOIR);
-  lines.push(`**Plateau Reservoir** (requires 3 oceans): ${plateauSeen ? 'reachable — appeared as legally playable in ≥1 run' : 'still unreachable under this solo actor'}.`);
+  lines.push('Earlier drafts of this document reported ocean counts, bridge completion');
+  lines.push('rates, mean generations, and card playability. Those numbers looked like');
+  lines.push('balance findings; they were actor artifacts. They are intentionally not');
+  lines.push('reported here. Use human playtests or a purpose-built evaluation suite');
+  lines.push('if you need design signals.');
   lines.push('');
 
   lines.push('## Rerun');
   lines.push('');
   lines.push('```bash');
-  lines.push(`npx tsx tools/consortium/validate.ts --games=${gamesPerConfig} --seed-base=${seedBase} --out=docs/consortium/16-validation.md`);
+  lines.push(
+    `npx tsx tools/consortium/validate.ts --games=${gamesPerConfig} ` +
+    `--modes=${modes.join(',')} --seed-base=${seedBase} --out=docs/consortium/16-validation.md`,
+  );
   lines.push('```');
+  lines.push('');
+  lines.push('Default mode when `--mode` / `--modes` is omitted: `random`.');
   lines.push('');
 
   fs.mkdirSync(path.dirname(outPath), {recursive: true});
   fs.writeFileSync(outPath, lines.join('\n'));
-  return {totalCrashes, failingConfigs};
+  return {totalCrashes, totalInvariantFailures, failingKeys};
 }
 
 // ---------------------------------------------------------------------------
@@ -879,19 +932,31 @@ function parseArgs(argv: Array<string>) {
   let games = 200;
   let seedBase = 42_000;
   let out = 'docs/consortium/16-validation.md';
+  let modes: Array<ActorMode> = ['random'];
   for (const a of argv) {
     if (a.startsWith('--games=')) games = Number(a.slice(8));
     else if (a.startsWith('--seed-base=')) seedBase = Number(a.slice(12));
     else if (a.startsWith('--out=')) out = a.slice(6);
-    else if (a === '--quick') games = 5;
+    else if (a.startsWith('--mode=')) {
+      const m = a.slice(7);
+      if (m !== 'random' && m !== 'weighted') {
+        throw new Error(`Unknown mode ${m}; expected random|weighted`);
+      }
+      modes = [m];
+    } else if (a.startsWith('--modes=')) {
+      modes = a.slice(8).split(',').map((s) => s.trim()).filter(Boolean).map((m) => {
+        if (m !== 'random' && m !== 'weighted') {
+          throw new Error(`Unknown mode ${m}; expected random|weighted`);
+        }
+        return m;
+      });
+    } else if (a === '--quick') games = 5;
   }
-  return {games, seedBase, out};
+  return {games, seedBase, out, modes};
 }
 
-async function main() {
-  const {games, seedBase, out} = parseArgs(process.argv.slice(2));
-
-  const configs: Array<ConfigSpec> = [
+function configs(): Array<ConfigSpec> {
+  return [
     {
       name: 'baseline-no-consortium',
       options: {
@@ -935,36 +1000,49 @@ async function main() {
       },
     },
   ];
+}
 
-  const resultsByConfig = new Map<string, Array<GameResult>>();
+async function main() {
+  const {games, seedBase, out, modes} = parseArgs(process.argv.slice(2));
+  const cfgs = configs();
+  const resultsByKey = new Map<string, Array<GameResult>>();
   let seed = seedBase;
 
-  for (const cfg of configs) {
-    console.log(`\n=== ${cfg.name} (${games} games) ===`);
-    const results: Array<GameResult> = [];
-    for (let i = 0; i < games; i++) {
-      const s = seed++;
-      const result = runOneGame(cfg, s);
-      results.push(result);
-      if (result.crashed) {
-        console.log(`  CRASH seed=${s} gen=${result.crash?.generation}: ${result.crash?.error.slice(0, 120)}`);
-      } else if ((i + 1) % 25 === 0 || i === 0) {
-        console.log(`  ${i + 1}/${games} ok gen=${result.generations} bridges=${result.bridgeCompletedCount} playable=${result.playableSeen.size}`);
+  for (const mode of modes) {
+    for (const cfg of cfgs) {
+      const key = `${mode}::${cfg.name}`;
+      console.log(`\n=== [${mode}] ${cfg.name} (${games} games) ===`);
+      const results: Array<GameResult> = [];
+      for (let i = 0; i < games; i++) {
+        const s = seed++;
+        const result = runOneGame(cfg, s, mode);
+        results.push(result);
+        if (result.crashed) {
+          console.log(
+            `  FAIL seed=${s} gen=${result.crash?.generation}: ` +
+            `${result.crash?.error.slice(0, 120)}`,
+          );
+        } else if ((i + 1) % 25 === 0 || i === 0) {
+          console.log(`  ${i + 1}/${games} ok gen=${result.generations}`);
+        }
       }
+      resultsByKey.set(key, results);
+      const crashes = results.filter((r) => r.crashed).length;
+      const inv = results.reduce((n, r) => n + r.invariantFailures.length, 0);
+      console.log(`  done: ${games - crashes}/${games} completed, ${crashes} crashes, ${inv} invariant failures`);
     }
-    resultsByConfig.set(cfg.name, results);
-    const crashes = results.filter((r) => r.crashed).length;
-    console.log(`  done: ${games - crashes}/${games} completed, ${crashes} crashes`);
   }
 
-  const {totalCrashes, failingConfigs} = writeReport(out, configs, resultsByConfig, games, seedBase);
+  const {totalCrashes, totalInvariantFailures, failingKeys} =
+    writeReport(out, cfgs, modes, resultsByKey, games, seedBase);
   console.log(`\nWrote ${out}`);
   console.log(`Total crashes: ${totalCrashes}`);
-  if (failingConfigs.length) {
-    console.log(`Failing configs: ${failingConfigs.join(', ')}`);
+  console.log(`Total invariant failures: ${totalInvariantFailures}`);
+  if (failingKeys.length || totalCrashes > 0 || totalInvariantFailures > 0) {
+    console.log(`Failing: ${failingKeys.join(', ') || '(see totals)'}`);
     process.exitCode = 1;
   } else {
-    console.log('All configurations: zero crashes.');
+    console.log('All configurations and modes: zero crashes, all invariants held.');
   }
 }
 
