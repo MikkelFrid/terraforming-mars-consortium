@@ -1,170 +1,100 @@
 # Consortium — Phase 16: Full-game validation
 
-Branch: `feat/consortium-ocean-fix`
+Branch: `feat/consortium-harness-honesty`
 Date: 2026-07-26
 Harness: `tools/consortium/validate.ts` (TypeScript via `npx tsx`)
 
-## Why TypeScript
+## What this harness can and cannot tell us
 
-The game engine, `PlayerInput` resolution, and seeded `Game.newInstance`
-are TypeScript. A `tsx` harness drives the same code path as production
-and reuses the fake-DB pattern from `tests/testing/setup.ts`.
+**This harness measures crashes and state invariants.** It drives solo
+games to `Phase.END` through real `player.process` calls and fails the
+run if an exception escapes or an invariant breaks.
+
+It **cannot** tell us whether Consortium is balanced. Ocean counts,
+bridge completion rates, game length, card play rates, and similar
+numbers reflect the actor's choice distribution, not the game's design.
+A preference-weighted actor that scores megastructure contribute at 5.5
+and standard projects at 1.5 will starve oceans and over-complete bridges;
+that is harness bias, not evidence about the map or the economy.
+Do not cite this document for balance decisions.
+
+Default actor mode is **`random`**: uniform choice over legal options at
+every decision point. Mode **`weighted`** keeps the old heuristic for
+comparison only.
 
 ## Method
 
-- Solo games to `Phase.END`, fixed seed set starting at **42000**
-- **200** games per configuration
-- Random actor biased toward Consortium plays, Core Sampling, megastructure contributions
+- Solo games to `Phase.END`, seed base **42000**
+- **200** games per configuration × mode
+- Modes run: `random`, `weighted`
 - Retries alternate `OrOptions` on actor payment failures before counting a crash
-- "Legally playable" = appeared in `getPlayableCards()` or a play-card menu
-- **Board note:** Consortium map has **13 core ocean spaces** (ocean-fix).
-  `PlaceOceanTile` still soft-skips empty boards as a degrade path.
+- After every step: iridium bank bounds, megastructure segment counts,
+  chasm/locked tile bans
+- Keystone placements assert minimum iridium on the payment
+- End of every game: serialize → deserialize → serialize without loss
 
-## 1. Crashes
+## Crashes
 
-| Config | Games | Crashes | Notes |
-|--------|------:|--------:|-------|
-| baseline-no-consortium | 200 | 0 | ok |
-| consortium | 200 | 0 | ok |
-| consortium+corporate-era | 200 | 0 | ok |
-| consortium+prelude | 200 | 0 | ok |
-| consortium+colonies | 200 | 0 | ok |
-| consortium+turmoil | 200 | 0 | ok |
+Zero crashes is the primary pass criterion.
 
-**Zero crashes across all configurations.**
+| Mode | Config | Games | Crashes | Notes |
+|------|--------|------:|--------:|-------|
+| random | baseline-no-consortium | 200 | 0 | ok |
+| random | consortium | 200 | 0 | ok |
+| random | consortium+corporate-era | 200 | 0 | ok |
+| random | consortium+prelude | 200 | 0 | ok |
+| random | consortium+colonies | 200 | 0 | ok |
+| random | consortium+turmoil | 200 | 0 | ok |
+| weighted | baseline-no-consortium | 200 | 0 | ok |
+| weighted | consortium | 200 | 0 | ok |
+| weighted | consortium+corporate-era | 200 | 0 | ok |
+| weighted | consortium+prelude | 200 | 0 | ok |
+| weighted | consortium+colonies | 200 | 0 | ok |
+| weighted | consortium+turmoil | 200 | 0 | ok |
 
-## 2. Unreachable cards
+**Zero crashes across all configurations and modes.**
 
-Union of playable Consortium project cards across all Consortium-enabled runs.
-Listed cards were **never** legally playable in any run (may be legitimately rare).
+## Invariants
 
-| Metric | Value |
-|--------|------:|
-| Consortium project cards | 55 |
-| Seen as playable (≥1 run) | 7 |
-| Never playable | 48 |
+These must hold regardless of how well the actor plays:
 
-| Card |
-|------|
-| Siderophile Extraction |
-| Core Sample Survey |
-| Deep Crust Mapping |
-| Impact Basin Claim |
-| Regolith Sifters |
-| Prospector's Camp |
-| Meteoritic Refinery |
-| Iridium Cartel |
-| Scaffold Yard |
-| Survey Stake |
-| Site Foreman |
-| Highland Anchor |
-| Segment Prefabrication |
-| Consortium Charter |
-| Keystone Rights |
-| Union Hall |
-| Structural Engineers |
-| Load Bearing Study |
-| Grand Contractor |
-| Monument Financing |
-| Trailhead Camp |
-| Frontier Survey |
-| Rim Outpost |
-| Chasm Descent |
-| Overland Convoy |
-| Sector Claim |
-| Deep Reach Rover |
-| Far Side Boomtown |
-| Wayfarer Compact |
-| Frontier Charter |
-| Crater Sifting |
-| Highland Terrace |
-| Basalt Quarry |
-| Ejecta Blanket |
-| Scarp Foundry |
-| Plateau Reservoir |
-| Talus Reclamation |
-| Impact Glass Works |
-| Rimwall Habitat |
-| Escrow Account |
-| Consortium Levy |
-| Tender Process |
-| Refit Yard |
-| Iridium Reserve |
-| Joint Venture |
-| Charter Revision |
-| Guild Arbitration |
-| Ledger of Claims |
+1. No exceptions in any configuration or mode
+2. Iridium bank stays in `[0, 28]`
+3. No megastructure exceeds its segment count (or fills with gaps)
+4. No keystone is placed without the minimum iridium payment
+5. No tile is placed on a chasm that has not been converted
+6. No locked frontier space receives a tile before its bridge completes
+7. Serialization round-trips at end of game without loss
 
-Note: solo random-actor coverage is incomplete by design — cards that need
-multi-player interaction or rare tags will still appear here.
+| Mode | Config | Games | Invariant failures |
+|------|--------|------:|-------------------:|
+| random | baseline-no-consortium | 200 | 0 |
+| random | consortium | 200 | 0 |
+| random | consortium+corporate-era | 200 | 0 |
+| random | consortium+prelude | 200 | 0 |
+| random | consortium+colonies | 200 | 0 |
+| random | consortium+turmoil | 200 | 0 |
+| weighted | baseline-no-consortium | 200 | 0 |
+| weighted | consortium | 200 | 0 |
+| weighted | consortium+corporate-era | 200 | 0 |
+| weighted | consortium+prelude | 200 | 0 |
+| weighted | consortium+colonies | 200 | 0 |
+| weighted | consortium+turmoil | 200 | 0 |
 
-## 3. Megastructure completion rate
+**All invariants held in every game.**
 
-| Kind | Appearances (in play) | Completions | Rate | Mean gen when completed |
-|------|----------------------:|------------:|-----:|------------------------:|
-| bridge | 3000 | 1800 | 60.0% | 11.4 |
-| space_elevator | 400 | 0 | 0.0% | — |
-| l1_magnetic_shield | 200 | 0 | 0.0% | — |
-| mohole | 200 | 0 | 0.0% | — |
-| solar_mirror | 600 | 0 | 0.0% | — |
-| arcology | 600 | 0 | 0.0% | — |
+## Why balance-shaped metrics are omitted
 
-## 4. Bridge completion rate
-
-| Config | Games (ok) | Games with ≥1 bridge | Rate ≥1 | Mean bridges completed / game |
-|--------|-----------:|---------------------:|--------:|------------------------------:|
-| consortium | 200 | 200 | 100.0% | 1.00 |
-| consortium+corporate-era | 200 | 200 | 100.0% | 3.00 |
-| consortium+prelude | 200 | 200 | 100.0% | 3.00 |
-| consortium+colonies | 200 | 0 | 0.0% | 0.00 |
-| consortium+turmoil | 200 | 200 | 100.0% | 2.00 |
-
-**Design signal:** `consortium+colonies` completed ≥1 bridge in only 0.0% of games.
-If this holds under human play, the frontier cluster is starved when Colonies competes for M€.
-
-## 5. Iridium flow
-
-Bank capacity: **28**.
-
-| Config | Mean granted | Mean spent | Mean low-water | Games bank hit 0 |
-|--------|-------------:|-----------:|---------------:|-----------------:|
-| consortium | 11.0 | 11.0 | 24.0 | 0 |
-| consortium+corporate-era | 16.0 | 10.0 | 22.0 | 0 |
-| consortium+prelude | 10.0 | 10.0 | 26.0 | 0 |
-| consortium+colonies | 5.0 | 5.0 | 27.0 | 0 |
-| consortium+turmoil | 6.0 | 6.0 | 26.0 | 0 |
-
-## 6. Game length (generations)
-
-| Config | Games (ok) | Mean gen | Median gen | Min | Max |
-|--------|-----------:|---------:|-----------:|----:|----:|
-| baseline-no-consortium | 200 | 14.00 | 14 | 14 | 14 |
-| consortium | 200 | 14.00 | 14 | 14 | 14 |
-| consortium+corporate-era | 200 | 14.00 | 14 | 14 | 14 |
-| consortium+prelude | 200 | 12.00 | 12 | 12 | 12 |
-| consortium+colonies | 200 | 14.00 | 14 | 14 | 14 |
-| consortium+turmoil | 200 | 14.00 | 14 | 14 | 14 |
-
-Consortium vs baseline mean generation delta: **0.00**.
-
-## 7. Ocean parameter (post ocean-fix)
-
-Board now has **13** core ocean spaces; game needs **9** oceans to max the parameter.
-`PlaceOceanTile` soft-skip remains as a degrade path, but must not fire on Consortium.
-
-| Config | Mean oceans placed | Games with all 9 | Rate all 9 |
-|--------|-------------------:|-----------------:|-----------:|
-| baseline-no-consortium | 9.00 | 200 | 100.0% |
-| consortium | 0.00 | 0 | 0.0% |
-| consortium+corporate-era | 1.00 | 0 | 0.0% |
-| consortium+prelude | 3.00 | 0 | 0.0% |
-| consortium+colonies | 0.00 | 0 | 0.0% |
-| consortium+turmoil | 0.00 | 0 | 0.0% |
-
-**Plateau Reservoir** (requires 3 oceans): still unreachable under this solo actor.
+Earlier drafts of this document reported ocean counts, bridge completion
+rates, mean generations, and card playability. Those numbers looked like
+balance findings; they were actor artifacts. They are intentionally not
+reported here. Use human playtests or a purpose-built evaluation suite
+if you need design signals.
 
 ## Rerun
 
 ```bash
-npx tsx tools/consortium/validate.ts --games=200 --seed-base=42000 --out=docs/consortium/16-validation.md
+npx tsx tools/consortium/validate.ts --games=200 --modes=random,weighted --seed-base=42000 --out=docs/consortium/16-validation.md
 ```
+
+Default mode when `--mode` / `--modes` is omitted: `random`.
