@@ -246,6 +246,6 @@ describe('Consortium megastructure effects', () => {
   });
 
   it('Consortium manifest registers the Prospecting project cards', () => {
-    expect(Object.keys(CONSORTIUM_CARD_MANIFEST.projectCards)).to.have.length(10);
+    expect(Object.keys(CONSORTIUM_CARD_MANIFEST.projectCards)).to.have.length(24);
   });
 });
