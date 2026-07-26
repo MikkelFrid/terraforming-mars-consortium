@@ -21,9 +21,47 @@ describe('ConsortiumBoard', () => {
       land: mars.filter((s) => s.spaceType === SpaceType.LAND).length,
       crater: mars.filter((s) => s.spaceType === SpaceType.CRATER_FIELD).length,
       chasm: mars.filter((s) => s.spaceType === SpaceType.CHASM).length,
+      ocean: mars.filter((s) => s.spaceType === SpaceType.OCEAN).length,
       highland: mars.filter((s) => s.spaceType === SpaceType.HIGHLAND).length,
     };
-    expect(counts).to.deep.eq({land: 85, crater: 12, chasm: 24, highland: 6});
+    expect(counts).to.deep.eq({land: 72, crater: 12, chasm: 24, ocean: 13, highland: 6});
+  });
+
+  it('has 13 ocean spaces, all in the core zone, none on highland', () => {
+    // Core = ring <= 4 (see build_board.py). Oceans must never overlap highland.
+    const board = ConsortiumBoard.newInstance(
+      {...DEFAULT_GAME_OPTIONS, boardName: BoardName.CONSORTIUM, consortiumExpansion: true},
+      new SeededRandom(0),
+    );
+    const oceans = board.spaces.filter((s) => s.spaceType === SpaceType.OCEAN);
+    expect(oceans).to.have.length(13);
+    expect(oceans.length).to.be.at.least(9);
+
+    const highlands = new Set(
+      board.spaces
+        .filter((s) => s.spaceType === SpaceType.HIGHLAND)
+        .map((s) => `${s.q},${s.r}`),
+    );
+    for (const ocean of oceans) {
+      expect(ocean.q).to.not.be.undefined;
+      expect(ocean.r).to.not.be.undefined;
+      const ring = (Math.abs(ocean.q!) + Math.abs(ocean.r!) + Math.abs(ocean.q! + ocean.r!)) / 2;
+      expect(ring).to.be.at.most(4);
+      expect(highlands.has(`${ocean.q},${ocean.r}`)).is.false;
+    }
+  });
+
+  it('can place an ocean tile on a Consortium ocean space', () => {
+    const [game, player] = testGame(1, {
+      boardName: BoardName.CONSORTIUM,
+      consortiumExpansion: true,
+    });
+    const oceanSpace = game.board.getAvailableSpacesForOcean(player)[0];
+    expect(oceanSpace).to.not.be.undefined;
+    expect(oceanSpace.spaceType).eq(SpaceType.OCEAN);
+    game.addOcean(player, oceanSpace);
+    expect(oceanSpace.tile?.tileType).eq(TileType.OCEAN);
+    expect(game.board.getOceanSpaces()).to.have.length(1);
   });
 
   it('locked frontier spaces reject placement', () => {

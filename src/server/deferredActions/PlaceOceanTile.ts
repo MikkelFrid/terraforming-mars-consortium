@@ -50,6 +50,12 @@ export class PlaceOceanTile extends DeferredAction<Space | undefined> {
       title = this.options?.title ?? this.getTitle(on);
     }
 
+    // Soft-skip when a board exposes no legal ocean spaces (degrade, don't crash).
+    // Consortium now has 13 core oceans; this guard must not fire for that board.
+    if (availableSpaces.length === 0) {
+      return undefined;
+    }
+
     return new SelectSpace(title, availableSpaces)
       .andThen((space) => {
         this.creditedPlayer.game.addOcean(this.creditedPlayer, space);

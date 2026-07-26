@@ -51,6 +51,14 @@ OFFSET_X, OFFSET_Y = 137, 134
 HIGHLANDS = [(0, -3), (1, -3), (0, -2), (-3, 1), (-3, 2), (-2, 1)]
 CORE_CRATERS = [(4, -2), (-2, 4), (-2, -2)]
 
+# Ocean-reserved spaces. Tharsis has 12; this board has 13 so there is a
+# real choice of where to place the nine oceans the game needs. All sit in
+# the core so the ocean parameter can never be gated behind a bridge, and
+# none overlap a highland, which cannot take an ocean by rule.
+OCEANS = [(2, -4), (3, -4), (2, -3), (3, -3), (4, -3),
+          (2, -2), (3, -2), (1, -1), (2, -1), (3, -1),
+          (1, 0), (2, 0), (0, 1)]
+
 
 def ring(q, r):
     return (abs(q) + abs(r) + abs(q + r)) // 2
@@ -99,6 +107,8 @@ def build_spaces():
             s['type'] = 'highland'
         elif key in CORE_CRATERS:
             s['type'] = 'crater'
+        elif key in OCEANS and s['zone'] == 'core':
+            s['type'] = 'ocean'
 
     for sector in range(3):
         candidates = sorted(

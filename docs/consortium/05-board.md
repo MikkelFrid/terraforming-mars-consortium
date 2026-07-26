@@ -15,7 +15,8 @@ Base: `main` after iridium merge (`24b0137cf`)
 | `src/server/boards/consortiumSpaces.json` | 127 space records |
 
 Confirmed: **127 spaces**, hex field **634×542**, field origin **137, 134**
-(centred on the planet disc), types land 85 / crater 12 / chasm 24 / highland 6.
+(centred on the planet disc), types land 72 / crater 12 / chasm 24 / ocean 13 /
+highland 6.
 
 Do not hand-edit generated files — change the generator and rerun.
 
@@ -26,6 +27,7 @@ Do not hand-edit generated files — change the generator and rerun.
 | JSON `type` | `SpaceType` | Rules |
 |-------------|-------------|--------|
 | `land` | `LAND` | Normal land |
+| `ocean` | `OCEAN` | Core ocean-reserved (13); parameter never gated behind a bridge |
 | `highland` | `HIGHLAND` | No ocean |
 | `crater` | `CRATER_FIELD` | One-time iridium grant |
 | `chasm` | `CHASM` | Unplaceable |
