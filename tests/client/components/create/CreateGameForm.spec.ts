@@ -43,6 +43,31 @@ describe('CreateGameForm', () => {
     expect(wrapper.exists()).to.be.true;
   });
 
+  it('keeps Consortium expansion and board input ids distinct', async () => {
+    // Regression: board radios used id=`${boardName}-checkbox`, colliding with
+    // the Consortium expansion checkbox (`consortium-checkbox`). Clicking the
+    // Consortium map then toggled the expansion off instead of selecting the board.
+    const wrapper = mount(CreateGameForm, {
+      ...globalConfig,
+    });
+    (wrapper.vm as any).expansions.consortium = true;
+    await wrapper.vm.$nextTick();
+
+    const expansion = wrapper.find('#consortium-checkbox');
+    const board = wrapper.find('#board-consortium-radio');
+    expect(expansion.exists()).to.be.true;
+    expect(board.exists()).to.be.true;
+    expect(expansion.attributes('type')).eq('checkbox');
+    expect(board.attributes('type')).eq('radio');
+    expect(wrapper.find('label[for="consortium-checkbox"]').exists()).to.be.true;
+    expect(wrapper.find('label[for="board-consortium-radio"]').exists()).to.be.true;
+
+    await board.setValue(BoardName.CONSORTIUM);
+    await wrapper.vm.$nextTick();
+    expect((wrapper.vm as any).board).eq(BoardName.CONSORTIUM);
+    expect((wrapper.vm as any).expansions.consortium).eq(true);
+  });
+
   it('restores the last saved game settings on load', async () => {
     new CreateGameSettingsStorage(localStorage).saveSettings(createGameSettings({
       expansions: {...DEFAULT_EXPANSIONS, venus: true},

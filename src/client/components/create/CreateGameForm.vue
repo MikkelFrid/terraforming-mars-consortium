@@ -188,8 +188,9 @@
 
                             <div v-for="boardName in boards" :key="boardName">
                               <div v-if="boardName==='utopia planitia'" class="create-game-subsection-label" v-i18n>Fan-made</div>
-                              <input type="radio" :value="boardName" name="board" v-model="board" :id="boardName+'-checkbox'">
-                              <label :for="boardName+'-checkbox'" class="expansion-button">
+                              <!-- Board radios must not reuse expansion checkbox ids (e.g. consortium-checkbox). -->
+                              <input type="radio" :value="boardName" name="board" v-model="board" :id="'board-' + boardName + '-radio'">
+                              <label :for="'board-' + boardName + '-radio'" class="expansion-button">
                                   <span :class="getBoardColorClass(boardName)">&#x2B22;</span>
                                   <span class="capitalized" v-i18n>{{ boardName }}</span>
                                   <template v-if="boardName !== RandomBoardOption.OFFICIAL && boardName !== RandomBoardOption.ALL">
