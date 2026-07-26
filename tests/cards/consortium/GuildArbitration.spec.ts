@@ -5,7 +5,7 @@ import {cast} from '../../../src/common/utils/utils';
 import {fakeCard} from '../../TestingUtils';
 import {BoardName} from '../../../src/common/boards/BoardName';
 import {Tag} from '../../../src/common/cards/Tag';
-import {CardType} from '../../../common/cards/CardType';
+import {CardType} from '../../../src/common/cards/CardType';
 
 describe('GuildArbitration', () => {
   it('requires 3 Earth tags and gains 8 M€', () => {
