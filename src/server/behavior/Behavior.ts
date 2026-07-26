@@ -169,6 +169,12 @@ export type Behavior = {
   },
 
   /**
+   * Consortium iridium from the shared bank.
+   * Standalone — not a Units stock member (no production).
+   */
+  iridium?: Countable,
+
+  /**
    * Log a message using a parameterized string replacement. This is not a normal template.
    *
    * Template does not accept traditional parameters ${0} and ${1}, but rather

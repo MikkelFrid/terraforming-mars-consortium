@@ -32,6 +32,7 @@ import {IdentifySpacesDeferred} from '../underworld/IdentifySpacesDeferred';
 import {ClaimSpacesDeferred} from '../underworld/ClaimSpacesDeferred';
 import {ExcavateSpacesDeferred} from '../underworld/ExcavateSpacesDeferred';
 import {UnderworldExpansion} from '../underworld/UnderworldExpansion';
+import {Iridium} from '../consortium/Iridium';
 import {SelectResource} from '../inputs/SelectResource';
 import {RemoveResourcesFromCard} from '../deferredActions/RemoveResourcesFromCard';
 import {isIProjectCard} from '../cards/IProjectCard';
@@ -662,6 +663,10 @@ export class Executor implements BehaviorExecutor {
           card.generationUsed = player.game.generation;
         }
       }
+    }
+
+    if (behavior.iridium !== undefined) {
+      Iridium.grant(player, ctx.count(behavior.iridium));
     }
 
     if (behavior.log !== undefined) {

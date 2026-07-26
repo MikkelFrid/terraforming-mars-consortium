@@ -840,6 +840,9 @@ export class Player implements IPlayer {
     // Deliberately excluded from Sol Bank (steel/titanium/MC only).
     if (payment.iridium > 0) {
       Iridium.spend(this, payment.iridium);
+      for (const card of this.tableau) {
+        card.onIridiumSpent?.(this, payment.iridium);
+      }
     }
 
     if (payment.megacredits > 0 || payment.steel > 0 || payment.titanium > 0) {

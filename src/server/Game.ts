@@ -915,6 +915,13 @@ export class Game implements IGame, Logger {
     // Consortium Mohole: one iridium per contributing player when the bank has any.
     Megastructures.grantMoholeGenerationIridium(this);
 
+    // Consortium cards with start-of-generation effects (e.g. Siderophile Extraction).
+    for (const player of this.players) {
+      for (const card of player.tableau) {
+        card.onGenerationStart?.(player);
+      }
+    }
+
     if (this.gameOptions.draftVariant) {
       this.gotoDraftPhase();
     } else {

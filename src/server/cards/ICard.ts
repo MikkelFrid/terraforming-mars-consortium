@@ -142,6 +142,22 @@ export interface ICard {
   onProductionPhase?(player: IPlayer): void;
 
   /**
+   * Consortium: called at the start of each generation (after generation++),
+   * same timing as Mohole contributor iridium. Used by Siderophile Extraction.
+   *
+   * @param player the card owner.
+   */
+  onGenerationStart?(player: IPlayer): void;
+
+  /**
+   * Consortium: called when this card's owner spends iridium (via Player.pay).
+   *
+   * @param player the card owner.
+   * @param amount iridium spent in this payment.
+   */
+  onIridiumSpent?(player: IPlayer, amount: number): void;
+
+  /**
    * Callback when ANY player adds a colony.
    *
    * @param cardOwner the player who owns this card.
