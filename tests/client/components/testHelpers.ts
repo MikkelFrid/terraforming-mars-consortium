@@ -94,6 +94,7 @@ export function fakeGameModel(overrides?: RecursivePartial<GameModel>): GameMode
     oxygenLevel: 0,
     passedPlayers: [],
     pathfinders: undefined,
+    megastructures: undefined,
     phase: Phase.ACTION,
     spaces: [],
     step: 0,

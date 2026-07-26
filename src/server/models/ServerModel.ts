@@ -20,6 +20,7 @@ import {getTurmoilModel} from '../models/TurmoilModel';
 import {SpectatorModel} from '../../common/models/SpectatorModel';
 import {GameModel} from '../../common/models/GameModel';
 import {Turmoil} from '../turmoil/Turmoil';
+import {createMegastructuresModel} from './MegastructuresModel';
 import {createPathfindersModel} from './PathfindersModel';
 import {MoonModel} from '../../common/models/MoonModel';
 import {CardName} from '../../common/cards/CardName';
@@ -49,7 +50,7 @@ export class Server {
     };
   }
 
-  public static getGameModel(game: IGame): GameModel {
+  public static getGameModel(game: IGame, viewer?: IPlayer): GameModel {
     const turmoil = getTurmoilModel(game);
 
     return {
@@ -69,6 +70,7 @@ export class Server {
       lastSoloGeneration: game.lastSoloGeneration(),
       milestones: this.getMilestones(game),
       moon: this.getMoonModel(game),
+      megastructures: createMegastructuresModel(game, viewer),
       name: game.name,
       oceans: game.board.getOceanSpaces().length,
       oxygenLevel: game.getOxygenLevel(),
@@ -102,7 +104,7 @@ export class Server {
       dealtCeoCards: cardsToModel(player, player.dealtCeoCards),
       dealtProjectCards: cardsToModel(player, player.dealtProjectCards),
       draftedCards: cardsToModel(player, player.draftedCards, {showCalculatedCost: true}),
-      game: this.getGameModel(player.game),
+      game: this.getGameModel(player.game, player),
       id: player.id,
       runId: runId,
       pickedCorporationCard: player.pickedCorporationCard ? cardsToModel(player, [player.pickedCorporationCard]) : [],

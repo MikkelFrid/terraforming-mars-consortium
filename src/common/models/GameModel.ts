@@ -9,6 +9,7 @@ import {AresData} from '../ares/AresData';
 import {SpaceModel} from './SpaceModel';
 import {MoonModel} from './MoonModel';
 import {PathfindersModel} from './PathfindersModel';
+import {MegastructuresModel} from './MegastructuresModel';
 import {SpectatorId} from '../Types';
 import {ColonyName} from '../colonies/ColonyName';
 import {GlobalParameter} from '../GlobalParameter';
@@ -32,6 +33,8 @@ export type GameModel = {
   lastSoloGeneration: number,
   milestones: ReadonlyArray<ClaimedMilestoneModel>;
   moon: MoonModel | undefined;
+  /** Consortium megastructure tracks. Absent when the module is off. */
+  megastructures: MegastructuresModel | undefined;
   name: string;
   oceans: number;
   oxygenLevel: number;
