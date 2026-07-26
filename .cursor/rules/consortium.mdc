@@ -119,6 +119,20 @@ cite its output as evidence about game balance.
   loop in the project
 - Keep the fork public. GPL-3.0
 
+## Railway
+
+Railway access is for reading logs, checking deployment status, and
+triggering redeploys of the existing service.
+
+Never create new paid resources - projects, databases, services - without
+asking first and waiting for an answer.
+
+Never write credentials, tokens or connection strings into the repository.
+Use Railway's own variable references.
+
+Before any action that changes the deployed service, state what you are
+about to do and why, in one line.
+
 ## When uncertain
 
 Say so explicitly. A flagged unknown is more useful than a confident wrong
