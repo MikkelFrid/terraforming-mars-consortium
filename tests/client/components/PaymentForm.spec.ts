@@ -11,6 +11,7 @@ function mountPaymentForm(overrides: {
   order?: ReadonlyArray<SpendableResource>,
   ledger?: Partial<Ledger>,
   showsave?: boolean,
+  minIridium?: number,
 }) {
   const order = overrides.order ?? ['megacredits'];
   const ledger = overrides.ledger ?? {};
@@ -20,6 +21,7 @@ function mountPaymentForm(overrides: {
     ledger: {...newDefaultLedger(), ...ledger},
     showsave: overrides.showsave ?? true,
     buttonLabel: 'Save',
+    minIridium: overrides.minIridium,
   };
 
   return mount(PaymentForm, {
@@ -350,5 +352,23 @@ describe('PaymentForm', () => {
 
     expect(wrapper.emitted('save')).to.exist;
     expect(wrapper.find('.tm-warning').exists()).is.false;
+  });
+
+  it('rejects keystone payment below minIridium with a clear message', async () => {
+    const wrapper = mountPaymentForm({
+      cost: 8,
+      order: ['iridium', 'megacredits'],
+      minIridium: 2,
+      ledger: {
+        'iridium': {available: 3, rate: 4},
+        'megacredits': {available: 20, rate: 1},
+      },
+    });
+    // Default payment may not include iridium — force a pure-MC attempt.
+    wrapper.vm.payment = {...wrapper.vm.payment, iridium: 0, megacredits: 8};
+    await wrapper.find('[data-test=save]').trigger('click');
+    await wrapper.vm.$nextTick();
+    expect(wrapper.emitted('save')).to.not.exist;
+    expect(wrapper.find('.tm-warning').text()).to.include('Keystone requires at least 2 iridium');
   });
 });

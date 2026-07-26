@@ -203,9 +203,10 @@ export class Megastructures {
         const index = this.nextSegmentIndex(structure);
         const cost = this.segmentCostMc(structure, index);
         const keystone = this.isKeystone(structure, index);
+        // Titles embed [id] so the track panel can target a structure in one click.
         const title = keystone ?
-          `Contribute keystone to ${displayName(structure.kind, structure.sector)} (${cost} M€, min ${this.keystoneMinIridium(structure)} iridium)` :
-          `Contribute segment ${index + 1} to ${displayName(structure.kind, structure.sector)} (${cost} M€)`;
+          `Contribute keystone to ${displayName(structure.kind, structure.sector)} [${structure.id}] (${cost} M€, min ${this.keystoneMinIridium(structure)} iridium)` :
+          `Contribute segment ${index + 1} to ${displayName(structure.kind, structure.sector)} [${structure.id}] (${cost} M€)`;
         return new SelectOption(title).andThen(() => {
           this.beginContribute(player, structure);
           return undefined;
@@ -225,11 +226,17 @@ export class Megastructures {
     }
     const index = this.nextSegmentIndex(structure);
     const cost = this.segmentCostMc(structure, index);
+    const keystone = this.isKeystone(structure, index);
+    const minIridium = keystone ? this.keystoneMinIridium(structure) : undefined;
+    const title = keystone ?
+      `Select how to pay ${cost} M€ for ${displayName(structure.kind, structure.sector)} keystone (min ${minIridium} iridium)` :
+      `Select how to pay ${cost} M€ for ${displayName(structure.kind, structure.sector)} segment ${index + 1}`;
     player.game.defer(new SelectPaymentDeferred(player, cost, {
       canUseSteel: true,
       canUseTitanium: true,
       canUseIridium: true,
-      title: `Select how to pay ${cost} M€ for ${displayName(structure.kind, structure.sector)} segment ${index + 1}`,
+      minIridium,
+      title,
     })).andThen((payment) => {
       // SelectPaymentDeferred already called player.pay.
       this.placeSegment(player, structure, payment, /* alreadyPaid */ true);

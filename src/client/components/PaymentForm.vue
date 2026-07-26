@@ -108,6 +108,11 @@ export default defineComponent({
       type: String,
       required: true,
     },
+    /** Consortium keystone: payment must include at least this much iridium. */
+    minIridium: {
+      type: Number,
+      required: false,
+    },
   },
   emits: ['save', 'change'],
   data(): DataModel {
@@ -199,6 +204,10 @@ export default defineComponent({
           this.warning = `You do not have enough ${unit}`;
           return;
         }
+      }
+      if (this.minIridium !== undefined && this.payment.iridium < this.minIridium) {
+        this.warning = `Keystone requires at least ${this.minIridium} iridium`;
+        return;
       }
       const delta = this.totalSpent() - this.cost;
       if (delta < 0) {

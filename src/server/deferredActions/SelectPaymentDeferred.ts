@@ -13,6 +13,8 @@ export type Options = {
   canUseTitanium?: boolean;
   /** Consortium: megastructure segments (tag-gated spend target). */
   canUseIridium?: boolean;
+  /** Consortium keystone: payment must include at least this much iridium. */
+  minIridium?: number;
   canUseSeeds?: boolean,
   canUseAuroraiData?: boolean,
   canUseGraphene?: boolean;
@@ -70,6 +72,10 @@ export class SelectPaymentDeferred extends DeferredAction<Payment> {
     }
 
     if (this.mustPayWithMegacredits()) {
+      if ((this.options.minIridium ?? 0) > 0) {
+        // Keystone cannot be silent-auto-paid with pure M€.
+        throw new Error(`Keystone requires at least ${this.options.minIridium} iridium`);
+      }
       if (this.player.megaCredits < this.amount) {
         throw new Error(`Player does not have ${this.amount} M€`);
       }
@@ -93,7 +99,8 @@ export class SelectPaymentDeferred extends DeferredAction<Payment> {
         lunaTradeFederationTitanium: this.player.canUseTitaniumAsMegacredits,
         kuiperAsteroids: this.options.canUseAsteroids || false,
         graphene: this.options.canUseGraphene || false,
-      }, this.options.reserveUnits)
+      }, this.options.reserveUnits,
+      this.options.minIridium)
       .andThen((payment) => {
         this.player.pay(payment);
         this.cb(payment);

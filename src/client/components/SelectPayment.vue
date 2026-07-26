@@ -7,6 +7,7 @@
       :cost="cost"
       :order="order"
       :ledger="ledger"
+      :minIridium="minIridium"
       :showsave="showsave"
       :buttonLabel="playerinput.buttonLabel"
       @change="(p) => payment = p"
@@ -55,6 +56,7 @@ export default defineComponent({
       return ([
         'steel',
         'titanium',
+        'iridium',
         'heat',
         'seeds',
         'auroraiData',
@@ -65,6 +67,9 @@ export default defineComponent({
     },
     ledger(): Ledger {
       return this.buildLedger(this.order, this.playerinput.reserveUnits ?? Units.EMPTY);
+    },
+    minIridium(): number | undefined {
+      return this.playerinput.minIridium;
     },
   },
   components: {

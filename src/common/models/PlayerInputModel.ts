@@ -81,6 +81,8 @@ export type SelectPaymentModel = BaseInputModel & {
   kuiperAsteroids: number;
   spireScience: number;
   reserveUnits: Readonly<Units> | undefined; // Built to support the Merchant milestone.
+  /** Consortium keystone: minimum iridium that must be included in the payment. */
+  minIridium?: number;
 
   floaters: 0,
   microbes: 0,
