@@ -75,6 +75,8 @@ export const MEGASTRUCTURE_BALANCE = {
   SCAFFOLD_YARD_DISCOUNT: 3,
   /** Site Foreman: permanent segment discount while in play. Balance knob. */
   SITE_FOREMAN_DISCOUNT: 2,
+  /** Keystone Consortium: permanent segment discount while in play. Balance knob. */
+  KEYSTONE_CONSORTIUM_DISCOUNT: 3,
 
   // --- Keystone Rights -----------------------------------------------------
   /** Extra end-game VP from Keystone Rights (once). Balance knob. */
@@ -83,6 +85,12 @@ export const MEGASTRUCTURE_BALANCE = {
   // --- Frontier cards ------------------------------------------------------
   /** Sector Claim: M€ rebate when placing a tile in a frontier zone. Balance knob. */
   SECTOR_CLAIM_REBATE: 4,
+  /** Rimward Expeditions: M€ rebate when placing a tile in a frontier zone. Balance knob. */
+  RIMWARD_FRONTIER_REBATE: 3,
+  /** Rimward Expeditions: M€ on any bridge completion. Balance knob. */
+  RIMWARD_BRIDGE_COMPLETE_MC: 4,
+  /** Massif Group: discount on cards that require owning a highland tile. Balance knob. */
+  MASSIF_HIGHLAND_CARD_DISCOUNT: 4,
 
   // --- Terrain / general payment rates -------------------------------------
   /** Scarp Foundry: steel M€ value when paying for megastructure segments. Balance knob. */

@@ -227,8 +227,11 @@ export default defineComponent({
           return this.canUseTitaniumRegularly() ||
           this.playerinput.paymentOptions.lunaTradeFederationTitanium === true;
         case 'iridium':
-          // Tag-gated: Structure or Prospecting only. Not universal.
-          return this.tags.includes(Tag.STRUCTURE) || this.tags.includes(Tag.PROSPECTING);
+          // Tag-gated: Structure or Prospecting only — unless Siderite Holdings
+          // lifted the gate (server sets paymentOptions.iridium).
+          return this.tags.includes(Tag.STRUCTURE) ||
+            this.tags.includes(Tag.PROSPECTING) ||
+            this.playerinput.paymentOptions.iridium === true;
         case 'plants':
           return this.tags.includes(Tag.BUILDING) && this.playerinput.paymentOptions.plants === true;
         case 'microbes':

@@ -458,6 +458,18 @@ def build_plateau_reservoir(path):
     _recolor_special('mohole_area.png', path, 0.75, 0.95, 1.15, glyph)
 
 
+def build_massif_group(path):
+    """152x152: massif peak on warmer highland_anchor base."""
+    def glyph(draw, size):
+        w, h = size
+        cx, cy = w // 2, h // 2 + 6
+        fill = (240, 220, 180, 230)
+        draw.polygon([(cx, cy - 32), (cx - 26, cy + 16), (cx + 26, cy + 16)], fill=fill)
+        draw.polygon([(cx - 4, cy - 8), (cx - 18, cy + 16), (cx + 2, cy + 16)],
+                     fill=(180, 140, 90, 200))
+    _recolor_special('highland_anchor.png', path, 1.05, 0.92, 0.75, glyph)
+
+
 # --------------------------------------------------------------------- main
 
 def main():
@@ -496,6 +508,7 @@ def main():
     build_basalt_quarry(os.path.join(SPECIAL_TILE_DIR, 'basalt_quarry.png'))
     build_ejecta_blanket(os.path.join(SPECIAL_TILE_DIR, 'ejecta_blanket.png'))
     build_plateau_reservoir(os.path.join(SPECIAL_TILE_DIR, 'plateau_reservoir.png'))
+    build_massif_group(os.path.join(SPECIAL_TILE_DIR, 'massif_group.png'))
 
     emblem_paths = []
     for stem, rgb, shape in _MEGASTRUCTURE_PLACEHOLDERS:
@@ -515,6 +528,7 @@ def main():
               'assets/tiles/special_tile_icons/basalt_quarry.png',
               'assets/tiles/special_tile_icons/ejecta_blanket.png',
               'assets/tiles/special_tile_icons/plateau_reservoir.png',
+              'assets/tiles/special_tile_icons/massif_group.png',
               *emblem_paths):
         f = os.path.join(ROOT, p)
         im = Image.open(f)

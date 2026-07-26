@@ -67,6 +67,7 @@ const tileTypeToCssClass: Record<TileType, string> = {
   [TileType.BASALT_QUARRY]: 'basalt_quarry',
   [TileType.EJECTA_BLANKET]: 'ejecta_blanket',
   [TileType.PLATEAU_RESERVOIR]: 'plateau_reservoir',
+  [TileType.MASSIF_GROUP]: 'massif_group',
 };
 
 const tileTypeToCssClassAresOverride = new Map<TileType, string>([
@@ -118,6 +119,7 @@ const descriptions: Record<TileType, string> = {
   [TileType.BASALT_QUARRY]: 'Basalt Quarry: special tile on a highland space',
   [TileType.EJECTA_BLANKET]: 'Ejecta Blanket: special tile adjacent to a crater field',
   [TileType.PLATEAU_RESERVOIR]: 'Plateau Reservoir: special tile on a highland space',
+  [TileType.MASSIF_GROUP]: 'Massif Group: corporation special tile on a highland space',
 };
 
 export default defineComponent({

@@ -1,4 +1,5 @@
 import {Tag} from '../../../common/cards/Tag';
+import {CardName} from '../../../common/cards/CardName';
 import {IPlayer} from '../../IPlayer';
 import {InequalityRequirement} from './InequalityRequirement';
 import {Options} from './CardRequirement';
@@ -30,6 +31,14 @@ export class TagCardRequirement extends InequalityRequirement {
     // PoliticalAgendas Scientists P4 hook
     if (this.tag === Tag.SCIENCE && player.hasTurmoilScienceTagBonus) {
       tagCount += 1;
+    }
+
+    // Charter Syndicate: Structure / Prospecting tags count double for
+    // requirements only (not scoring, awards, or milestones).
+    if (this.max !== true &&
+      (this.tag === Tag.STRUCTURE || this.tag === Tag.PROSPECTING) &&
+      player.tableau.has(CardName.CHARTER_SYNDICATE)) {
+      tagCount += player.tags.count(this.tag, 'raw');
     }
 
     return tagCount;

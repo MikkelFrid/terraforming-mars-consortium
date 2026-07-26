@@ -1130,6 +1130,14 @@ export enum CardName {
   GUILD_ARBITRATION = 'Guild Arbitration',
   LEDGER_OF_CLAIMS = 'Ledger of Claims',
 
+  // Consortium Corporations
+  SIDERITE_HOLDINGS = 'Siderite Holdings',
+  KEYSTONE_CONSORTIUM = 'Keystone Consortium',
+  RIMWARD_EXPEDITIONS = 'Rimward Expeditions',
+  MASSIF_GROUP = 'Massif Group',
+  IRIDIUM_AUTHORITY = 'Iridium Authority',
+  CHARTER_SYNDICATE = 'Charter Syndicate',
+
   // Underworld Replacement Cards
   STANDARD_TECHNOLOGY_UNDERWORLD = 'Standard Technology:u',
   HACKERS_UNDERWORLD = 'Hackers:u',

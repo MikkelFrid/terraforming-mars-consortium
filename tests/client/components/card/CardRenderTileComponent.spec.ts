@@ -60,4 +60,18 @@ describe('CardRenderTileComponent', () => {
     });
     expect(wrapper.html()).to.include('card-tile-symbol-ejecta-blanket');
   });
+
+  it('renders Massif Group with its card symbol class', () => {
+    const wrapper = shallowMount(CardRenderTileComponent, {
+      ...globalConfig,
+      props: {
+        item: {
+          is: 'tile',
+          tile: TileType.MASSIF_GROUP,
+          hasSymbol: true,
+        },
+      },
+    });
+    expect(wrapper.html()).to.include('card-tile-symbol-massif-group');
+  });
 });

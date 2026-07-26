@@ -73,6 +73,7 @@ export enum TileType {
     BASALT_QUARRY, // 50
     EJECTA_BLANKET, // 51
     PLATEAU_RESERVOIR, // 52
+    MASSIF_GROUP, // 53
   }
 
 export const tileTypeToString: Record<TileType, string> = {
@@ -130,6 +131,7 @@ export const tileTypeToString: Record<TileType, string> = {
   [TileType.BASALT_QUARRY]: CardName.BASALT_QUARRY,
   [TileType.EJECTA_BLANKET]: CardName.EJECTA_BLANKET,
   [TileType.PLATEAU_RESERVOIR]: CardName.PLATEAU_RESERVOIR,
+  [TileType.MASSIF_GROUP]: CardName.MASSIF_GROUP,
 } as const;
 
 export const HAZARD_TILES = new Set([TileType.DUST_STORM_MILD, TileType.DUST_STORM_SEVERE, TileType.EROSION_MILD, TileType.EROSION_SEVERE]);

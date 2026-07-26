@@ -1,4 +1,5 @@
 import {Tag} from '../../common/cards/Tag';
+import {CardName} from '../../common/cards/CardName';
 import {MEGASTRUCTURE_BALANCE as BALANCE} from '../../common/consortium/MegastructureConstants';
 import {displayName, MegastructureKind} from '../../common/consortium/MegastructureKind';
 import {Resource} from '../../common/Resource';
@@ -47,6 +48,13 @@ const bridgeEffect: MegastructureOnComplete = {
     }
     unlockBridgeSector(game.board.spaces, sector);
     logGlobal(game, structure, `opens sector ${sector} (frontier unlocked, chasms → land)`);
+    // Rimward Expeditions: free-rider payout for every owner, contributor or not.
+    for (const player of game.playersInGenerationOrder) {
+      if (player.tableau.has(CardName.RIMWARD_EXPEDITIONS)) {
+        player.stock.add(Resource.MEGACREDITS, BALANCE.RIMWARD_BRIDGE_COMPLETE_MC, {log: true});
+        player.drawCard(1);
+      }
+    }
   },
   perContributor(player, structure, segmentsOwned) {
     const amount = segmentsOwned * BALANCE.BRIDGE_MC_PRODUCTION_PER_SEGMENT;

@@ -8,6 +8,7 @@ import {
 } from '../../common/consortium/MegastructureKind';
 import {CardName} from '../../common/cards/CardName';
 import {Payment} from '../../common/inputs/Payment';
+import {Resource} from '../../common/Resource';
 import {SpaceType} from '../../common/boards/SpaceType';
 import {PlayerId} from '../../common/Types';
 import {Random} from '../../common/utils/Random';
@@ -144,6 +145,9 @@ export class Megastructures {
     let discount = 0;
     if (player.tableau.has(CardName.SITE_FOREMAN)) {
       discount += BALANCE.SITE_FOREMAN_DISCOUNT;
+    }
+    if (player.tableau.has(CardName.KEYSTONE_CONSORTIUM)) {
+      discount += BALANCE.KEYSTONE_CONSORTIUM_DISCOUNT;
     }
     discount += player.nextMegastructureSegmentDiscount;
     return discount;
@@ -389,6 +393,10 @@ export class Megastructures {
       const rights = player.tableau.get(CardName.KEYSTONE_RIGHTS);
       if (rights !== undefined && rights.data !== true) {
         rights.data = true;
+      }
+      // Keystone Consortium: +1 M€ production when placing a keystone.
+      if (player.tableau.has(CardName.KEYSTONE_CONSORTIUM)) {
+        player.production.add(Resource.MEGACREDITS, 1, {log: true});
       }
       this.complete(player.game, structure, player);
     }

@@ -174,6 +174,9 @@ const TILE_CLASSES: Record<TileType, Classes> = {
   [TileType.PLATEAU_RESERVOIR]: {
     symbol: 'card-tile-symbol-plateau-reservoir',
   },
+  [TileType.MASSIF_GROUP]: {
+    symbol: 'card-tile-symbol-massif-group',
+  },
 };
 
 export default defineComponent({

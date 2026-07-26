@@ -85,4 +85,24 @@ describe('BoardSpaceTile', () => {
     });
     expect(wrapper.classes().some((c) => c.includes('basalt_quarry'))).to.be.true;
   });
+
+  it('renders Massif Group with its board CSS class', () => {
+    const wrapper = shallowMount(BoardSpaceTile, {
+      ...globalConfig,
+      props: {
+        space: {
+          id: '05',
+          x: 4,
+          y: 0,
+          bonus: [],
+          color: 'yellow',
+          tileType: TileType.MASSIF_GROUP,
+          spaceType: SpaceType.HIGHLAND,
+          highlight: undefined,
+        },
+        aresExtension: false,
+      },
+    });
+    expect(wrapper.classes().some((c) => c.includes('massif_group'))).to.be.true;
+  });
 });
