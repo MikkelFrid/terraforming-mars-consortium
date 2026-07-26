@@ -1,15 +1,14 @@
-import {MEGASTRUCTURE_BALANCE as BALANCE} from '../../common/consortium/MegastructureConstants';
-import {displayName} from '../../common/consortium/MegastructureKind';
 import {Color} from '../../common/Color';
 import {
   MegastructureIneligibility,
   MegastructureModel,
   MegastructuresModel,
 } from '../../common/models/MegastructuresModel';
+import {displayName} from '../../common/consortium/MegastructureKind';
 import {IGame} from '../IGame';
 import {IPlayer} from '../IPlayer';
 import {Megastructure, Megastructures} from '../consortium/Megastructures';
-import {MEGASTRUCTURE_EFFECTS} from '../consortium/MegastructureEffects';
+import {completionEffectSummary} from '../consortium/MegastructureEffects';
 
 function ineligibilityFor(
   player: IPlayer | undefined,
@@ -34,20 +33,7 @@ function completionGrantedText(structure: Megastructure): string | undefined {
   if (!structure.completed) {
     return undefined;
   }
-  const effect = MEGASTRUCTURE_EFFECTS[structure.kind];
-  // Stub labels until phase 6c fills real effects — mirror MegastructureEffects.
-  void effect;
-  const labels: Record<string, string> = {
-    bridge: 'Unlocks frontier (stub)',
-    space_elevator: 'Space Elevator effect (stub)',
-    l1_magnetic_shield: 'L1 Magnetic Shield effect (stub)',
-    mohole: 'Mohole effect (stub)',
-    solar_mirror: 'Solar Mirror effect (stub)',
-    arcology: 'Arcology effect (stub)',
-  };
-  const global = labels[structure.kind] ?? 'Global effect (stub)';
-  return `${global}. Contributors: ${BALANCE.VP_PER_SEGMENT} VP/segment` +
-    ` + ${BALANCE.VP_KEYSTONE_BONUS} VP keystone bonus.`;
+  return completionEffectSummary(structure.kind, structure.sector);
 }
 
 function toModel(
@@ -78,19 +64,25 @@ function toModel(
     }
   }
 
+  const keystoneMinIridium = Megastructures.keystoneMinIridium(structure);
   return {
     id: structure.id,
     kind: structure.kind,
     name: displayName(structure.kind, structure.sector),
     sector: structure.sector,
-    segments: structure.segments.map((seg, idx) => ({
-      ownerColor: seg.owner !== undefined ? game.getPlayerById(seg.owner).color : undefined,
-      isKeystone: Megastructures.isKeystone(structure, idx),
-    })),
+    segments: structure.segments.map((seg, idx) => {
+      const isKeystone = Megastructures.isKeystone(structure, idx);
+      return {
+        ownerColor: seg.owner !== undefined ? game.getPlayerById(seg.owner).color : undefined,
+        isKeystone,
+        keystoneMinIridium: isKeystone ? keystoneMinIridium : undefined,
+      };
+    }),
     completed: structure.completed,
     nextSegmentCost: next >= 0 ? Megastructures.segmentCostMc(structure, next) : undefined,
     nextIsKeystone,
-    keystoneMinIridium: Megastructures.keystoneMinIridium(structure),
+    nextMinIridium: nextIsKeystone ? keystoneMinIridium : 0,
+    keystoneMinIridium,
     canContribute,
     ineligibility: ineligibilityFor(viewer, structure),
     contributors: Array.from(byPlayer.values()),

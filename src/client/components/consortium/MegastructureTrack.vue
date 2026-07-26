@@ -14,11 +14,7 @@
         <span class="megastructure-track__name" data-test="structure-name" v-i18n>{{ structure.name }}</span>
         <span v-if="structure.completed" class="megastructure-track__complete-badge" data-test="complete-badge" v-i18n>Complete</span>
         <span v-else class="megastructure-track__cost" data-test="next-cost">
-          <span v-i18n>Next</span>: {{ structure.nextSegmentCost }} M€
-          <template v-if="structure.nextIsKeystone">
-            · <span class="megastructure-track__keystone-label" data-test="keystone-cost" v-i18n>Keystone</span>
-            (min {{ structure.keystoneMinIridium }} <span v-i18n>iridium</span>)
-          </template>
+          <span v-i18n>Next</span>: {{ nextCostLabel }}
         </span>
       </div>
 
@@ -30,9 +26,15 @@
           :class="segmentClasses(seg)"
           :data-test="seg.isKeystone ? 'segment-keystone' : 'segment'"
           :data-owner-color="seg.ownerColor || ''"
-          :title="seg.isKeystone ? 'Keystone' : ('Segment ' + (idx + 1))"
+          :data-keystone-iridium="seg.isKeystone ? String(seg.keystoneMinIridium ?? structure.keystoneMinIridium) : undefined"
+          :title="segmentTitle(seg, idx)"
         >
           <i v-if="seg.ownerColor" :class="'board-cube board-cube--' + seg.ownerColor"></i>
+          <span
+            v-if="seg.isKeystone"
+            class="megastructure-segment__iridium"
+            data-test="keystone-iridium"
+          >{{ seg.keystoneMinIridium ?? structure.keystoneMinIridium }} Ir</span>
         </div>
       </div>
 
@@ -91,6 +93,18 @@ export default defineComponent({
     },
   },
   emits: ['contribute'],
+  computed: {
+    nextCostLabel(): string {
+      const cost = this.structure.nextSegmentCost;
+      if (cost === undefined) {
+        return '';
+      }
+      if (this.structure.nextIsKeystone || this.structure.nextMinIridium > 0) {
+        return `${cost} M€ + min ${this.structure.keystoneMinIridium} iridium (keystone)`;
+      }
+      return `${cost} M€`;
+    },
+  },
   methods: {
     segmentClasses(seg: MegastructureSegmentModel): Array<string> {
       const classes = ['megastructure-segment'];
@@ -104,6 +118,13 @@ export default defineComponent({
         classes.push('megastructure-segment--empty');
       }
       return classes;
+    },
+    segmentTitle(seg: MegastructureSegmentModel, idx: number): string {
+      if (seg.isKeystone) {
+        const min = seg.keystoneMinIridium ?? this.structure.keystoneMinIridium;
+        return `Keystone (min ${min} iridium)`;
+      }
+      return 'Segment ' + (idx + 1);
     },
     ineligibilityText(reason: MegastructureIneligibility): string {
       switch (reason) {

@@ -8,6 +8,8 @@ export type MegastructureSegmentModel = {
   /** Player colour of the owner, or undefined if empty. */
   ownerColor: Color | undefined;
   isKeystone: boolean;
+  /** Present on the keystone cell so the iridium gate is visible before it is next. */
+  keystoneMinIridium?: number;
 };
 
 export type MegastructureContributorModel = {
@@ -28,6 +30,8 @@ export type MegastructureModel = {
   /** Cost of the next empty segment in M€; undefined when complete. */
   nextSegmentCost: number | undefined;
   nextIsKeystone: boolean;
+  /** Min iridium required if the next segment is the keystone; else 0. */
+  nextMinIridium: number;
   keystoneMinIridium: number;
   /** Viewing-player eligibility (false for spectators). */
   canContribute: boolean;

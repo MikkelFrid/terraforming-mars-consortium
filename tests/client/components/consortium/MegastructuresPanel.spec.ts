@@ -13,11 +13,12 @@ function fiveStructures(overrides?: Partial<MegastructuresModel['structures'][0]
       {ownerColor: undefined, isKeystone: false},
       {ownerColor: undefined, isKeystone: false},
       {ownerColor: undefined, isKeystone: false},
-      {ownerColor: undefined, isKeystone: true},
+      {ownerColor: undefined, isKeystone: true, keystoneMinIridium: 2},
     ],
     completed: false,
     nextSegmentCost: 12,
     nextIsKeystone: false,
+    nextMinIridium: 0,
     keystoneMinIridium: 2,
     canContribute: true,
     ineligibility: undefined,
@@ -41,9 +42,11 @@ function fiveStructures(overrides?: Partial<MegastructuresModel['structures'][0]
           {ownerColor: undefined, isKeystone: false},
           {ownerColor: undefined, isKeystone: false},
           {ownerColor: undefined, isKeystone: false},
-          {ownerColor: undefined, isKeystone: true},
+          {ownerColor: undefined, isKeystone: true, keystoneMinIridium: 3},
         ],
         nextSegmentCost: 16,
+        nextMinIridium: 0,
+        keystoneMinIridium: 3,
         canContribute: false,
         ineligibility: 'missing_foundation',
       },
@@ -56,16 +59,19 @@ function fiveStructures(overrides?: Partial<MegastructuresModel['structures'][0]
         segments: Array.from({length: 6}, (_, i) => ({
           ownerColor: 'blue' as const,
           isKeystone: i === 5,
+          keystoneMinIridium: i === 5 ? 3 : undefined,
         })),
         completed: true,
         nextSegmentCost: undefined,
         nextIsKeystone: false,
+        nextMinIridium: 0,
+        keystoneMinIridium: 3,
         canContribute: false,
         ineligibility: 'completed',
         contributors: [
           {color: 'blue', name: 'Blue', count: 6, keystone: true},
         ],
-        completionGranted: 'Mohole effect (stub). Contributors: 1 VP/segment + 2 VP keystone bonus.',
+        completionGranted: 'All: +1 heat prod. Contributors: iridium now + each generation.',
       },
     ],
   };
@@ -112,7 +118,7 @@ describe('MegastructuresPanel', () => {
     expect(elevator.find('.board-cube--red').exists()).is.true;
   });
 
-  it('marks the keystone segment as distinguishable', () => {
+  it('marks the keystone segment as distinguishable and shows its iridium requirement', () => {
     PreferencesManager.INSTANCE.set('show_megastructure_details', true);
     const wrapper = mount(MegastructuresPanel, {
       ...globalConfig,
@@ -125,12 +131,42 @@ describe('MegastructuresPanel', () => {
     const keystone = bridge.find('[data-test="segment-keystone"]');
     expect(keystone.exists()).is.true;
     expect(keystone.classes()).to.include('megastructure-segment--keystone');
+    expect(keystone.find('[data-test="keystone-iridium"]').text()).to.include('2 Ir');
+    // Next cost is ordinary (not keystone) but still lists plain M€.
+    expect(bridge.find('[data-test="next-cost"]').text()).to.match(/12 M€/);
+    expect(bridge.find('[data-test="next-cost"]').text()).to.not.include('iridium');
     // Ordinary segments lack the keystone class.
     const ordinary = bridge.findAll('[data-test="segment"]');
     expect(ordinary.length).to.be.greaterThan(0);
     ordinary.forEach((seg) => {
       expect(seg.classes()).to.not.include('megastructure-segment--keystone');
     });
+  });
+
+  it('shows full next cost including iridium when the next segment is the keystone', () => {
+    PreferencesManager.INSTANCE.set('show_megastructure_details', true);
+    const model = fiveStructures({
+      nextSegmentCost: 8,
+      nextIsKeystone: true,
+      nextMinIridium: 2,
+      segments: [
+        {ownerColor: 'blue', isKeystone: false},
+        {ownerColor: 'blue', isKeystone: false},
+        {ownerColor: 'red', isKeystone: false},
+        {ownerColor: undefined, isKeystone: true, keystoneMinIridium: 2},
+      ],
+    });
+    const wrapper = mount(MegastructuresPanel, {
+      ...globalConfig,
+      props: {
+        megastructures: model,
+        preferences: PreferencesManager.INSTANCE.values(),
+      },
+    });
+    const cost = wrapper.find('[data-test="megastructure-bridge-0"] [data-test="next-cost"]');
+    expect(cost.text()).to.include('8 M€');
+    expect(cost.text()).to.include('min 2 iridium');
+    expect(cost.text()).to.include('keystone');
   });
 
   it('displays ineligibility reason when the viewer cannot contribute', () => {

@@ -53,7 +53,7 @@ describe('Consortium megastructures model', () => {
     expect(done.completed).is.true;
     expect(done.contributors[0].count).eq(4);
     expect(done.contributors[0].keystone).is.true;
-    expect(done.completionGranted).to.include('stub');
+    expect(done.completionGranted).to.include('Opens sector');
   });
 
   it('ServerModel embeds megastructures for the viewing player', () => {
