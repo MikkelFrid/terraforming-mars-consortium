@@ -15,6 +15,7 @@ Produces:
     assets/hex_crater_field.png      46x50  RGBA
     assets/hex_highland.png          46x50  RGBA
     assets/resources/iridium.png     331x331 RGBA
+    assets/consortium/megastructures/*.png  116x116 RGBA (8 placeholders)
 
 Design constraints, derived from the existing game assets:
 
@@ -227,6 +228,79 @@ def build_iridium(path):
     img.save(path)
 
 
+# --------------------------------------------------------- megastructure emblems
+#
+# Locked paths and size (phase 07). Do not rename or resize — real artwork
+# replaces the placeholder shapes in a follow-up while keeping these paths:
+#
+#   assets/consortium/megastructures/bridge-0.png             116x116 RGBA
+#   assets/consortium/megastructures/bridge-1.png             116x116 RGBA
+#   assets/consortium/megastructures/bridge-2.png             116x116 RGBA
+#   assets/consortium/megastructures/space_elevator.png       116x116 RGBA
+#   assets/consortium/megastructures/l1_magnetic_shield.png   116x116 RGBA
+#   assets/consortium/megastructures/mohole.png                116x116 RGBA
+#   assets/consortium/megastructures/solar_mirror.png         116x116 RGBA
+#   assets/consortium/megastructures/arcology.png             116x116 RGBA
+
+MEGASTRUCTURE_EMBLEM_DIR = os.path.join(ASSET_DIR, 'consortium', 'megastructures')
+MEGASTRUCTURE_EMBLEM_SIZE = 116
+
+# (filename stem, fill RGB, shape)
+# Shapes are plain geometry — distinct colours only. Real emblems later.
+_MEGASTRUCTURE_PLACEHOLDERS = (
+    ('bridge-0', (70, 130, 180), 'triangle'),       # steel blue
+    ('bridge-1', (60, 110, 160), 'triangle'),       # deeper blue
+    ('bridge-2', (50, 90, 140), 'triangle'),        # navy
+    ('space_elevator', (200, 160, 60), 'rect'),     # gold
+    ('l1_magnetic_shield', (120, 90, 180), 'diamond'),  # violet
+    ('mohole', (180, 90, 50), 'circle'),            # rust
+    ('solar_mirror', (220, 200, 80), 'hex'),        # yellow
+    ('arcology', (80, 150, 100), 'pentagon'),       # green
+)
+
+
+def build_megastructure_emblem(path, rgb, shape):
+    """116x116 circular badge with a plain coloured geometric glyph."""
+    size = MEGASTRUCTURE_EMBLEM_SIZE
+    img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    cx = cy = size / 2
+    r = size / 2 - 2
+    # Dark plate (matches tag style: inscribed circle, transparent corners).
+    d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=(40, 44, 52, 255),
+              outline=(10, 12, 16, 255))
+    gr = r * 0.55
+    fill = rgb + (255,)
+    outline = (20, 22, 28, 255)
+    if shape == 'triangle':
+        pts = [(cx, cy - gr), (cx + gr * 0.9, cy + gr * 0.7),
+               (cx - gr * 0.9, cy + gr * 0.7)]
+        d.polygon(pts, fill=fill, outline=outline)
+    elif shape == 'rect':
+        d.rectangle([cx - gr * 0.55, cy - gr, cx + gr * 0.55, cy + gr],
+                    fill=fill, outline=outline)
+    elif shape == 'diamond':
+        pts = [(cx, cy - gr), (cx + gr, cy), (cx, cy + gr), (cx - gr, cy)]
+        d.polygon(pts, fill=fill, outline=outline)
+    elif shape == 'circle':
+        d.ellipse([cx - gr, cy - gr, cx + gr, cy + gr], fill=fill, outline=outline)
+    elif shape == 'hex':
+        pts = []
+        for i in range(6):
+            a = math.radians(-90 + i * 60)
+            pts.append((cx + gr * math.cos(a), cy + gr * math.sin(a)))
+        d.polygon(pts, fill=fill, outline=outline)
+    elif shape == 'pentagon':
+        pts = []
+        for i in range(5):
+            a = math.radians(-90 + i * 72)
+            pts.append((cx + gr * math.cos(a), cy + gr * math.sin(a)))
+        d.polygon(pts, fill=fill, outline=outline)
+    else:
+        raise ValueError(f'unknown shape {shape}')
+    img.save(path)
+
+
 # --------------------------------------------------------------------- main
 
 def main():
@@ -234,6 +308,7 @@ def main():
         sys.exit(f'missing {HEX_SRC} — run from the repository root')
     os.makedirs(TAG_DIR, exist_ok=True)
     os.makedirs(RESOURCE_DIR, exist_ok=True)
+    os.makedirs(MEGASTRUCTURE_EMBLEM_DIR, exist_ok=True)
 
     build_tag(os.path.join(TAG_DIR, 'structure.png'),
               (74, 104, 122), (128, 158, 174),
@@ -256,13 +331,20 @@ def main():
 
     build_iridium(os.path.join(RESOURCE_DIR, 'iridium.png'))
 
+    emblem_paths = []
+    for stem, rgb, shape in _MEGASTRUCTURE_PLACEHOLDERS:
+        rel = f'assets/consortium/megastructures/{stem}.png'
+        build_megastructure_emblem(os.path.join(ROOT, rel), rgb, shape)
+        emblem_paths.append(rel)
+
     print('generated:')
     for p in ('assets/tags/structure.png', 'assets/tags/prospecting.png',
               'assets/hex_chasm.png', 'assets/hex_crater_field.png',
-              'assets/hex_highland.png', 'assets/resources/iridium.png'):
+              'assets/hex_highland.png', 'assets/resources/iridium.png',
+              *emblem_paths):
         f = os.path.join(ROOT, p)
         im = Image.open(f)
-        print(f'  {p:34} {im.size[0]}x{im.size[1]} {im.mode} '
+        print(f'  {p:52} {im.size[0]}x{im.size[1]} {im.mode} '
               f'{os.path.getsize(f)} bytes')
 
 
