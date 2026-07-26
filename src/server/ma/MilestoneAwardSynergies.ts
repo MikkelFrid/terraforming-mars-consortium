@@ -553,7 +553,7 @@ const synergiesData: Array<[MilestoneName | AwardName, MilestoneName | AwardName
   // ['Excavator', 'Edgedancer', 9],
 
   // Consortium — high overlap pairs for fan/random MA
-  ['C. Architect', 'C. Founder', 9],
+  ['Mason', 'Underwriter', 9],
   ['Pathfinder', 'Cartographer', 9],
   ['Assayer', 'Refiner', 2],
 ];

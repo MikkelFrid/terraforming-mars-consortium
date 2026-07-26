@@ -69,8 +69,8 @@ export const awardNames = [
   'Kingpin',
   'Excavator',
 
-  // Consortium (Founder is taken by modular/TC Nova → C. Founder)
-  'C. Founder',
+  // Consortium
+  'Underwriter',
   'Cartographer',
   'Refiner',
 
@@ -100,6 +100,9 @@ export const AWARD_RENAMES = new Map<string, AwardName>([
 
   // TODO(yournamehere): remove after 2026-04-05
   // ['EdgeLord', 'Excavator'],
+
+  // TODO(consortium): remove after 2026-10-01
+  ['C. Founder', 'Underwriter'],
 ]);
 
 export function maybeRenamedAward(name: string): AwardName {

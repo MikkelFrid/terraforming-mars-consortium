@@ -1,14 +1,14 @@
 import {expect} from 'chai';
-import {ConsortiumFounder} from '../../../src/server/awards/consortium/ConsortiumFounder';
+import {Underwriter} from '../../../src/server/awards/consortium/Underwriter';
 import {testGame} from '../../TestGame';
 import {BoardName} from '../../../src/common/boards/BoardName';
 import {Payment} from '../../../src/common/inputs/Payment';
 import {Megastructures} from '../../../src/server/consortium/Megastructures';
 import {MEGASTRUCTURE_BALANCE as BALANCE} from '../../../src/common/consortium/MegastructureConstants';
 
-describe('ConsortiumFounder', () => {
+describe('Underwriter', () => {
   it('scores megastructure segments contributed and reports ties', () => {
-    const award = new ConsortiumFounder();
+    const award = new Underwriter();
     const [game, p1, p2] = testGame(2, {consortiumExpansion: true, boardName: BoardName.CONSORTIUM});
     p1.megaCredits = 200;
     p2.megaCredits = 200;

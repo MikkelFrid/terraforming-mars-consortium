@@ -86,7 +86,7 @@ export const MEGASTRUCTURE_BALANCE = {
  * tune in phase 8. See docs/consortium/10-structure-cards.md.
  */
 export const CONSORTIUM_MA_BALANCE = {
-  /** C. Architect: total segments contributed. Balance knob. */
+  /** Mason: total segments contributed. Balance knob. */
   ARCHITECT_SEGMENTS: 5,
   /** Pathfinder: owned tiles in frontier zones (space.bridge set). Balance knob. */
   PATHFINDER_FRONTIER_TILES: 3,

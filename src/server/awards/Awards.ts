@@ -58,7 +58,7 @@ import {AwardName} from '../../common/ma/AwardName';
 import {MAManifest} from '../ma/MAManifest';
 import {Suburbian} from './modular/Suburbian';
 import {Blacksmith} from './Blacksmith';
-import {ConsortiumFounder} from './consortium/ConsortiumFounder';
+import {Underwriter} from './consortium/Underwriter';
 import {Cartographer} from './consortium/Cartographer';
 import {Refiner} from './consortium/Refiner';
 
@@ -73,8 +73,8 @@ export const awardManifest: MAManifest<AwardName, IAward> = {
     'Biologist': {Factory: Biologist, random: 'both'},
     'Blacksmith': {Factory: Blacksmith},
     'Botanist': {Factory: Botanist, random: 'both'},
-    'C. Founder': {Factory: ConsortiumFounder},
     'Cartographer': {Factory: Cartographer},
+    'Underwriter': {Factory: Underwriter},
     'Celebrity': {Factory: Celebrity, random: 'both'},
     'Collector': {Factory: Collector, random: 'modular'},
     'Constructor': {Factory: Constructor, compatibility: 'colonies', random: 'modular'},
@@ -136,7 +136,7 @@ export const awardManifest: MAManifest<AwardName, IAward> = {
     [BoardName.VASTITAS_BOREALIS_NOVA]: ['Traveller', 'Landscaper', 'Highlander', 'Promoter', 'Blacksmith'],
     [BoardName.TERRA_CIMMERIA_NOVA]: ['Electrician', 'Founder', 'Mogul', 'A. Zoologist', 'Forecaster'],
     [BoardName.HOLLANDIA]: [],
-    [BoardName.CONSORTIUM]: ['C. Founder', 'Cartographer', 'Refiner'],
+    [BoardName.CONSORTIUM]: ['Underwriter', 'Cartographer', 'Refiner'],
   },
   expansions: {
     venus: ['Venuphile'],

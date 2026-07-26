@@ -72,8 +72,8 @@ export const milestoneNames = [
   'Tunneler',
   'Risktaker',
 
-  // Consortium (Architect is taken by Terra Cimmeria Nova → C. Architect)
-  'C. Architect',
+  // Consortium
+  'Mason',
   'Pathfinder',
   'Assayer',
 
@@ -114,6 +114,9 @@ const MILESTONE_RENAMES = new Map<string, MilestoneName>([
 
   // TODO(yournamehere): remove after 2021-04-05
   // ['Electrician', 'V. Electrician'],
+
+  // TODO(consortium): remove after 2026-10-01
+  ['C. Architect', 'Mason'],
 ]);
 
 export function maybeRenamedMilestone(name: string): MilestoneName {

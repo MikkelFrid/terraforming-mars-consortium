@@ -42,20 +42,18 @@ Consortium had none. Fixed board registration follows other maps
 (`milestoneManifest.boards` / `awardManifest.boards` +
 `MilestoneAwardSelector` `NONE` switch for `BoardName.CONSORTIUM`).
 
-### Name collisions
+### Names
 
-| Design name | Taken by | Display name used |
-|-------------|----------|-------------------|
-| Architect | Terra Cimmeria Nova | **C. Architect** |
-| Founder | Modular / TC Nova | **C. Founder** |
-
-Pathfinder, Assayer, Cartographer, Refiner were free.
+Architect / Founder collided with existing MAs. Final names are crafts/roles
+in the game's own register: **Mason** (milestone), **Underwriter** (award).
+Pathfinder, Assayer, Cartographer, Refiner were free. Save renames map
+`C. Architect`→`Mason` and `C. Founder`→`Underwriter`.
 
 ### Milestones
 
 | Name | Rule | Threshold constant |
 |------|------|--------------------|
-| C. Architect | Total segments contributed | `CONSORTIUM_MA_BALANCE.ARCHITECT_SEGMENTS` **= 5** |
+| Mason | Total segments contributed | `CONSORTIUM_MA_BALANCE.ARCHITECT_SEGMENTS` **= 5** |
 | Pathfinder | Owned tiles with `space.bridge` set | `PATHFINDER_FRONTIER_TILES` **= 3** |
 | Assayer | Prospecting + Structure tags | `ASSAYER_TAG_TOTAL` **= 6** |
 
@@ -63,7 +61,7 @@ Pathfinder, Assayer, Cartographer, Refiner were free.
 
 | Name | Score |
 |------|-------|
-| C. Founder | Most megastructure segments contributed |
+| Underwriter | Most megastructure segments contributed |
 | Cartographer | Most owned tiles in frontier zones |
 | Refiner | Most iridium spent over the game (`player.iridiumSpent`) |
 
@@ -79,7 +77,7 @@ All three milestone thresholds live in
 | `ASSAYER_TAG_TOTAL` | 6 | Half of the 24 Consortium project cards' tag pool; mid-game |
 
 Awards have no numeric threshold (relative). Synergy weights for fan/random MA:
-`C. Architect`↔`C. Founder` 9, `Pathfinder`↔`Cartographer` 9, `Assayer`↔`Refiner` 2
+`Mason`↔`Underwriter` 9, `Pathfinder`↔`Cartographer` 9, `Assayer`↔`Refiner` 2
 in `MilestoneAwardSynergies.ts`.
 
 ### Iridium spent tracking

@@ -70,7 +70,7 @@ import {Tycoon10} from './modular/Tycoon10';
 import {Trader} from './modular/Trader';
 import {Tactician4} from './modular/Tactician4';
 import {Briber} from './Briber';
-import {ConsortiumArchitect} from './consortium/ConsortiumArchitect';
+import {Mason} from './consortium/Mason';
 import {Pathfinder} from './consortium/Pathfinder';
 import {Assayer} from './consortium/Assayer';
 
@@ -82,7 +82,6 @@ export const milestoneManifest: MAManifest<MilestoneName, IMilestone> = {
     'Briber': {Factory: Briber, random: 'modular'},
     'Builder': {Factory: Builder},
     'Builder7': {Factory: Builder7, random: 'modular'},
-    'C. Architect': {Factory: ConsortiumArchitect},
     'C. Forester': {Factory: CForester},
     'Capitalist': {Factory: Capitalist},
     'Coastguard': {Factory: Coastguard, random: 'modular'},
@@ -163,7 +162,7 @@ export const milestoneManifest: MAManifest<MilestoneName, IMilestone> = {
     [BoardName.VASTITAS_BOREALIS_NOVA]: ['Agronomist', 'V. Spacefarer', 'Geologist', 'Engineer', 'Farmer'],
     [BoardName.TERRA_CIMMERIA_NOVA]: ['Planetologist', 'Architect', 'Coastguard', 'C. Forester', 'Fundraiser'],
     [BoardName.HOLLANDIA]: [],
-    [BoardName.CONSORTIUM]: ['C. Architect', 'Pathfinder', 'Assayer'],
+    [BoardName.CONSORTIUM]: ['Mason', 'Pathfinder', 'Assayer'],
   },
   expansions: {
     venus: ['Hoverlord'],
