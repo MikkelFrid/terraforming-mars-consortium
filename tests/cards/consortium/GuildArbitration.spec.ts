@@ -13,8 +13,9 @@ describe('GuildArbitration', () => {
     const [/* game */, player] = testGame(2, {consortiumExpansion: true, boardName: BoardName.CONSORTIUM});
     expect(card.canPlay(player)).is.false;
 
-    // Card itself has 1 Earth tag; need 2 more already in play.
+    // Tag requirements count tableau only (not the card being played).
     player.playedCards.push(
+      fakeCard({tags: [Tag.EARTH], type: CardType.AUTOMATED}),
       fakeCard({tags: [Tag.EARTH], type: CardType.AUTOMATED}),
       fakeCard({tags: [Tag.EARTH], type: CardType.AUTOMATED}),
     );

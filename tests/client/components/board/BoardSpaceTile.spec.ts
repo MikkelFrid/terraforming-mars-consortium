@@ -65,4 +65,24 @@ describe('BoardSpaceTile', () => {
     });
     expect(wrapper.classes().some((c) => c.includes('trailhead_camp'))).to.be.true;
   });
+
+  it('renders Basalt Quarry with its board CSS class', () => {
+    const wrapper = shallowMount(BoardSpaceTile, {
+      ...globalConfig,
+      props: {
+        space: {
+          id: '04',
+          x: 3,
+          y: 0,
+          bonus: [],
+          color: 'red',
+          tileType: TileType.BASALT_QUARRY,
+          spaceType: SpaceType.HIGHLAND,
+          highlight: undefined,
+        },
+        aresExtension: false,
+      },
+    });
+    expect(wrapper.classes().some((c) => c.includes('basalt_quarry'))).to.be.true;
+  });
 });

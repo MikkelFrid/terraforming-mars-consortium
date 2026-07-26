@@ -17,7 +17,9 @@ describe('MineralRights', () => {
     game.iridiumBank = 10;
 
     const crater = game.board.spaces.find((s) =>
-      s.spaceType === SpaceType.CRATER_FIELD && s.tile === undefined)!;
+      s.spaceType === SpaceType.CRATER_FIELD &&
+      s.tile === undefined &&
+      s.locked !== true)!;
     game.addTile(player, crater, {tileType: TileType.CITY});
     expect(player.iridium).eq(1);
     expect(player.megaCredits).eq(1);

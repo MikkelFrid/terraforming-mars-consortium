@@ -15,9 +15,10 @@ describe('CraterSifting', () => {
     expect(card.canPlay(player)).is.false;
 
     const crater = game.board.spaces.find((s) =>
-      s.spaceType === SpaceType.CRATER_FIELD && s.tile === undefined)!;
+      s.spaceType === SpaceType.CRATER_FIELD &&
+      s.tile === undefined &&
+      s.locked !== true)!;
     game.addTile(player, crater, {tileType: TileType.CITY});
-    // Placement also grants 1 crater iridium
     const before = player.iridium;
     expect(card.canPlay(player)).is.true;
 

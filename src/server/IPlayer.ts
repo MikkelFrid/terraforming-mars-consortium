@@ -354,7 +354,7 @@ export interface IPlayer {
   getPlayableCards(): Array<IProjectCard>;
   canPlay(card: IProjectCard): boolean;
   canSpend(payment: Payment, reserveUnits?: Units): boolean;
-  payingAmount(payment: Payment, options?: Partial<PaymentOptions>): number;
+  payingAmount(payment: Payment, options?: Partial<PaymentOptions> & {steelRate?: number}): number;
   /**
    * Returns a summary of how much a player would have to spend to play a card,
    * any associated costs, and ways the player can pay.

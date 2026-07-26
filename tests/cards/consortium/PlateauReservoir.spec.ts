@@ -2,7 +2,7 @@ import {expect} from 'chai';
 import {PlateauReservoir} from '../../../src/server/cards/consortium/PlateauReservoir';
 import {RoboticWorkforce} from '../../../src/server/cards/base/RoboticWorkforce';
 import {testGame} from '../../TestGame';
-import {runAllActions, maxOutOceans} from '../../TestingUtils';
+import {runAllActions} from '../../TestingUtils';
 import {cast} from '../../../src/common/utils/utils';
 import {BoardName} from '../../../src/common/boards/BoardName';
 import {SpaceType} from '../../../src/common/boards/SpaceType';
@@ -16,7 +16,14 @@ describe('PlateauReservoir', () => {
     const card = new PlateauReservoir();
     const [game, player] = testGame(2, {consortiumExpansion: true, boardName: BoardName.CONSORTIUM});
     expect(card.canPlay(player)).is.false;
-    maxOutOceans(player, 3);
+
+    // Consortium has no reserved ocean spaces; place ocean-on-land.
+    const lands = game.board.getAvailableSpacesOnLand(player)
+      .filter((s) => s.spaceType === SpaceType.LAND);
+    expect(lands.length).to.be.at.least(3);
+    for (let i = 0; i < 3; i++) {
+      game.addOcean(player, lands[i]);
+    }
     expect(card.canPlay(player)).is.true;
 
     cast(card.play(player), undefined);

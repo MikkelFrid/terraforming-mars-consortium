@@ -46,4 +46,18 @@ describe('CardRenderTileComponent', () => {
     });
     expect(wrapper.html()).to.include('card-tile-symbol-chasm-descent');
   });
+
+  it('renders Ejecta Blanket with its card symbol class', () => {
+    const wrapper = shallowMount(CardRenderTileComponent, {
+      ...globalConfig,
+      props: {
+        item: {
+          is: 'tile',
+          tile: TileType.EJECTA_BLANKET,
+          hasSymbol: true,
+        },
+      },
+    });
+    expect(wrapper.html()).to.include('card-tile-symbol-ejecta-blanket');
+  });
 });
