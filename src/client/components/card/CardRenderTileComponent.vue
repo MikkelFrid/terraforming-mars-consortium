@@ -153,6 +153,9 @@ const TILE_CLASSES: Record<TileType, Classes> = {
   [TileType.IMPACT_BASIN_CLAIM]: {
     symbol: 'card-tile-symbol-impact-basin-claim',
   },
+  [TileType.HIGHLAND_ANCHOR]: {
+    symbol: 'card-tile-symbol-highland-anchor',
+  },
 };
 
 export default defineComponent({

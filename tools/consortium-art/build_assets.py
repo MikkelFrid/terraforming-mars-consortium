@@ -349,6 +349,32 @@ def build_impact_basin(path):
     out.save(path)
 
 
+def build_highland_anchor(path):
+    """152x152 special-tile icon: warmer industrial_center with an anchor pin."""
+    src = os.path.join(SPECIAL_TILE_DIR, 'industrial_center.png')
+    img = Image.open(src).convert('RGBA')
+    r, g, b, a = img.split()
+    r = r.point(lambda x: min(255, int(x * 1.05 + 8)))
+    g = g.point(lambda x: int(x * 0.88))
+    b = b.point(lambda x: int(x * 0.70))
+    out = Image.merge('RGBA', (r, g, b, a))
+    draw = ImageDraw.Draw(out)
+    w, h = out.size
+    cx, cy = w // 2, h // 2 - 4
+    # Vertical shaft
+    draw.rectangle([cx - 3, cy - 28, cx + 3, cy + 22], fill=(240, 230, 200, 230))
+    # Crossbar
+    draw.rectangle([cx - 16, cy - 8, cx + 16, cy - 2], fill=(240, 230, 200, 230))
+    # Flukes
+    draw.polygon([(cx - 3, cy + 22), (cx - 18, cy + 10), (cx - 3, cy + 14)],
+                 fill=(240, 230, 200, 230))
+    draw.polygon([(cx + 3, cy + 22), (cx + 18, cy + 10), (cx + 3, cy + 14)],
+                 fill=(240, 230, 200, 230))
+    # Ring
+    draw.ellipse([cx - 10, cy - 38, cx + 10, cy - 18], outline=(240, 230, 200, 230), width=3)
+    out.save(path)
+
+
 # --------------------------------------------------------------------- main
 
 def main():
@@ -380,6 +406,7 @@ def main():
 
     build_iridium(os.path.join(RES_DIR, 'iridium.png'))
     build_impact_basin(os.path.join(SPECIAL_TILE_DIR, 'impact_basin.png'))
+    build_highland_anchor(os.path.join(SPECIAL_TILE_DIR, 'highland_anchor.png'))
 
     emblem_paths = []
     for stem, rgb, shape in _MEGASTRUCTURE_PLACEHOLDERS:
@@ -392,6 +419,7 @@ def main():
               'assets/hex_chasm.png', 'assets/hex_crater_field.png',
               'assets/hex_highland.png', 'assets/resources/iridium.png',
               'assets/tiles/special_tile_icons/impact_basin.png',
+              'assets/tiles/special_tile_icons/highland_anchor.png',
               *emblem_paths):
         f = os.path.join(ROOT, p)
         im = Image.open(f)

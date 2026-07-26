@@ -60,6 +60,7 @@ const tileTypeToCssClass: Record<TileType, string> = {
   [TileType.NEW_HOLLAND]: 'new-holland',
   [TileType.NEURAL_INSTANCE]: 'neural-instance',
   [TileType.IMPACT_BASIN_CLAIM]: 'impact_basin_claim',
+  [TileType.HIGHLAND_ANCHOR]: 'highland_anchor',
 };
 
 const tileTypeToCssClassAresOverride = new Map<TileType, string>([
@@ -104,6 +105,7 @@ const descriptions: Record<TileType, string> = {
   [TileType.NEW_HOLLAND]: 'New Holland: counts as an ocean and a city',
   [TileType.NEURAL_INSTANCE]: 'Neural Instance: MarsBot gains VP for adjacent non-human spaces',
   [TileType.IMPACT_BASIN_CLAIM]: 'Impact Basin Claim: special tile on a crater field',
+  [TileType.HIGHLAND_ANCHOR]: 'Highland Anchor: special tile on a highland space',
 };
 
 export default defineComponent({
