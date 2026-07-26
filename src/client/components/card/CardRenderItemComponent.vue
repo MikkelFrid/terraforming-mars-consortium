@@ -137,6 +137,8 @@ export default defineComponent({
         return [cardResource, 'card-resource-titanium'];
       case CardRenderItemType.STEEL:
         return [cardResource, 'card-resource-steel'];
+      case CardRenderItemType.IRIDIUM:
+        return [cardResource, 'card-resource-iridium'];
       case CardRenderItemType.HEAT:
         return [cardResource, 'card-resource-heat'];
       case CardRenderItemType.ENERGY:

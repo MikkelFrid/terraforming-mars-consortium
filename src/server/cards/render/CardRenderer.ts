@@ -200,6 +200,11 @@ abstract class Builder<T> {
     return this._appendToRow(new CardRenderItem(CardRenderItemType.STEEL, amount, options));
   }
 
+  /** Consortium iridium stock (no production). Follows steel/titanium. */
+  public iridium(amount: number, options?: ItemOptions): this {
+    return this._appendToRow(new CardRenderItem(CardRenderItemType.IRIDIUM, amount, options));
+  }
+
   public tr(amount: number, options?: ItemOptions): this {
     return this._appendToRow(new CardRenderItem(CardRenderItemType.TR, amount, options));
   }

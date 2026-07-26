@@ -9,6 +9,8 @@ export enum CardRenderItemType {
   ENERGY = 'energy',
   TITANIUM = 'titanium',
   STEEL = 'steel',
+  /** Consortium iridium stock — not a Units / production resource. */
+  IRIDIUM = 'iridium',
   MEGACREDITS = 'megacredits',
   CARDS = 'cards',
   TAG = 'tag',
