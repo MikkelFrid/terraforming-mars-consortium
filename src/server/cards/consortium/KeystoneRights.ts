@@ -6,6 +6,7 @@ import {CardName} from '../../../common/cards/CardName';
 import {CardRenderer} from '../render/CardRenderer';
 import {IPlayer} from '../../IPlayer';
 import {MEGASTRUCTURE_BALANCE as BALANCE} from '../../../common/consortium/MegastructureConstants';
+import {questionmark} from '../render/DynamicVictoryPoints';
 /**
  * When the owner places a keystone, card.data becomes true (once).
  * Claim is driven from Megastructures.placeSegment.
@@ -31,6 +32,7 @@ export class KeystoneRights extends Card implements IProjectCard {
           });
         }),
         description: 'Requires that you have 1 iridium.',
+        victoryPoints: questionmark(),
       },
     });
   }

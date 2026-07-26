@@ -6,6 +6,7 @@ import {CardName} from '../../../common/cards/CardName';
 import {CardRenderer} from '../render/CardRenderer';
 import {IPlayer} from '../../IPlayer';
 import {Megastructures} from '../../consortium/Megastructures';
+import {questionmark} from '../render/DynamicVictoryPoints';
 
 export class GrandContractor extends Card implements IProjectCard {
   constructor() {
@@ -24,6 +25,7 @@ export class GrandContractor extends Card implements IProjectCard {
           b.vpText('1 VP per megastructure you have contributed at least 2 segments to.');
         }),
         description: 'Requires 3 Structure tags.',
+        victoryPoints: questionmark(),
       },
     });
   }

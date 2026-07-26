@@ -4,6 +4,7 @@ import {ActionCard} from '../ActionCard';
 import {CardType} from '../../../common/cards/CardType';
 import {CardName} from '../../../common/cards/CardName';
 import {CardRenderer} from '../render/CardRenderer';
+import {IPlayer} from '../../IPlayer';
 
 export class SegmentPrefabrication extends ActionCard implements IProjectCard {
   constructor() {
@@ -27,5 +28,10 @@ export class SegmentPrefabrication extends ActionCard implements IProjectCard {
         }),
       },
     });
+  }
+
+  public override bespokeCanAct(player: IPlayer): boolean {
+    // Iridium.grant is a no-op when the bank is empty — refuse to burn steel.
+    return player.game.iridiumBank > 0;
   }
 }
