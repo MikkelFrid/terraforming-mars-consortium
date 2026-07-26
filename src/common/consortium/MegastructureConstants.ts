@@ -79,6 +79,10 @@ export const MEGASTRUCTURE_BALANCE = {
   // --- Keystone Rights -----------------------------------------------------
   /** Extra end-game VP from Keystone Rights (once). Balance knob. */
   KEYSTONE_RIGHTS_EXTRA_VP: 3,
+
+  // --- Frontier cards ------------------------------------------------------
+  /** Sector Claim: M€ rebate when placing a tile in a frontier zone. Balance knob. */
+  SECTOR_CLAIM_REBATE: 4,
 } as const;
 
 /**

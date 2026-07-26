@@ -1093,6 +1093,18 @@ export enum CardName {
   GRAND_CONTRACTOR = 'Grand Contractor',
   MONUMENT_FINANCING = 'Monument Financing',
 
+  // Consortium Frontier Project Cards
+  TRAILHEAD_CAMP = 'Trailhead Camp',
+  FRONTIER_SURVEY = 'Frontier Survey',
+  RIM_OUTPOST = 'Rim Outpost',
+  CHASM_DESCENT = 'Chasm Descent',
+  OVERLAND_CONVOY = 'Overland Convoy',
+  SECTOR_CLAIM = 'Sector Claim',
+  DEEP_REACH_ROVER = 'Deep Reach Rover',
+  FAR_SIDE_BOOMTOWN = 'Far Side Boomtown',
+  WAYFARER_COMPACT = 'Wayfarer Compact',
+  FRONTIER_CHARTER = 'Frontier Charter',
+
   // Underworld Replacement Cards
   STANDARD_TECHNOLOGY_UNDERWORLD = 'Standard Technology:u',
   HACKERS_UNDERWORLD = 'Hackers:u',

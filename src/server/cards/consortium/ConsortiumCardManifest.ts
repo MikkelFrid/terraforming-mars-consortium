@@ -25,6 +25,16 @@ import {StructuralEngineers} from './StructuralEngineers';
 import {LoadBearingStudy} from './LoadBearingStudy';
 import {GrandContractor} from './GrandContractor';
 import {MonumentFinancing} from './MonumentFinancing';
+import {TrailheadCamp} from './TrailheadCamp';
+import {FrontierSurvey} from './FrontierSurvey';
+import {RimOutpost} from './RimOutpost';
+import {ChasmDescent} from './ChasmDescent';
+import {OverlandConvoy} from './OverlandConvoy';
+import {SectorClaim} from './SectorClaim';
+import {DeepReachRover} from './DeepReachRover';
+import {FarSideBoomtown} from './FarSideBoomtown';
+import {WayfarerCompact} from './WayfarerCompact';
+import {FrontierCharter} from './FrontierCharter';
 
 export const CONSORTIUM_CARD_MANIFEST = new ModuleManifest({
   module: 'consortium',
@@ -53,6 +63,16 @@ export const CONSORTIUM_CARD_MANIFEST = new ModuleManifest({
     [CardName.LOAD_BEARING_STUDY]: {Factory: LoadBearingStudy},
     [CardName.GRAND_CONTRACTOR]: {Factory: GrandContractor},
     [CardName.MONUMENT_FINANCING]: {Factory: MonumentFinancing},
+    [CardName.TRAILHEAD_CAMP]: {Factory: TrailheadCamp},
+    [CardName.FRONTIER_SURVEY]: {Factory: FrontierSurvey},
+    [CardName.RIM_OUTPOST]: {Factory: RimOutpost},
+    [CardName.CHASM_DESCENT]: {Factory: ChasmDescent},
+    [CardName.OVERLAND_CONVOY]: {Factory: OverlandConvoy},
+    [CardName.SECTOR_CLAIM]: {Factory: SectorClaim},
+    [CardName.DEEP_REACH_ROVER]: {Factory: DeepReachRover},
+    [CardName.FAR_SIDE_BOOMTOWN]: {Factory: FarSideBoomtown},
+    [CardName.WAYFARER_COMPACT]: {Factory: WayfarerCompact},
+    [CardName.FRONTIER_CHARTER]: {Factory: FrontierCharter},
   },
   standardProjects: {
     [CardName.CORE_SAMPLING_STANDARD_PROJECT]: {Factory: CoreSamplingStandardProject},

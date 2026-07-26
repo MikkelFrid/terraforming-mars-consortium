@@ -67,6 +67,9 @@ export enum TileType {
     // Consortium
     IMPACT_BASIN_CLAIM, // 45
     HIGHLAND_ANCHOR, // 46
+    TRAILHEAD_CAMP, // 47
+    RIM_OUTPOST, // 48
+    CHASM_DESCENT, // 49
   }
 
 export const tileTypeToString: Record<TileType, string> = {
@@ -118,6 +121,9 @@ export const tileTypeToString: Record<TileType, string> = {
   [TileType.NEURAL_INSTANCE]: 'Neural Instance',
   [TileType.IMPACT_BASIN_CLAIM]: CardName.IMPACT_BASIN_CLAIM,
   [TileType.HIGHLAND_ANCHOR]: CardName.HIGHLAND_ANCHOR,
+  [TileType.TRAILHEAD_CAMP]: CardName.TRAILHEAD_CAMP,
+  [TileType.RIM_OUTPOST]: CardName.RIM_OUTPOST,
+  [TileType.CHASM_DESCENT]: CardName.CHASM_DESCENT,
 } as const;
 
 export const HAZARD_TILES = new Set([TileType.DUST_STORM_MILD, TileType.DUST_STORM_SEVERE, TileType.EROSION_MILD, TileType.EROSION_SEVERE]);
