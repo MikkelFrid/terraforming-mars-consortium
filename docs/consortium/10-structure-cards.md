@@ -102,3 +102,12 @@ in `MilestoneAwardSynergies.ts`.
 | Foundation bypass | `Megastructures.meetsFoundation` + Structural Engineers |
 | Keystone Rights claim | `Megastructures.placeSegment` when keystone |
 | Frontier tiles | `space.bridge !== undefined` + owned tile |
+
+## Acceptance evidence
+
+| Criterion | Result |
+|-----------|--------|
+| Lint (incl. stylelint) | `npm run lint` passed |
+| Server / client tests | **7205** / **453** |
+| Codegen | `make:cards` + `make:css` |
+| Screenshots | `/opt/cursor/artifacts/screenshots/structure-cards-all-fourteen.png`, `consortium-milestones-awards.png`, `consortium-ma-cardlist.png` |
