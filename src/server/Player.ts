@@ -49,6 +49,7 @@ import {Turmoil} from './turmoil/Turmoil';
 import {PathfindersExpansion} from './pathfinders/PathfindersExpansion';
 import {Iridium} from './consortium/Iridium';
 import {Megastructures} from './consortium/Megastructures';
+import {spaceElevatorDiscountFor} from './consortium/MegastructureEffects';
 import {ColoniesHandler} from './colonies/ColoniesHandler';
 import {MonsInsurance} from './cards/promo/MonsInsurance';
 import {InputResponse} from '../common/inputs/InputResponse';
@@ -729,6 +730,9 @@ export class Player implements IPlayer {
     if (card.tags.includes(Tag.SPACE) && PartyHooks.shouldApplyPolicy(this, PartyName.UNITY, 'up04')) {
       cost -= 2;
     }
+
+    // Consortium Space Elevator: all players pay less for space-tag cards.
+    cost -= spaceElevatorDiscountFor(card.tags, this.game);
 
     return Math.max(cost, 0);
   }

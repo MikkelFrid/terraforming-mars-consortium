@@ -912,6 +912,9 @@ export class Game implements IGame, Logger {
       }
     });
 
+    // Consortium Mohole: one iridium per contributing player when the bank has any.
+    Megastructures.grantMoholeGenerationIridium(this);
+
     if (this.gameOptions.draftVariant) {
       this.gotoDraftPhase();
     } else {
@@ -1368,9 +1371,8 @@ export class Game implements IGame, Logger {
       throw new Error('Selected space is unplaceable: ' + space.id);
     }
 
-    // Consortium locked frontier: unplaceable until bridge megastructure completes.
+    // Consortium locked frontier: unplaceable until its bridge completes (clears locked).
     if (space.locked === true) {
-      // TODO(consortium): allow when isFrontierUnlocked(space) once bridges exist.
       throw new Error('Selected space is locked frontier: ' + space.id);
     }
 

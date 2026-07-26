@@ -19,6 +19,7 @@ import {PlayerInput} from '../PlayerInput';
 import {SelectOption} from '../inputs/SelectOption';
 import {VictoryPointsBreakdownBuilder} from '../game/VictoryPointsBreakdownBuilder';
 import {inplaceShuffle} from '../utils/shuffle';
+import {Iridium} from './Iridium';
 import {MEGASTRUCTURE_EFFECTS} from './MegastructureEffects';
 import {
   SerializedMegastructure,
@@ -336,6 +337,7 @@ export class Megastructures {
 
   /**
    * Fold megastructure VP into the breakdown. Incomplete structures score nothing.
+   * Arcology contributors also get ARCOLOGY_EXTRA_VP_PER_SEGMENT on top of the base.
    */
   public static calculateVictoryPoints(player: IPlayer, builder: VictoryPointsBreakdownBuilder): void {
     const data = player.game.megastructuresData;
@@ -351,6 +353,9 @@ export class Megastructures {
         continue;
       }
       let vp = owned * BALANCE.VP_PER_SEGMENT;
+      if (structure.kind === 'arcology') {
+        vp += owned * BALANCE.ARCOLOGY_EXTRA_VP_PER_SEGMENT;
+      }
       if (structure.keystonePlayer === player.id) {
         vp += BALANCE.VP_KEYSTONE_BONUS;
       }
@@ -358,5 +363,35 @@ export class Megastructures {
         builder.setVictoryPoints('victoryPoints', vp, displayName(structure.kind, structure.sector));
       }
     }
+  }
+
+  /**
+   * Mohole per-generation iridium: one grant per contributing player when the
+   * bank has any. No-op if Mohole is incomplete or the bank is empty.
+   * Called from Game.startGeneration.
+   */
+  public static grantMoholeGenerationIridium(game: IGame): void {
+    const data = game.megastructuresData;
+    if (data === undefined) {
+      return;
+    }
+    const mohole = data.structures.find((s) => s.kind === 'mohole' && s.completed);
+    if (mohole === undefined) {
+      return;
+    }
+    const recipients = new Set<PlayerId>();
+    for (const seg of mohole.segments) {
+      if (seg.owner !== undefined) {
+        recipients.add(seg.owner);
+      }
+    }
+    for (const id of recipients) {
+      // Cap is inherent: one call of MOHOLE_GENERATION_IRIDIUM (1) per player per generation.
+      Iridium.grant(game.getPlayerById(id), BALANCE.MOHOLE_GENERATION_IRIDIUM);
+    }
+  }
+
+  public static hasCompleted(game: IGame, kind: MegastructureKind): boolean {
+    return game.megastructuresData?.structures.some((s) => s.kind === kind && s.completed) === true;
   }
 }
