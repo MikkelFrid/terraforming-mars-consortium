@@ -202,8 +202,8 @@ describe('Consortium megastructures', () => {
     expect(restored.iridiumBank).to.be.a('number');
   });
 
-  it('Consortium manifest projectCards stays empty', () => {
-    expect(CONSORTIUM_CARD_MANIFEST.projectCards).to.deep.eq({});
+  it('Consortium manifest registers the Prospecting project cards', () => {
+    expect(Object.keys(CONSORTIUM_CARD_MANIFEST.projectCards)).to.have.length(10);
   });
 
   it('contribute action defers payment with iridium enabled', () => {

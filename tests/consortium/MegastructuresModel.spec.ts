@@ -69,7 +69,7 @@ describe('Consortium megastructures model', () => {
     expect(Server.getPlayerModel(player).game.megastructures).is.undefined;
   });
 
-  it('Consortium manifest projectCards stays empty', () => {
-    expect(CONSORTIUM_CARD_MANIFEST.projectCards).to.deep.eq({});
+  it('Consortium manifest registers the Prospecting project cards', () => {
+    expect(Object.keys(CONSORTIUM_CARD_MANIFEST.projectCards)).to.have.length(10);
   });
 });

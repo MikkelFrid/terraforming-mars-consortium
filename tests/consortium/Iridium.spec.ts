@@ -182,8 +182,8 @@ describe('Consortium iridium', () => {
     expect(sp.canAct(player)).is.false;
   });
 
-  it('consortium manifest has no project cards; Core Sampling is a standard project', () => {
-    expect(Object.keys(CONSORTIUM_CARD_MANIFEST.projectCards)).to.be.empty;
+  it('consortium Core Sampling remains a standard project alongside Prospecting cards', () => {
+    expect(Object.keys(CONSORTIUM_CARD_MANIFEST.projectCards)).to.have.length(10);
     expect(CONSORTIUM_CARD_MANIFEST.standardProjects[CardName.CORE_SAMPLING_STANDARD_PROJECT])
       .to.not.be.undefined;
   });
