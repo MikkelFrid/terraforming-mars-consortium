@@ -58,3 +58,18 @@ the rebate is what the player experiences as “costs 4 less.”
 ## Prior rename (landed on main)
 
 Milestone **Mason** (was C. Architect), award **Underwriter** (was C. Founder).
+
+## Acceptance evidence
+
+- CardName uniqueness: all ten names free before add; verified again after.
+- Lint: `npm run lint` + stylelint clean.
+- Tests: server **7242** (above 7205); client **455** (above 453).
+- Unit coverage: one file per card; Frontier Survey 0/1/2/3 open sectors;
+  open-sector gates; Chasm Descent former-chasm only; RW for Rim Outpost /
+  Far Side Boomtown; client CSS for Trailhead Camp / Chasm Descent tiles.
+- Codegen: `make:cards` / `make:css` rerun.
+- Screenshot: `/opt/cursor/artifacts/screenshots/frontier-cards-all-ten.png`
+  (plus per-card `frontier-card-00`…`09.png`). Note: `/cards?search=frontier`
+  only matches Survey + Charter by name; the stitch covers all ten.
+- Branch: `cursor/consortium-frontier-cards-981e` (cloud naming constraint;
+  equivalent to `feat/consortium-frontier-cards`); **no PR**.

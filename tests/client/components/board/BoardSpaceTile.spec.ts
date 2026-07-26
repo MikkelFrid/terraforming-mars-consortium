@@ -45,4 +45,24 @@ describe('BoardSpaceTile', () => {
     });
     expect(wrapper.classes().some((c) => c.includes('highland_anchor'))).to.be.true;
   });
+
+  it('renders Trailhead Camp with its board CSS class', () => {
+    const wrapper = shallowMount(BoardSpaceTile, {
+      ...globalConfig,
+      props: {
+        space: {
+          id: '03',
+          x: 2,
+          y: 0,
+          bonus: [],
+          color: 'red',
+          tileType: TileType.TRAILHEAD_CAMP,
+          spaceType: SpaceType.LAND,
+          highlight: undefined,
+        },
+        aresExtension: false,
+      },
+    });
+    expect(wrapper.classes().some((c) => c.includes('trailhead_camp'))).to.be.true;
+  });
 });
