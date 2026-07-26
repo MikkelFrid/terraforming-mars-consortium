@@ -13,7 +13,7 @@ import {LogType, keep} from '../../deferredActions/ChooseCards';
 export class AssayRights extends Card implements IProjectCard {
   constructor() {
     super({
-      type: CardType.EVENT,
+      type: CardType.AUTOMATED,
       name: CardName.ASSAY_RIGHTS,
       tags: [Tag.PROSPECTING],
       cost: 9,

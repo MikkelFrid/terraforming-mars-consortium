@@ -42,9 +42,8 @@ from PIL import Image, ImageDraw, ImageFilter
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 HEX_SRC = os.path.join(ROOT, 'assets', 'hex_black.png')
 TAG_DIR = os.path.join(ROOT, 'assets', 'tags')
+RES_DIR = os.path.join(ROOT, 'assets', 'resources')
 ASSET_DIR = os.path.join(ROOT, 'assets')
-RESOURCE_DIR = os.path.join(ROOT, 'assets', 'resources')
-IRIDIUM_SIZE = 331
 
 S, SS = 116, 8
 W = S * SS
@@ -184,48 +183,71 @@ def _contours(img):
 
 
 # ---------------------------------------------------------------- resources
+#
+# Resource icons are 331x331 fully opaque squares with a dark plate, not
+# transparent cut-outs. Steel and titanium both follow that convention, so
+# iridium does too. The chunk is drawn as a hard-edged polyhedron with six
+# facets running bright to dark, because at 48px on a card the silhouette and
+# the facet contrast are the only things that survive - a soft blob reads as a
+# hole in the card rather than as metal.
+
+RES_S, RES_SS = 331, 6
+RES_W = RES_S * RES_SS
+
+_IR_TOP = (0.00, -0.66)
+_IR_UL = (-0.56, -0.20)
+_IR_UR = (0.58, -0.26)
+_IR_LL = (-0.44, 0.44)
+_IR_LR = (0.50, 0.40)
+_IR_BOT = (0.02, 0.68)
+_IR_C = (0.01, -0.03)
+
+_IR_FACETS = [
+    ([_IR_TOP, _IR_UL, _IR_C], (250, 252, 254)),
+    ([_IR_TOP, _IR_C, _IR_UR], (216, 224, 234)),
+    ([_IR_UL, _IR_LL, _IR_C], (188, 198, 210)),
+    ([_IR_UR, _IR_C, _IR_LR], (150, 160, 175)),
+    ([_IR_LL, _IR_BOT, _IR_C], (124, 134, 149)),
+    ([_IR_BOT, _IR_LR, _IR_C], (98, 107, 122)),
+]
+
+
+def _ir_px(p):
+    return (RES_W / 2 + p[0] * RES_W * 0.5,
+            RES_W / 2 + p[1] * RES_W * 0.5)
+
 
 def build_iridium(path):
-    """
-    331x331 iridium resource icon. Black field + cool platinum disc with a
-    faceted crystal highlight so it reads apart from titanium's mid-gray disc.
-    """
-    s = IRIDIUM_SIZE
-    img = Image.new('RGBA', (s, s), (0, 0, 0, 255))
+    img = Image.new('RGBA', (RES_W, RES_W), (0, 0, 0, 255))
     d = ImageDraw.Draw(img)
-    cx = cy = (s - 1) / 2
-    r = s * 0.42
 
-    # Radial cool-metal fill.
-    for y in range(s):
-        for x in range(s):
-            dx, dy = x - cx, y - cy
-            dist = (dx * dx + dy * dy) ** 0.5
-            if dist > r:
-                continue
-            t = dist / r
-            # Upper-left specular.
-            hl = max(0.0, 1.0 - (((dx + r * 0.35) ** 2 + (dy + r * 0.45) ** 2) ** 0.5) / (r * 1.1))
-            base = _lerp((168, 188, 210), (72, 88, 108), t ** 0.9)
-            rgb = _lerp(base, (236, 244, 255), hl * 0.55)
-            img.putpixel((x, y), rgb + (255,))
+    for i in range(140, 0, -1):
+        t = i / 140.0
+        v = int(6 + 30 * (1 - t))
+        r = RES_W * 0.72 * t
+        d.ellipse([RES_W / 2 - r, RES_W / 2 - r, RES_W / 2 + r, RES_W / 2 + r],
+                  fill=(v, v, v + 3, 255))
 
-    # Outer rim.
-    d.ellipse([cx - r, cy - r, cx + r, cy + r], outline=(20, 24, 30, 255), width=max(3, s // 80))
+    body = [_IR_TOP, _IR_UR, _IR_LR, _IR_BOT, _IR_LL, _IR_UL]
+    d.polygon([_ir_px(p) for p in body], fill=(24, 27, 34, 255))
 
-    # Faceted crystal (octagon) — denser white metal core.
-    facet_r = r * 0.38
-    pts = []
-    for i in range(8):
-        a = math.radians(-90 + i * 45)
-        pts.append((cx + facet_r * math.cos(a), cy + facet_r * math.sin(a)))
-    d.polygon(pts, fill=(210, 224, 240, 255), outline=(40, 48, 60, 255))
-    # Inner sparkle.
-    d.ellipse([cx - facet_r * 0.28, cy - facet_r * 0.28,
-               cx + facet_r * 0.28, cy + facet_r * 0.28],
-              fill=(248, 252, 255, 255))
+    for pts, col in _IR_FACETS:
+        d.polygon([_ir_px(p) for p in pts], fill=col + (255,))
 
-    img.save(path)
+    for pts, _ in _IR_FACETS:
+        d.line([_ir_px(p) for p in pts] + [_ir_px(pts[0])],
+               fill=(26, 29, 36, 255), width=int(2.2 * RES_SS))
+    d.line([_ir_px(p) for p in body] + [_ir_px(body[0])],
+           fill=(14, 16, 21, 255), width=int(5.0 * RES_SS))
+
+    spec = Image.new('RGBA', (RES_W, RES_W), (0, 0, 0, 0))
+    sd = ImageDraw.Draw(spec)
+    a, b = _ir_px((-0.30, -0.34)), _ir_px((-0.10, -0.16))
+    sd.ellipse([a[0], a[1], b[0], b[1]], fill=(255, 255, 255, 210))
+    spec = spec.filter(ImageFilter.GaussianBlur(RES_SS * 1.5))
+    img = Image.alpha_composite(img, spec)
+
+    img.resize((RES_S, RES_S), Image.LANCZOS).save(path)
 
 
 # --------------------------------------------------------- megastructure emblems
@@ -333,7 +355,7 @@ def main():
     if not os.path.exists(HEX_SRC):
         sys.exit(f'missing {HEX_SRC} — run from the repository root')
     os.makedirs(TAG_DIR, exist_ok=True)
-    os.makedirs(RESOURCE_DIR, exist_ok=True)
+    os.makedirs(RES_DIR, exist_ok=True)
     os.makedirs(MEGASTRUCTURE_EMBLEM_DIR, exist_ok=True)
     os.makedirs(SPECIAL_TILE_DIR, exist_ok=True)
 
@@ -356,7 +378,7 @@ def main():
     build_hex(os.path.join(ASSET_DIR, 'hex_highland.png'), ring, interior,
               (168, 116, 38), 255, (120, 78, 20), 100, _contours)
 
-    build_iridium(os.path.join(RESOURCE_DIR, 'iridium.png'))
+    build_iridium(os.path.join(RES_DIR, 'iridium.png'))
     build_impact_basin(os.path.join(SPECIAL_TILE_DIR, 'impact_basin.png'))
 
     emblem_paths = []

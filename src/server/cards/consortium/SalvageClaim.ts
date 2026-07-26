@@ -8,7 +8,7 @@ import {CardRenderer} from '../render/CardRenderer';
 export class SalvageClaim extends Card implements IProjectCard {
   constructor() {
     super({
-      type: CardType.EVENT,
+      type: CardType.AUTOMATED,
       name: CardName.SALVAGE_CLAIM,
       tags: [Tag.PROSPECTING],
       cost: 7,
