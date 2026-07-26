@@ -31,6 +31,15 @@
     <PlanetaryTracks :tracks="game.pathfinders" :gameOptions="game.gameOptions"/>
   </template>
 
+  <template v-if="game.megastructures">
+    <a class="hotkey-target"></a>
+    <MegastructuresPanel
+      :megastructures="game.megastructures"
+      :canAct="canContribute"
+      @contribute="$emit('contribute', $event)"
+    />
+  </template>
+
   <DeltaProjectBoard v-if="game.gameOptions.expansions.deltaProject" :players="players"/>
 
   <div v-if="players.length > 1" class="player_home_block--milestones-and-awards">
@@ -52,6 +61,7 @@ import Awards from '@/client/components/Awards.vue';
 import Turmoil from '@/client/components/turmoil/Turmoil.vue';
 import MoonBoard from '@/client/components/moon/MoonBoard.vue';
 import PlanetaryTracks from '@/client/components/pathfinders/PlanetaryTracks.vue';
+import MegastructuresPanel from '@/client/components/consortium/MegastructuresPanel.vue';
 import {TileView} from './board/TileView';
 
 export default defineComponent({
@@ -69,8 +79,13 @@ export default defineComponent({
       type: Array as PropType<ReadonlyArray<PublicPlayerModel>>,
       required: true,
     },
+    /** When true, show Contribute buttons on eligible structures. */
+    canContribute: {
+      type: Boolean,
+      default: false,
+    },
   },
-  emits: ['toggleTileView'],
+  emits: ['toggleTileView', 'contribute'],
   components: {
     Board,
     DeltaProjectBoard,
@@ -79,6 +94,7 @@ export default defineComponent({
     Turmoil,
     MoonBoard,
     PlanetaryTracks,
+    MegastructuresPanel,
   },
 });
 </script>

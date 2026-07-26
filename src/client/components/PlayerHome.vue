@@ -32,7 +32,9 @@
           :game="game"
           :tileView="tileView"
           :players="playerView.players"
+          :canContribute="canContributeMegastructure"
           @toggleTileView="cycleTileView()"
+          @contribute="contributeMegastructure"
         />
       </div>
 
@@ -48,7 +50,7 @@
       <div class="player_home_block player_home_block--actions nofloat">
         <a name="actions" class="player_home_anchor"></a>
         <DynamicTitle title="Actions" :color="thisPlayer.color"/>
-        <WaitingFor v-if="game.phase !== 'end'" :playerView="playerView" :waitingfor="playerView.waitingFor"/>
+        <WaitingFor ref="waitingFor" v-if="game.phase !== 'end'" :playerView="playerView" :waitingfor="playerView.waitingFor"/>
       </div>
 
       <div class="player_home_block player_home_block--hand" v-if="playerView.draftedCards.length > 0">
@@ -150,6 +152,7 @@
 
 <script lang="ts">
 import {defineComponent} from 'vue';
+import {vueRoot} from '@/client/components/vueRoot';
 
 import Card from '@/client/components/card/Card.vue';
 import PlayersOverview from '@/client/components/overview/PlayersOverview.vue';
@@ -175,6 +178,10 @@ import {sortActiveCards} from '@/client/utils/ActiveCardsSortingOrder';
 import {CardModel} from '@/common/models/CardModel';
 import {getCardOrThrow} from '../cards/ClientCardManifest';
 import {HomeMixin} from '@/client/mixins/HomeMixin';
+import {MegastructureId} from '@/common/consortium/MegastructureKind';
+import {buildContributeResponse} from '@/client/utils/megastructureContribute';
+import {InputResponse} from '@/common/inputs/InputResponse';
+import {Phase} from '@/common/Phase';
 
 type PlayerHomeModel = {
   showHand: boolean;
@@ -273,6 +280,11 @@ export default defineComponent({
     sortActiveCards(): typeof sortActiveCards {
       return sortActiveCards;
     },
+    canContributeMegastructure(): boolean {
+      return this.game.phase !== Phase.END &&
+        this.playerView.waitingFor !== undefined &&
+        this.playerView.waitingFor.optional !== true;
+    },
   },
 
   components: {
@@ -332,6 +344,21 @@ export default defineComponent({
     },
     isNotActive(cardModel: CardModel): boolean {
       return !getCardOrThrow(cardModel.name).hasAction;
+    },
+    contributeMegastructure(structureId: MegastructureId): void {
+      const response = buildContributeResponse(this.playerView.waitingFor, structureId);
+      if (response === undefined) {
+        vueRoot(this).showAlert(
+          'Megastructures',
+          'Contribute is not available right now. Use the Actions menu when it is your turn.',
+        );
+        return;
+      }
+      const waitingFor = this.$refs.waitingFor as {onsave: (out: InputResponse) => void} | undefined;
+      if (waitingFor === undefined) {
+        return;
+      }
+      waitingFor.onsave(response);
     },
   },
 });

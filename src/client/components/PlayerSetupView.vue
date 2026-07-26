@@ -88,6 +88,8 @@
 
         <PlanetaryTracks v-if="game.gameOptions.expansions.pathfinders" :tracks="game.pathfinders" :gameOptions="game.gameOptions"/>
 
+        <MegastructuresPanel v-if="game.megastructures" :megastructures="game.megastructures" :canAct="false"/>
+
         <a name="moonBoard" class="player_home_anchor"></a>
         <MoonBoard v-if="game.moon !== undefined" :model="game.moon" :tileView="tileView"/>
         <DeltaProjectBoard v-if="game.gameOptions.expansions.deltaProject" :players="playerView.players"/>
@@ -109,6 +111,7 @@ import WaitingFor from '@/client/components/WaitingFor.vue';
 import Turmoil from '@/client/components/turmoil/Turmoil.vue';
 import MoonBoard from '@/client/components/moon/MoonBoard.vue';
 import PlanetaryTracks from '@/client/components/pathfinders/PlanetaryTracks.vue';
+import MegastructuresPanel from '@/client/components/consortium/MegastructuresPanel.vue';
 import {playerColorClass} from '@/common/utils/utils';
 import {Phase} from '@/common/Phase';
 import {GameModel} from '@/common/models/GameModel';
@@ -148,6 +151,7 @@ export default defineComponent({
     Awards,
     Turmoil,
     PlanetaryTracks,
+    MegastructuresPanel,
     MoonBoard,
   },
   methods: {

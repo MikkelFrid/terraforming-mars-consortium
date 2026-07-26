@@ -7,6 +7,8 @@ export type Preferences = {
   hide_awards_and_milestones: boolean,
   show_milestone_details: boolean,
   show_award_details: boolean,
+  /** Consortium megastructure tracks panel. Default collapsed (board space). */
+  show_megastructure_details: boolean,
   hide_top_bar: boolean,
   small_cards: boolean,
   remove_background: boolean,
@@ -41,6 +43,7 @@ const defaults: Preferences = {
   hide_awards_and_milestones: false,
   show_milestone_details: true,
   show_award_details: true,
+  show_megastructure_details: false,
   hide_top_bar: false,
   small_cards: false,
   remove_background: false,
