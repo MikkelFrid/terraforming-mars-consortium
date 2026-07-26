@@ -6,6 +6,7 @@ import {
   MegastructureId,
   MegastructureKind,
 } from '../../common/consortium/MegastructureKind';
+import {CardName} from '../../common/cards/CardName';
 import {Payment} from '../../common/inputs/Payment';
 import {SpaceType} from '../../common/boards/SpaceType';
 import {PlayerId} from '../../common/Types';
@@ -135,6 +136,28 @@ export class Megastructures {
       BALANCE.GRAND_SEGMENT_COST_MC;
   }
 
+  /**
+   * Permanent + one-shot segment discounts (Site Foreman + Scaffold Yard).
+   * They stack. Balance knobs in MEGASTRUCTURE_BALANCE.
+   */
+  public static segmentDiscountMc(player: IPlayer): number {
+    let discount = 0;
+    if (player.tableau.has(CardName.SITE_FOREMAN)) {
+      discount += BALANCE.SITE_FOREMAN_DISCOUNT;
+    }
+    discount += player.nextMegastructureSegmentDiscount;
+    return discount;
+  }
+
+  /** Base segment cost minus stacking discounts, floored at 0. */
+  public static effectiveSegmentCostMc(
+    player: IPlayer,
+    structure: Megastructure,
+    index: number,
+  ): number {
+    return Math.max(0, this.segmentCostMc(structure, index) - this.segmentDiscountMc(player));
+  }
+
   public static keystoneMinIridium(structure: Megastructure): number {
     return structure.kind === 'bridge' ?
       BALANCE.BRIDGE_KEYSTONE_MIN_IRIDIUM :
@@ -160,6 +183,10 @@ export class Megastructures {
     if (!this.needsFoundation(player, structure)) {
       return true;
     }
+    // Structural Engineers: owner-only highland-foundation bypass.
+    if (player.tableau.has(CardName.STRUCTURAL_ENGINEERS)) {
+      return true;
+    }
     return this.playerOwnsHighlandTile(player);
   }
 
@@ -174,7 +201,7 @@ export class Megastructures {
     if (!this.meetsFoundation(player, structure)) {
       return false;
     }
-    const cost = this.segmentCostMc(structure, index);
+    const cost = this.effectiveSegmentCostMc(player, structure, index);
     const minIridium = this.isKeystone(structure, index) ? this.keystoneMinIridium(structure) : 0;
     if (player.iridium < minIridium) {
       return false;
@@ -187,6 +214,55 @@ export class Megastructures {
       titanium: true,
       iridium: true,
     });
+  }
+
+  /** Total segments this player owns across all structures. */
+  public static countSegmentsFor(player: IPlayer): number {
+    const data = player.game.megastructuresData;
+    if (data === undefined) {
+      return 0;
+    }
+    let count = 0;
+    for (const structure of data.structures) {
+      count += structure.segments.filter((s) => s.owner === player.id).length;
+    }
+    return count;
+  }
+
+  /** Distinct structures this player has contributed at least one segment to. */
+  public static countStructuresContributed(player: IPlayer): number {
+    const data = player.game.megastructuresData;
+    if (data === undefined) {
+      return 0;
+    }
+    return data.structures.filter((structure) =>
+      structure.segments.some((s) => s.owner === player.id)).length;
+  }
+
+  /** Structures where this player owns at least `min` segments. */
+  public static countStructuresWithMinSegments(player: IPlayer, min: number): number {
+    const data = player.game.megastructuresData;
+    if (data === undefined) {
+      return 0;
+    }
+    return data.structures.filter((structure) =>
+      structure.segments.filter((s) => s.owner === player.id).length >= min).length;
+  }
+
+  /** Completed megastructures in the game. */
+  public static countCompleted(game: IGame): number {
+    return game.megastructuresData?.structures.filter((s) => s.completed).length ?? 0;
+  }
+
+  /**
+   * Owned tiles in frontier zones. Frontier spaces carry `bridge` from the
+   * Consortium board JSON (survives unlock / serialize).
+   */
+  public static countFrontierTiles(player: IPlayer): number {
+    return player.game.board.spaces.filter((space) =>
+      space.bridge !== undefined &&
+      space.tile !== undefined &&
+      Board.ownedBy(player)(space)).length;
   }
 
   /**
@@ -202,7 +278,7 @@ export class Megastructures {
       .filter((s) => this.canContribute(player, s))
       .map((structure) => {
         const index = this.nextSegmentIndex(structure);
-        const cost = this.segmentCostMc(structure, index);
+        const cost = this.effectiveSegmentCostMc(player, structure, index);
         const keystone = this.isKeystone(structure, index);
         // Titles embed [id] so the track panel can target a structure in one click.
         const title = keystone ?
@@ -226,7 +302,7 @@ export class Megastructures {
       throw new Error(`Cannot contribute to ${structure.id}`);
     }
     const index = this.nextSegmentIndex(structure);
-    const cost = this.segmentCostMc(structure, index);
+    const cost = this.effectiveSegmentCostMc(player, structure, index);
     const keystone = this.isKeystone(structure, index);
     const minIridium = keystone ? this.keystoneMinIridium(structure) : undefined;
     const title = keystone ?
@@ -268,7 +344,7 @@ export class Megastructures {
       throw new Error(`Foundation required for ${structure.id}`);
     }
 
-    const cost = this.segmentCostMc(structure, index);
+    const cost = this.effectiveSegmentCostMc(player, structure, index);
     const keystone = this.isKeystone(structure, index);
     const minIridium = keystone ? this.keystoneMinIridium(structure) : 0;
     if (payment.iridium < minIridium) {
@@ -296,12 +372,20 @@ export class Megastructures {
       player.pay(payment);
     }
 
+    // Consume Scaffold Yard one-shot after a successful contribute.
+    player.nextMegastructureSegmentDiscount = 0;
+
     structure.segments[index].owner = player.id;
 
     player.game.log('${0} contributed segment ${1} to ${2}', (b) =>
       b.player(player).number(index + 1).string(displayName(structure.kind, structure.sector)));
 
     if (keystone) {
+      // Keystone Rights: claim once via card.data (survives serialize).
+      const rights = player.tableau.get(CardName.KEYSTONE_RIGHTS);
+      if (rights !== undefined && rights.data !== true) {
+        rights.data = true;
+      }
       this.complete(player.game, structure, player);
     }
   }

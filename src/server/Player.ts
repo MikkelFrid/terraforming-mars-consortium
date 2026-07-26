@@ -180,6 +180,16 @@ export class Player implements IPlayer {
 
   /** Consortium iridium. Standalone field — not a Units member. No production. 0 VP. */
   public iridium: number = 0;
+  /**
+   * Cumulative iridium spent this game (Refiner award + balance analysis).
+   * Incremented only in Iridium.spend.
+   */
+  public iridiumSpent: number = 0;
+  /**
+   * Scaffold Yard one-shot: M€ knocked off the next megastructure segment
+   * this generation. Cleared on contribute or generation start.
+   */
+  public nextMegastructureSegmentDiscount: number = 0;
 
   // Stats
   public actionsTakenThisGame: number = 0;
@@ -1860,6 +1870,8 @@ export class Player implements IPlayer {
       standardProjectsThisGeneration: Array.from(this.standardProjectsThisGeneration),
       withinDeflectionZone: this.withinDeflectionZone,
       iridium: this.iridium,
+      iridiumSpent: this.iridiumSpent,
+      nextMegastructureSegmentDiscount: this.nextMegastructureSegmentDiscount,
 
       name: this.name,
       color: this.color,
@@ -1971,6 +1983,8 @@ export class Player implements IPlayer {
     }
     player.withinDeflectionZone = d.withinDeflectionZone ?? false;
     player.iridium = d.iridium ?? 0;
+    player.iridiumSpent = d.iridiumSpent ?? 0;
+    player.nextMegastructureSegmentDiscount = d.nextMegastructureSegmentDiscount ?? 0;
     return player;
   }
 

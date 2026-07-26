@@ -1077,6 +1077,22 @@ export enum CardName {
   METEORITIC_REFINERY = 'Meteoritic Refinery',
   IRIDIUM_CARTEL = 'Iridium Cartel',
 
+  // Consortium Structure Project Cards
+  SCAFFOLD_YARD = 'Scaffold Yard',
+  SURVEY_STAKE = 'Survey Stake',
+  MODULAR_TRUSS = 'Modular Truss',
+  SITE_FOREMAN = 'Site Foreman',
+  BONDED_LABOUR = 'Bonded Labour',
+  HIGHLAND_ANCHOR = 'Highland Anchor',
+  SEGMENT_PREFABRICATION = 'Segment Prefabrication',
+  CONSORTIUM_CHARTER = 'Consortium Charter',
+  KEYSTONE_RIGHTS = 'Keystone Rights',
+  UNION_HALL = 'Union Hall',
+  STRUCTURAL_ENGINEERS = 'Structural Engineers',
+  LOAD_BEARING_STUDY = 'Load Bearing Study',
+  GRAND_CONTRACTOR = 'Grand Contractor',
+  MONUMENT_FINANCING = 'Monument Financing',
+
   // Underworld Replacement Cards
   STANDARD_TECHNOLOGY_UNDERWORLD = 'Standard Technology:u',
   HACKERS_UNDERWORLD = 'Hackers:u',

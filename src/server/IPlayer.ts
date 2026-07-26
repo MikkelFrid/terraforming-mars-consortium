@@ -172,6 +172,10 @@ export interface IPlayer {
    * No production. Worth 0 VP at game end.
    */
   iridium: number;
+  /** Cumulative iridium spent (Refiner award). */
+  iridiumSpent: number;
+  /** Scaffold Yard residual segment discount this generation. */
+  nextMegastructureSegmentDiscount: number;
 
   // The number of actions a player can take this round.
   // It's almost always 2, but certain cards can change this value.

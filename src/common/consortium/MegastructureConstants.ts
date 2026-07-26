@@ -69,4 +69,27 @@ export const MEGASTRUCTURE_BALANCE = {
   ARCOLOGY_GLOBAL_MC_PRODUCTION: 1,
   /** Arcology contributor: extra VP per segment on top of VP_PER_SEGMENT. Balance knob. */
   ARCOLOGY_EXTRA_VP_PER_SEGMENT: 1,
+
+  // --- Structure-card segment discounts (stack) -----------------------------
+  /** Scaffold Yard: next segment this generation costs this much less. Balance knob. */
+  SCAFFOLD_YARD_DISCOUNT: 3,
+  /** Site Foreman: permanent segment discount while in play. Balance knob. */
+  SITE_FOREMAN_DISCOUNT: 2,
+
+  // --- Keystone Rights -----------------------------------------------------
+  /** Extra end-game VP from Keystone Rights (once). Balance knob. */
+  KEYSTONE_RIGHTS_EXTRA_VP: 3,
+} as const;
+
+/**
+ * Consortium milestone / award thresholds. First-pass playtest guesses —
+ * tune in phase 8. See docs/consortium/10-structure-cards.md.
+ */
+export const CONSORTIUM_MA_BALANCE = {
+  /** C. Architect: total segments contributed. Balance knob. */
+  ARCHITECT_SEGMENTS: 5,
+  /** Pathfinder: owned tiles in frontier zones (space.bridge set). Balance knob. */
+  PATHFINDER_FRONTIER_TILES: 3,
+  /** Assayer: Prospecting + Structure tags combined. Balance knob. */
+  ASSAYER_TAG_TOTAL: 6,
 } as const;

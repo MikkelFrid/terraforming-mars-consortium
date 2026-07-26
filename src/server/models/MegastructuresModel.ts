@@ -79,7 +79,9 @@ function toModel(
       };
     }),
     completed: structure.completed,
-    nextSegmentCost: next >= 0 ? Megastructures.segmentCostMc(structure, next) : undefined,
+    nextSegmentCost: next >= 0 && viewer !== undefined ?
+      Megastructures.effectiveSegmentCostMc(viewer, structure, next) :
+      (next >= 0 ? Megastructures.segmentCostMc(structure, next) : undefined),
     nextIsKeystone,
     nextMinIridium: nextIsKeystone ? keystoneMinIridium : 0,
     keystoneMinIridium,

@@ -87,4 +87,8 @@ export interface SerializedPlayer extends DeprecatedFields{
   withinDeflectionZone: boolean;
   /** Consortium iridium. Absent on pre-consortium saves → deserialize as 0. */
   iridium?: number;
+  /** Cumulative iridium spent. Absent on older saves → 0. */
+  iridiumSpent?: number;
+  /** Scaffold Yard residual discount. Absent on older saves → 0. */
+  nextMegastructureSegmentDiscount?: number;
 }

@@ -46,6 +46,7 @@ export class Iridium {
       throw new Error(`Player does not have ${count} iridium`);
     }
     player.iridium -= count;
+    player.iridiumSpent += count;
     // Conservation + capacity clamp: with correct grants this never hits the cap
     // except as a safety net against corrupted state.
     player.game.iridiumBank = Math.min(IRIDIUM_BANK_CAPACITY, player.game.iridiumBank + count);

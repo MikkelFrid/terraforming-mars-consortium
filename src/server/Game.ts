@@ -907,6 +907,8 @@ export class Game implements IGame, Logger {
 
     this.players.forEach((player) => {
       player.hasIncreasedTerraformRatingThisGeneration = false;
+      // Scaffold Yard is generation-scoped.
+      player.nextMegastructureSegmentDiscount = 0;
       if (player.tableau.has(CardName.PRESERVATION_PROGRAM)) {
         player.preservationProgram = true;
       }
