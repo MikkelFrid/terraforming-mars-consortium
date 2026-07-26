@@ -72,6 +72,8 @@ export interface SerializedPlayer extends DeprecatedFields{
   steel: number;
   steelProduction: number;
   steelValue: number;
+  /** Consortium: iridium M€ value when paying. Absent on older saves → IRIDIUM_VALUE. */
+  iridiumValue?: number;
   terraformRating: number;
   timer: SerializedTimer;
   titanium: number;

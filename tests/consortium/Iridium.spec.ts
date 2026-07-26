@@ -183,7 +183,7 @@ describe('Consortium iridium', () => {
   });
 
   it('consortium Core Sampling remains a standard project alongside Prospecting cards', () => {
-    expect(Object.keys(CONSORTIUM_CARD_MANIFEST.projectCards)).to.have.length(34);
+    expect(Object.keys(CONSORTIUM_CARD_MANIFEST.projectCards)).to.have.length(55);
     expect(CONSORTIUM_CARD_MANIFEST.standardProjects[CardName.CORE_SAMPLING_STANDARD_PROJECT])
       .to.not.be.undefined;
   });

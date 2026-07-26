@@ -1462,7 +1462,12 @@ export class Game implements IGame, Logger {
     // Consortium crater field: one-time placement reward (1 iridium from the bank).
     if (space.spaceType === SpaceType.CRATER_FIELD && space.craterBonusClaimed !== true) {
       space.craterBonusClaimed = true;
-      Iridium.grant(player, 1);
+      const granted = Iridium.grant(player, 1);
+      if (granted > 0) {
+        for (const card of player.tableau) {
+          card.onCraterIridiumGained?.(player, granted);
+        }
+      }
     }
 
     const adjacentOceanCount = this.board.getAdjacentSpaces(space).filter(Board.isOceanSpace).length;

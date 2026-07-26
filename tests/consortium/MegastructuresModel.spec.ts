@@ -70,6 +70,6 @@ describe('Consortium megastructures model', () => {
   });
 
   it('Consortium manifest registers the Prospecting project cards', () => {
-    expect(Object.keys(CONSORTIUM_CARD_MANIFEST.projectCards)).to.have.length(34);
+    expect(Object.keys(CONSORTIUM_CARD_MANIFEST.projectCards)).to.have.length(55);
   });
 });

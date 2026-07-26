@@ -208,11 +208,13 @@ export class Megastructures {
     }
     // Segments accept MC, steel, titanium and iridium. Iridium remains tag-gated
     // everywhere else; this is an explicit permitted spend target.
+    // Scarp Foundry may raise the steel rate for this check only.
     return player.canAfford({
       cost,
       steel: true,
       titanium: true,
       iridium: true,
+      steelRate: player.getMegastructureSteelValue(),
     });
   }
 
@@ -313,6 +315,7 @@ export class Megastructures {
       canUseTitanium: true,
       canUseIridium: true,
       minIridium,
+      steelRate: player.getMegastructureSteelValue(),
       title,
     })).andThen((payment) => {
       // SelectPaymentDeferred already called player.pay.
@@ -356,6 +359,7 @@ export class Megastructures {
       titanium: true,
       iridium: true,
       heat: player.canUseHeatAsMegaCredits,
+      steelRate: player.getMegastructureSteelValue(),
     });
     if (paid < cost) {
       throw new Error(`Payment of ${paid} does not cover segment cost ${cost}`);

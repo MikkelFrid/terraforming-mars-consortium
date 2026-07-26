@@ -1105,6 +1105,31 @@ export enum CardName {
   WAYFARER_COMPACT = 'Wayfarer Compact',
   FRONTIER_CHARTER = 'Frontier Charter',
 
+  // Consortium Terrain Project Cards
+  CRATER_SIFTING = 'Crater Sifting',
+  HIGHLAND_TERRACE = 'Highland Terrace',
+  BASALT_QUARRY = 'Basalt Quarry',
+  EJECTA_BLANKET = 'Ejecta Blanket',
+  SCARP_FOUNDRY = 'Scarp Foundry',
+  PLATEAU_RESERVOIR = 'Plateau Reservoir',
+  TALUS_RECLAMATION = 'Talus Reclamation',
+  IMPACT_GLASS_WORKS = 'Impact Glass Works',
+  RIMWALL_HABITAT = 'Rimwall Habitat',
+
+  // Consortium General Project Cards
+  ESCROW_ACCOUNT = 'Escrow Account',
+  STANDARD_GAUGE = 'Standard Gauge',
+  BONDED_FREIGHT = 'Bonded Freight',
+  CONSORTIUM_LEVY = 'Consortium Levy',
+  TENDER_PROCESS = 'Tender Process',
+  MINERAL_RIGHTS = 'Mineral Rights',
+  REFIT_YARD = 'Refit Yard',
+  IRIDIUM_RESERVE = 'Iridium Reserve',
+  JOINT_VENTURE = 'Joint Venture',
+  CHARTER_REVISION = 'Charter Revision',
+  GUILD_ARBITRATION = 'Guild Arbitration',
+  LEDGER_OF_CLAIMS = 'Ledger of Claims',
+
   // Underworld Replacement Cards
   STANDARD_TECHNOLOGY_UNDERWORLD = 'Standard Technology:u',
   HACKERS_UNDERWORLD = 'Hackers:u',

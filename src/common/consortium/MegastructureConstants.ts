@@ -83,6 +83,16 @@ export const MEGASTRUCTURE_BALANCE = {
   // --- Frontier cards ------------------------------------------------------
   /** Sector Claim: M€ rebate when placing a tile in a frontier zone. Balance knob. */
   SECTOR_CLAIM_REBATE: 4,
+
+  // --- Terrain / general payment rates -------------------------------------
+  /** Scarp Foundry: steel M€ value when paying for megastructure segments. Balance knob. */
+  SCARP_FOUNDRY_STEEL_VALUE: 3,
+  /** Iridium Reserve: iridium M€ value when paying (vs default IRIDIUM_VALUE). Balance knob. */
+  IRIDIUM_RESERVE_VALUE: 5,
+  /** Mineral Rights: extra M€ per iridium gained from a crater field. Balance knob. */
+  MINERAL_RIGHTS_MC_PER_IRIDIUM: 1,
+  /** Impact Glass Works: max iridium from counting crater tiles on Mars. Balance knob. */
+  IMPACT_GLASS_WORKS_IRIDIUM_CAP: 4,
 } as const;
 
 /**

@@ -203,7 +203,7 @@ describe('Consortium megastructures', () => {
   });
 
   it('Consortium manifest registers the Prospecting project cards', () => {
-    expect(Object.keys(CONSORTIUM_CARD_MANIFEST.projectCards)).to.have.length(34);
+    expect(Object.keys(CONSORTIUM_CARD_MANIFEST.projectCards)).to.have.length(55);
   });
 
   it('contribute action defers payment with iridium enabled', () => {

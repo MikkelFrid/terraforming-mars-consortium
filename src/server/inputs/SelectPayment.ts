@@ -15,6 +15,8 @@ export class SelectPayment extends BasePlayerInput<Payment> {
     public reserveUnits?: Units | undefined,
     /** Consortium keystone: reject payments with fewer than this many iridium. */
     public minIridium?: number,
+    /** Consortium Scarp Foundry: steel M€ value for this payment. */
+    public steelRate?: number,
   ) {
     super('payment', title);
     this.buttonLabel = 'Pay'; // no input button
@@ -38,6 +40,7 @@ export class SelectPayment extends BasePlayerInput<Payment> {
       spireScience: player.getSpendable('spireScience'),
       reserveUnits: this.reserveUnits,
       minIridium: this.minIridium,
+      steelRate: this.steelRate,
 
       floaters: 0,
       microbes: 0,
@@ -61,7 +64,10 @@ export class SelectPayment extends BasePlayerInput<Payment> {
     if (this.minIridium !== undefined && payment.iridium < this.minIridium) {
       throw new InputError(`Keystone requires at least ${this.minIridium} iridium`);
     }
-    const amountPaid = player.payingAmount(payment, this.paymentOptions);
+    const amountPaid = player.payingAmount(payment, {
+      ...this.paymentOptions,
+      steelRate: this.steelRate,
+    });
     if (amountPaid < this.amount) {
       throw new InputError('Did not spend enough');
     }

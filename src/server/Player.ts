@@ -50,6 +50,7 @@ import {PathfindersExpansion} from './pathfinders/PathfindersExpansion';
 import {Iridium} from './consortium/Iridium';
 import {Megastructures} from './consortium/Megastructures';
 import {spaceElevatorDiscountFor} from './consortium/MegastructureEffects';
+import {MEGASTRUCTURE_BALANCE} from '../common/consortium/MegastructureConstants';
 import {ColoniesHandler} from './colonies/ColoniesHandler';
 import {MonsInsurance} from './cards/promo/MonsInsurance';
 import {InputResponse} from '../common/inputs/InputResponse';
@@ -117,6 +118,8 @@ export class Player implements IPlayer {
   // Resource values
   private titaniumValue: number = 3;
   private steelValue: number = 2;
+  /** Consortium: iridium M€ value when paying. Default IRIDIUM_VALUE (4). */
+  private iridiumValue: number = constants.IRIDIUM_VALUE;
   // Helion
   public canUseHeatAsMegaCredits: boolean = false;
   // Martian Lumber Corp
@@ -333,6 +336,28 @@ export class Player implements IPlayer {
     if (this.steelValue > 0) {
       this.steelValue--;
     }
+  }
+
+  public getIridiumValue(): number {
+    return this.iridiumValue;
+  }
+
+  public increaseIridiumValue(): void {
+    this.iridiumValue++;
+  }
+
+  /**
+   * Steel M€ value for megastructure segment payments.
+   * Scarp Foundry raises the floor to SCARP_FOUNDRY_STEEL_VALUE without
+   * changing ordinary card/building steel spends.
+   */
+  public getMegastructureSteelValue(): number {
+    if (this.tableau.has(CardName.SCARP_FOUNDRY)) {
+      return Math.max(
+        this.getSteelValue(),
+        MEGASTRUCTURE_BALANCE.SCARP_FOUNDRY_STEEL_VALUE);
+    }
+    return this.getSteelValue();
   }
 
   public increaseTerraformRating(steps: number = 1, opts: {log?: boolean, from?: From} = {}) {
@@ -1339,11 +1364,15 @@ export class Player implements IPlayer {
    * ../..param {PaymentOptions} options any configuration defining the accepted form of payment.
    * ../..return {number} a number representing the value of payment in M€.
    */
-  public payingAmount(payment: Payment, options?: Partial<PaymentOptions>): number {
+  public payingAmount(
+    payment: Payment,
+    options?: Partial<PaymentOptions> & {steelRate?: number},
+  ): number {
     const multiplier = {
       ...DEFAULT_PAYMENT_VALUES,
-      steel: this.getSteelValue(),
+      steel: options?.steelRate ?? this.getSteelValue(),
       titanium: this.getTitaniumValue(),
+      iridium: this.getIridiumValue(),
     };
 
     const usable: {[key in SpendableResource]: boolean} = {
@@ -1818,6 +1847,7 @@ export class Player implements IPlayer {
       // Resource values
       titaniumValue: this.titaniumValue,
       steelValue: this.steelValue,
+      iridiumValue: this.iridiumValue,
       // Helion
       canUseHeatAsMegaCredits: this.canUseHeatAsMegaCredits,
       // Martian Lumber Corp
@@ -1939,6 +1969,7 @@ export class Player implements IPlayer {
     player.tags.extraJovianTags = d.jovianTagCount ?? 0;
     player.steel = d.steel;
     player.steelValue = d.steelValue;
+    player.iridiumValue = d.iridiumValue ?? constants.IRIDIUM_VALUE;
     player.terraformRating = d.terraformRating;
     player.titanium = d.titanium;
     player.titaniumValue = d.titaniumValue;

@@ -64,6 +64,9 @@ const tileTypeToCssClass: Record<TileType, string> = {
   [TileType.TRAILHEAD_CAMP]: 'trailhead_camp',
   [TileType.RIM_OUTPOST]: 'rim_outpost',
   [TileType.CHASM_DESCENT]: 'chasm_descent',
+  [TileType.BASALT_QUARRY]: 'basalt_quarry',
+  [TileType.EJECTA_BLANKET]: 'ejecta_blanket',
+  [TileType.PLATEAU_RESERVOIR]: 'plateau_reservoir',
 };
 
 const tileTypeToCssClassAresOverride = new Map<TileType, string>([
@@ -112,6 +115,9 @@ const descriptions: Record<TileType, string> = {
   [TileType.TRAILHEAD_CAMP]: 'Trailhead Camp: special tile on a frontier space',
   [TileType.RIM_OUTPOST]: 'Rim Outpost: special tile on a frontier space',
   [TileType.CHASM_DESCENT]: 'Chasm Descent: special tile on a former chasm',
+  [TileType.BASALT_QUARRY]: 'Basalt Quarry: special tile on a highland space',
+  [TileType.EJECTA_BLANKET]: 'Ejecta Blanket: special tile adjacent to a crater field',
+  [TileType.PLATEAU_RESERVOIR]: 'Plateau Reservoir: special tile on a highland space',
 };
 
 export default defineComponent({

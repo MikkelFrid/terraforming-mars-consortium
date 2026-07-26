@@ -71,6 +71,8 @@ export type PublicPlayerModel = {
   steel: number;
   steelProduction: number;
   steelValue: number;
+  /** Consortium: iridium M€ value when paying (default 4; Iridium Reserve → 5). */
+  iridiumValue: number;
   /** Consortium iridium. Standalone stock; no production. Not universally spendable. */
   iridium: number;
   tags: Record<Tag, number>

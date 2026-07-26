@@ -15,6 +15,8 @@ export type Options = {
   canUseIridium?: boolean;
   /** Consortium keystone: payment must include at least this much iridium. */
   minIridium?: number;
+  /** Consortium Scarp Foundry: override steel M€ value for this payment. */
+  steelRate?: number;
   canUseSeeds?: boolean,
   canUseAuroraiData?: boolean,
   canUseGraphene?: boolean;
@@ -100,7 +102,8 @@ export class SelectPaymentDeferred extends DeferredAction<Payment> {
         kuiperAsteroids: this.options.canUseAsteroids || false,
         graphene: this.options.canUseGraphene || false,
       }, this.options.reserveUnits,
-      this.options.minIridium)
+      this.options.minIridium,
+      this.options.steelRate)
       .andThen((payment) => {
         this.player.pay(payment);
         this.cb(payment);

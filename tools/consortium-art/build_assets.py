@@ -424,6 +424,40 @@ def build_chasm_descent(path):
     _recolor_special('mohole_area.png', path, 0.70, 0.75, 0.95, glyph)
 
 
+def build_basalt_quarry(path):
+    """152x152: quarry cut on warmer mining base."""
+    def glyph(draw, size):
+        w, h = size
+        cx, cy = w // 2, h // 2 + 2
+        fill = (235, 210, 170, 230)
+        draw.polygon([(cx - 22, cy + 10), (cx - 8, cy - 18), (cx + 10, cy - 8),
+                      (cx + 20, cy + 14)], fill=fill)
+        draw.line([(cx - 14, cy - 2), (cx + 8, cy + 6)], fill=(60, 40, 20, 200), width=2)
+    _recolor_special('mining_area.png', path, 1.05, 0.90, 0.70, glyph)
+
+
+def build_ejecta_blanket(path):
+    """152x152: splash ring on cooler nuclear_zone base."""
+    def glyph(draw, size):
+        w, h = size
+        cx, cy = w // 2, h // 2
+        fill = (210, 220, 235, 220)
+        draw.ellipse([cx - 26, cy - 18, cx + 26, cy + 18], outline=fill, width=3)
+        draw.ellipse([cx - 8, cy - 8, cx + 8, cy + 8], fill=fill)
+    _recolor_special('nuclear_zone.png', path, 0.80, 0.90, 1.10, glyph)
+
+
+def build_plateau_reservoir(path):
+    """152x152: water plate on cooler mohole base."""
+    def glyph(draw, size):
+        w, h = size
+        cx, cy = w // 2, h // 2
+        fill = (150, 190, 220, 230)
+        draw.ellipse([cx - 24, cy - 14, cx + 24, cy + 16], fill=fill)
+        draw.rectangle([cx - 28, cy - 6, cx + 28, cy - 2], fill=(230, 220, 190, 220))
+    _recolor_special('mohole_area.png', path, 0.75, 0.95, 1.15, glyph)
+
+
 # --------------------------------------------------------------------- main
 
 def main():
@@ -459,6 +493,9 @@ def main():
     build_trailhead_camp(os.path.join(SPECIAL_TILE_DIR, 'trailhead_camp.png'))
     build_rim_outpost(os.path.join(SPECIAL_TILE_DIR, 'rim_outpost.png'))
     build_chasm_descent(os.path.join(SPECIAL_TILE_DIR, 'chasm_descent.png'))
+    build_basalt_quarry(os.path.join(SPECIAL_TILE_DIR, 'basalt_quarry.png'))
+    build_ejecta_blanket(os.path.join(SPECIAL_TILE_DIR, 'ejecta_blanket.png'))
+    build_plateau_reservoir(os.path.join(SPECIAL_TILE_DIR, 'plateau_reservoir.png'))
 
     emblem_paths = []
     for stem, rgb, shape in _MEGASTRUCTURE_PLACEHOLDERS:
@@ -475,6 +512,9 @@ def main():
               'assets/tiles/special_tile_icons/trailhead_camp.png',
               'assets/tiles/special_tile_icons/rim_outpost.png',
               'assets/tiles/special_tile_icons/chasm_descent.png',
+              'assets/tiles/special_tile_icons/basalt_quarry.png',
+              'assets/tiles/special_tile_icons/ejecta_blanket.png',
+              'assets/tiles/special_tile_icons/plateau_reservoir.png',
               *emblem_paths):
         f = os.path.join(ROOT, p)
         im = Image.open(f)

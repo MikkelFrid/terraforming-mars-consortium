@@ -70,9 +70,11 @@ export const PaymentWidgetMixin = defineComponent({
     getResourceRate(unit: SpendableResource): number {
       switch (unit) {
       case 'steel':
-        return this.playerView.thisPlayer.steelValue;
+        return this.playerinput.steelRate ?? this.playerView.thisPlayer.steelValue;
       case 'titanium':
         return this.getTitaniumResourceRate();
+      case 'iridium':
+        return this.playerView.thisPlayer.iridiumValue ?? DEFAULT_PAYMENT_VALUES.iridium;
       default:
         return DEFAULT_PAYMENT_VALUES[unit];
       }

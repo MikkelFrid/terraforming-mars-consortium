@@ -158,6 +158,15 @@ export interface ICard {
   onIridiumSpent?(player: IPlayer, amount: number): void;
 
   /**
+   * Consortium: called when this card's owner gains iridium from a crater-field
+   * placement bonus.
+   *
+   * @param player the card owner.
+   * @param amount iridium granted from the crater (usually 1).
+   */
+  onCraterIridiumGained?(player: IPlayer, amount: number): void;
+
+  /**
    * Callback when ANY player adds a colony.
    *
    * @param cardOwner the player who owns this card.

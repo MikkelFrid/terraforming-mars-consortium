@@ -83,6 +83,8 @@ export type SelectPaymentModel = BaseInputModel & {
   reserveUnits: Readonly<Units> | undefined; // Built to support the Merchant milestone.
   /** Consortium keystone: minimum iridium that must be included in the payment. */
   minIridium?: number;
+  /** Consortium Scarp Foundry: override steel M€ value for this payment UI. */
+  steelRate?: number;
 
   floaters: 0,
   microbes: 0,

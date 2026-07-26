@@ -165,6 +165,15 @@ const TILE_CLASSES: Record<TileType, Classes> = {
   [TileType.CHASM_DESCENT]: {
     symbol: 'card-tile-symbol-chasm-descent',
   },
+  [TileType.BASALT_QUARRY]: {
+    symbol: 'card-tile-symbol-basalt-quarry',
+  },
+  [TileType.EJECTA_BLANKET]: {
+    symbol: 'card-tile-symbol-ejecta-blanket',
+  },
+  [TileType.PLATEAU_RESERVOIR]: {
+    symbol: 'card-tile-symbol-plateau-reservoir',
+  },
 };
 
 export default defineComponent({

@@ -50,6 +50,8 @@ export type CanAffordOptions = Partial<PaymentOptions> & {
   tr?: TRSource,
   /** Represents when the action rewards the tile space more than once. */
   bonusMultiplier?: number,
+  /** Override steel M€ value for this check (Scarp Foundry megastructure path). */
+  steelRate?: number,
 }
 
 /**
@@ -206,6 +208,11 @@ export interface IPlayer {
   getSteelValue(): number;
   increaseSteelValue(): void;
   decreaseSteelValue(): void;
+  /** Consortium: iridium M€ value when paying (default IRIDIUM_VALUE). */
+  getIridiumValue(): number;
+  increaseIridiumValue(): void;
+  /** Consortium: steel M€ value when paying for megastructure segments (Scarp Foundry). */
+  getMegastructureSteelValue(): number;
   increaseTerraformRating(steps?: number, opts?: {log?: boolean, from?: From}): void;
   decreaseTerraformRating(steps?: number, opts?: {log?: boolean}): void;
   setTerraformRating(value: number): void;

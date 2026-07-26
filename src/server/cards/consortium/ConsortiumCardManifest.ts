@@ -35,6 +35,27 @@ import {DeepReachRover} from './DeepReachRover';
 import {FarSideBoomtown} from './FarSideBoomtown';
 import {WayfarerCompact} from './WayfarerCompact';
 import {FrontierCharter} from './FrontierCharter';
+import {CraterSifting} from './CraterSifting';
+import {HighlandTerrace} from './HighlandTerrace';
+import {BasaltQuarry} from './BasaltQuarry';
+import {EjectaBlanket} from './EjectaBlanket';
+import {ScarpFoundry} from './ScarpFoundry';
+import {PlateauReservoir} from './PlateauReservoir';
+import {TalusReclamation} from './TalusReclamation';
+import {ImpactGlassWorks} from './ImpactGlassWorks';
+import {RimwallHabitat} from './RimwallHabitat';
+import {EscrowAccount} from './EscrowAccount';
+import {StandardGauge} from './StandardGauge';
+import {BondedFreight} from './BondedFreight';
+import {ConsortiumLevy} from './ConsortiumLevy';
+import {TenderProcess} from './TenderProcess';
+import {MineralRights} from './MineralRights';
+import {RefitYard} from './RefitYard';
+import {IridiumReserve} from './IridiumReserve';
+import {JointVenture} from './JointVenture';
+import {CharterRevision} from './CharterRevision';
+import {GuildArbitration} from './GuildArbitration';
+import {LedgerOfClaims} from './LedgerOfClaims';
 
 export const CONSORTIUM_CARD_MANIFEST = new ModuleManifest({
   module: 'consortium',
@@ -73,6 +94,27 @@ export const CONSORTIUM_CARD_MANIFEST = new ModuleManifest({
     [CardName.FAR_SIDE_BOOMTOWN]: {Factory: FarSideBoomtown},
     [CardName.WAYFARER_COMPACT]: {Factory: WayfarerCompact},
     [CardName.FRONTIER_CHARTER]: {Factory: FrontierCharter},
+    [CardName.CRATER_SIFTING]: {Factory: CraterSifting},
+    [CardName.HIGHLAND_TERRACE]: {Factory: HighlandTerrace},
+    [CardName.BASALT_QUARRY]: {Factory: BasaltQuarry},
+    [CardName.EJECTA_BLANKET]: {Factory: EjectaBlanket},
+    [CardName.SCARP_FOUNDRY]: {Factory: ScarpFoundry},
+    [CardName.PLATEAU_RESERVOIR]: {Factory: PlateauReservoir},
+    [CardName.TALUS_RECLAMATION]: {Factory: TalusReclamation},
+    [CardName.IMPACT_GLASS_WORKS]: {Factory: ImpactGlassWorks},
+    [CardName.RIMWALL_HABITAT]: {Factory: RimwallHabitat},
+    [CardName.ESCROW_ACCOUNT]: {Factory: EscrowAccount},
+    [CardName.STANDARD_GAUGE]: {Factory: StandardGauge},
+    [CardName.BONDED_FREIGHT]: {Factory: BondedFreight},
+    [CardName.CONSORTIUM_LEVY]: {Factory: ConsortiumLevy},
+    [CardName.TENDER_PROCESS]: {Factory: TenderProcess},
+    [CardName.MINERAL_RIGHTS]: {Factory: MineralRights},
+    [CardName.REFIT_YARD]: {Factory: RefitYard},
+    [CardName.IRIDIUM_RESERVE]: {Factory: IridiumReserve},
+    [CardName.JOINT_VENTURE]: {Factory: JointVenture},
+    [CardName.CHARTER_REVISION]: {Factory: CharterRevision},
+    [CardName.GUILD_ARBITRATION]: {Factory: GuildArbitration},
+    [CardName.LEDGER_OF_CLAIMS]: {Factory: LedgerOfClaims},
   },
   standardProjects: {
     [CardName.CORE_SAMPLING_STANDARD_PROJECT]: {Factory: CoreSamplingStandardProject},
