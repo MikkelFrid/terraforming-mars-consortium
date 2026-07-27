@@ -15,6 +15,7 @@ Produces:
     assets/hex_crater_field.png      46x50  RGBA
     assets/hex_highland.png          46x50  RGBA
     assets/resources/iridium.png     331x331 RGBA
+    assets/expansion_icons/expansion_icon_consortium.png  64x64 RGBA
     assets/consortium/megastructures/*.png  116x116 RGBA (8 placeholders)
 
 Design constraints, derived from the existing game assets:
@@ -248,6 +249,66 @@ def build_iridium(path):
     img = Image.alpha_composite(img, spec)
 
     img.resize((RES_S, RES_S), Image.LANCZOS).save(path)
+
+
+# ---------------------------------------------- expansion icon (lobby / cards)
+#
+# Lobby renders `.create-game-expansion-icon` at 30x30. Peer icons are small
+# circular badges (Ares letter-A, Underworld U-octagon). Consortium's identity
+# resource is iridium, so the expansion glyph is the same faceted chunk on a
+# dark disc — not the old solid teal placeholder circle.
+#
+# Canvas 64x64 with transparent corners (same convention as tags). Meaningful
+# detail stays inside ~28px radius so it survives the 30px lobby downscale.
+
+EXP_ICON_S, EXP_ICON_SS = 64, 8
+EXP_ICON_W = EXP_ICON_S * EXP_ICON_SS
+EXP_ICON_DIR = os.path.join(ASSET_DIR, 'expansion_icons')
+
+
+def _exp_ir_px(p):
+    # Slightly inset vs the resource icon so the gem clears the disc rim at 30px.
+    scale = 0.42
+    return (EXP_ICON_W / 2 + p[0] * EXP_ICON_W * scale,
+            EXP_ICON_W / 2 + p[1] * EXP_ICON_W * scale)
+
+
+def build_expansion_icon_consortium(path):
+    """64x64 circular badge: dark plate + iridium gem (transparent corners)."""
+    img = Image.new('RGBA', (EXP_ICON_W, EXP_ICON_W), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    cx = cy = EXP_ICON_W / 2
+    r = EXP_ICON_W / 2 - 2 * EXP_ICON_SS
+
+    # Plate — cool slate, matches Structure-tag family rather than warm Ares red.
+    d.ellipse([cx - r, cy - r, cx + r, cy + r],
+              fill=(36, 42, 52, 255),
+              outline=(12, 14, 18, 255),
+              width=int(2.5 * EXP_ICON_SS))
+    # Thin cool rim so it reads against the dark lobby button.
+    rim = r - 1.5 * EXP_ICON_SS
+    d.ellipse([cx - rim, cy - rim, cx + rim, cy + rim],
+              outline=(120, 150, 170, 220),
+              width=max(1, int(1.2 * EXP_ICON_SS)))
+
+    body = [_IR_TOP, _IR_UR, _IR_LR, _IR_BOT, _IR_LL, _IR_UL]
+    d.polygon([_exp_ir_px(p) for p in body], fill=(24, 27, 34, 255))
+    for pts, col in _IR_FACETS:
+        d.polygon([_exp_ir_px(p) for p in pts], fill=col + (255,))
+    for pts, _ in _IR_FACETS:
+        d.line([_exp_ir_px(p) for p in pts] + [_exp_ir_px(pts[0])],
+               fill=(26, 29, 36, 255), width=int(1.6 * EXP_ICON_SS))
+    d.line([_exp_ir_px(p) for p in body] + [_exp_ir_px(body[0])],
+           fill=(14, 16, 21, 255), width=int(3.2 * EXP_ICON_SS))
+
+    spec = Image.new('RGBA', (EXP_ICON_W, EXP_ICON_W), (0, 0, 0, 0))
+    sd = ImageDraw.Draw(spec)
+    a, b = _exp_ir_px((-0.30, -0.34)), _exp_ir_px((-0.10, -0.16))
+    sd.ellipse([a[0], a[1], b[0], b[1]], fill=(255, 255, 255, 210))
+    spec = spec.filter(ImageFilter.GaussianBlur(EXP_ICON_SS * 1.2))
+    img = Image.alpha_composite(img, spec)
+
+    img.resize((EXP_ICON_S, EXP_ICON_S), Image.LANCZOS).save(path)
 
 
 # --------------------------------------------------------- megastructure emblems
@@ -500,6 +561,11 @@ def main():
               (168, 116, 38), 255, (120, 78, 20), 100, _contours)
 
     build_iridium(os.path.join(RES_DIR, 'iridium.png'))
+
+    os.makedirs(EXP_ICON_DIR, exist_ok=True)
+    build_expansion_icon_consortium(
+        os.path.join(EXP_ICON_DIR, 'expansion_icon_consortium.png'))
+
     build_impact_basin(os.path.join(SPECIAL_TILE_DIR, 'impact_basin.png'))
     build_highland_anchor(os.path.join(SPECIAL_TILE_DIR, 'highland_anchor.png'))
     build_trailhead_camp(os.path.join(SPECIAL_TILE_DIR, 'trailhead_camp.png'))
@@ -520,6 +586,7 @@ def main():
     for p in ('assets/tags/structure.png', 'assets/tags/prospecting.png',
               'assets/hex_chasm.png', 'assets/hex_crater_field.png',
               'assets/hex_highland.png', 'assets/resources/iridium.png',
+              'assets/expansion_icons/expansion_icon_consortium.png',
               'assets/tiles/special_tile_icons/impact_basin.png',
               'assets/tiles/special_tile_icons/highland_anchor.png',
               'assets/tiles/special_tile_icons/trailhead_camp.png',

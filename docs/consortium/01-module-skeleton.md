@@ -27,7 +27,7 @@ Naming follows Star Wars: module key `consortium`, flat flag
 - `GameSetupDetail.vue` — setup icon (div, no rulebook link required)
 - `CardListModel.ts` — filter abbrev `'n'`
 - `src/styles/cards.less` — `.consortium-icon` / `.expansion-icon-consortium`
-- `assets/expansion_icons/expansion_icon_consortium.png` — placeholder teal circle
+- `assets/expansion_icons/expansion_icon_consortium.png` — iridium gem on dark disc (from `build_assets.py`)
 - `src/client/utils/WikiLinks.ts` — `RULEBOOK_URLS.consortium` placeholder
   (required: type is `Record<GameModule, string>`)
 

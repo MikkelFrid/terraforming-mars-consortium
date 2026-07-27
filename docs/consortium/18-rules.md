@@ -42,7 +42,7 @@ The rulebook embeds live asset paths (not hand-drawn):
 | Asset | Path |
 |-------|------|
 | Hero / board figure | `/assets/board/mars_consortium.png` |
-| Expansion icon | `/assets/expansion_icons/expansion_icon_consortium.png` |
+| Expansion icon | `/assets/expansion_icons/expansion_icon_consortium.png` (iridium badge from `build_assets.py`) |
 | Iridium | `/assets/resources/iridium.png` |
 | Structure / Prospecting tags | `/assets/tags/structure.png`, `prospecting.png` |
 | Megastructure emblems | `/assets/consortium/megastructures/*.png` |
