@@ -47,23 +47,23 @@ describe('SideriteHoldings', () => {
     cast(reserve.play(player), undefined);
     player.playedCards.push(reserve);
 
-    expect(player.getIridiumValue()).eq(5);
+    expect(player.getIridiumValue()).eq(6);
     expect(player.getSteelValue()).eq(2);
     expect(player.getMegastructureSteelValue()).eq(3);
 
-    // Ordinary card: steel 2, iridium 5 (Siderite opens the gate)
+    // Ordinary card: steel 2, iridium 6 (Siderite opens the gate)
     const algaePaid = player.payingAmount(Payment.of({steel: 1, iridium: 1}), {
       steel: true,
       iridium: true,
     });
-    expect(algaePaid).eq(2 + 5);
+    expect(algaePaid).eq(2 + 6);
 
-    // Segment: steel 3, iridium 5 — not double-counted
+    // Segment: steel 3, iridium 6 — not double-counted
     const segPaid = player.payingAmount(Payment.of({steel: 1, iridium: 1}), {
       steel: true,
       iridium: true,
       steelRate: player.getMegastructureSteelValue(),
     });
-    expect(segPaid).eq(3 + 5);
+    expect(segPaid).eq(3 + 6);
   });
 });
