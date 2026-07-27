@@ -56,3 +56,7 @@ python3 tools/consortium/build_rulebook.py
 ```
 
 The generator fails if any referenced art file is missing.
+
+Card names link to the in-app gallery via **hash filter**
+(`/cards#Card%20Name`) — CardList ignores `?search=`. Hovering a name shows a
+CSS card preview (cost, tags, text); click opens the gallery in a new tab.

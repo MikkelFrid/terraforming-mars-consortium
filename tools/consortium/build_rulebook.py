@@ -11,10 +11,27 @@ import html
 import json
 import re
 from pathlib import Path
+from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parents[2]
 CARDS_JSON = ROOT / "src/genfiles/cards.json"
 OUT = ROOT / "assets/consortium/rulebook.html"
+
+# Cards whose genfile metadata.description is empty.
+DESCRIPTION_FALLBACKS = {
+    "Core Sampling:SP": (
+        "Spend 6 M€ to gain 1 iridium from the bank (if any remains)."
+    ),
+}
+
+TYPE_TIP_CLASS = {
+    "corporation": "tip-corp",
+    "prelude": "tip-prelude",
+    "standard_project": "tip-sp",
+    "active": "tip-active",
+    "automated": "tip-automated",
+    "event": "tip-event",
+}
 
 TYPE_ORDER = {
     "corporation": 0,
@@ -90,25 +107,102 @@ def card_number(c: dict) -> str:
 
 def card_description(c: dict) -> str:
     md = c.get("metadata") or {}
-    return md.get("description") or "—"
+    desc = md.get("description")
+    if desc:
+        return desc
+    return DESCRIPTION_FALLBACKS.get(c.get("name", ""), "—")
+
+
+def gallery_url(name: str) -> str:
+    """CardList reads filter text from the URL hash, not ?search=."""
+    return "/cards#" + quote(name, safe="")
+
+
+def tip_cost_label(c: dict) -> str:
+    if c.get("type") == "corporation":
+        sm = c.get("startingMegaCredits")
+        return f"{sm}" if sm is not None else "—"
+    if c.get("type") == "prelude":
+        return "P"
+    cost = c.get("cost")
+    return "—" if cost is None else str(cost)
+
+
+def tip_tags_html(c: dict) -> str:
+    tags = c.get("tags") or []
+    if not tags:
+        return '<span class="tip-no-tags">No tags</span>'
+    parts = []
+    for tag in tags:
+        src = f"/assets/tags/{tag}.png"
+        alt = html.escape(tag.replace("_", " "))
+        parts.append(
+            f'<img class="tip-tag" src="{src}" alt="{alt}" title="{alt}" '
+            f'width="28" height="28" />'
+        )
+    return "".join(parts)
+
+
+def tip_vp_html(c: dict) -> str:
+    md = c.get("metadata") or {}
+    vp = c.get("victoryPoints")
+    if vp is None:
+        vp = md.get("victoryPoints")
+    if vp is None or vp == 0:
+        return ""
+    return f'<span class="tip-vp">{html.escape(str(vp))} VP</span>'
+
+
+def card_tooltip_html(c: dict) -> str:
+    name = c.get("name", "")
+    ctype = c.get("type", "")
+    tip_class = TYPE_TIP_CLASS.get(ctype, "tip-automated")
+    type_label = TYPE_LABEL.get(ctype, ctype)
+    desc = card_description(c)
+    num = card_number(c)
+    cost = tip_cost_label(c)
+    cost_caption = "start" if ctype == "corporation" else "M€"
+    return (
+        f'<span class="card-tip {tip_class}" role="tooltip">'
+        f'<span class="tip-top">'
+        f'<span class="tip-cost" title="{html.escape(cost_caption)}">'
+        f"{html.escape(cost)}</span>"
+        f'<span class="tip-title">{html.escape(name)}</span>'
+        f"{tip_vp_html(c)}"
+        f"</span>"
+        f'<span class="tip-tags">{tip_tags_html(c)}</span>'
+        f'<span class="tip-body">{html.escape(desc)}</span>'
+        f'<span class="tip-foot">'
+        f'<span class="tip-type">{html.escape(type_label)}</span>'
+        f'<span class="tip-num">{html.escape(num)}</span>'
+        f'<span class="tip-mod">Consortium</span>'
+        f"</span>"
+        f'<span class="tip-hint">Click to open in card gallery</span>'
+        f"</span>"
+    )
 
 
 def catalog_rows(cards: list[dict]) -> str:
     rows = []
     for c in cards:
-        name = html.escape(c.get("name", ""))
+        name = c.get("name", "")
+        name_esc = html.escape(name)
         ctype = TYPE_LABEL.get(c.get("type", ""), c.get("type", ""))
         desc = html.escape(card_description(c))
         num = html.escape(card_number(c))
-        gallery = html.escape(c.get("name", ""))
+        href = html.escape(gallery_url(name), quote=True)
+        tip = card_tooltip_html(c)
         rows.append(
             "<tr>"
-            f"<td class=\"num\">{num}</td>"
-            f"<td class=\"name\"><a href=\"/cards?search={gallery}\">{name}</a></td>"
+            f'<td class="num">{num}</td>'
+            f'<td class="name">'
+            f'<a class="card-link" href="{href}" target="_blank" '
+            f'rel="noopener">{name_esc}{tip}</a>'
+            f"</td>"
             f"<td>{html.escape(ctype)}</td>"
-            f"<td class=\"cost\">{html.escape(cost_cell(c))}</td>"
+            f'<td class="cost">{html.escape(cost_cell(c))}</td>'
             f"<td>{html.escape(tags_cell(c))}</td>"
-            f"<td class=\"desc\">{desc}</td>"
+            f'<td class="desc">{desc}</td>'
             "</tr>"
         )
     return "\n".join(rows)
@@ -347,6 +441,126 @@ def build_html(cards: list[dict]) -> str:
     #catalog td.name {{ white-space: nowrap; font-weight: 600; }}
     #catalog td.cost {{ white-space: nowrap; }}
     #catalog td.desc {{ min-width: 14rem; color: var(--muted); }}
+    a.card-link {{
+      position: relative;
+      text-decoration: none;
+      border-bottom: 1px dotted var(--accent);
+    }}
+    a.card-link:hover,
+    a.card-link:focus {{
+      border-bottom-style: solid;
+      outline: none;
+    }}
+    .card-tip {{
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      width: 260px;
+      padding: 0;
+      border-radius: 10px;
+      box-shadow: 0 12px 36px rgba(0,0,0,.45);
+      font: 13px/1.35 system-ui, -apple-system, sans-serif;
+      color: #f2f5f8;
+      background: #1c2430;
+      border: 1px solid #3a4a5c;
+      pointer-events: none;
+      text-align: left;
+      white-space: normal;
+      overflow: hidden;
+    }}
+    .card-tip.is-open {{ display: block; }}
+    .card-tip .tip-top {{
+      display: grid;
+      grid-template-columns: 40px 1fr auto;
+      gap: .45rem;
+      align-items: start;
+      padding: .65rem .7rem .4rem;
+      background: linear-gradient(180deg, #2a3648, #1c2430);
+    }}
+    .card-tip .tip-cost {{
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #ffe08a, #c48a1a 55%, #6a4a10);
+      color: #1a1408;
+      font: 700 15px/36px system-ui, sans-serif;
+      text-align: center;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 1px 2px rgba(0,0,0,.4);
+    }}
+    .card-tip .tip-title {{
+      font: 700 14px/1.25 system-ui, sans-serif;
+      color: #fff;
+      padding-top: .15rem;
+    }}
+    .card-tip .tip-vp {{
+      font: 700 12px/1.2 system-ui, sans-serif;
+      color: #1a2430;
+      background: #e8c15a;
+      border-radius: 999px;
+      padding: .2rem .45rem;
+      align-self: start;
+    }}
+    .card-tip .tip-tags {{
+      display: flex;
+      flex-wrap: wrap;
+      gap: .25rem;
+      padding: .15rem .7rem .45rem;
+      min-height: 2rem;
+    }}
+    .card-tip .tip-tag {{
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #0e141c;
+    }}
+    .card-tip .tip-no-tags {{
+      color: #8a97a6;
+      font-size: 12px;
+      padding: .25rem 0;
+    }}
+    .card-tip .tip-body {{
+      display: block;
+      padding: .55rem .75rem .7rem;
+      background: #f4f7fa;
+      color: #1a2430;
+      font: 13px/1.4 Georgia, "Times New Roman", serif;
+      min-height: 4.5rem;
+    }}
+    .card-tip .tip-foot {{
+      display: flex;
+      justify-content: space-between;
+      gap: .5rem;
+      align-items: center;
+      padding: .4rem .7rem;
+      font: 11px/1.2 system-ui, sans-serif;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      background: #121820;
+      color: #9aabbc;
+    }}
+    .card-tip .tip-type {{ color: #d7e2ec; font-weight: 700; }}
+    .card-tip .tip-mod {{
+      color: #0e1620;
+      background: #7eb6c9;
+      border-radius: 4px;
+      padding: .15rem .35rem;
+      font-weight: 700;
+    }}
+    .card-tip .tip-hint {{
+      display: block;
+      padding: .35rem .7rem .45rem;
+      font: 11px/1.2 system-ui, sans-serif;
+      color: #8a97a6;
+      background: #0e141c;
+    }}
+    .card-tip.tip-corp .tip-top {{ background: linear-gradient(180deg, #5a3a28, #2a1c14); }}
+    .card-tip.tip-active .tip-top {{ background: linear-gradient(180deg, #2f5a3a, #1a2e22); }}
+    .card-tip.tip-event .tip-top {{ background: linear-gradient(180deg, #6a4a18, #2e2410); }}
+    .card-tip.tip-sp .tip-top {{ background: linear-gradient(180deg, #3a4555, #1c2430); }}
+    .card-tip.tip-prelude .tip-top {{ background: linear-gradient(180deg, #6a3a5a, #2a1824); }}
+    @media (max-width: 640px) {{
+      .card-tip {{ width: min(260px, calc(100vw - 16px)); }}
+    }}
   </style>
 </head>
 <body>
@@ -544,13 +758,14 @@ def build_html(cards: list[dict]) -> str:
     <h3>Is the frontier optional?</h3>
     <p>Each sector stays locked until its Bridge is finished, then those spaces are in play.</p>
     <h3>Where do I browse card art in the app?</h3>
-    <p><a href="/cards?search=consortium">Card gallery — search “consortium”</a></p>
+    <p><a href="/cards#consortium">Card gallery — filter “consortium”</a></p>
 
     <h2 id="catalog">8. Card index</h2>
     <p class="catalog-note">
       All <strong>{n}</strong> Consortium cards in the current build
-      (from <code>src/genfiles/cards.json</code>). Click a name to open it in the
-      <a href="/cards?search=consortium">card gallery</a>.
+      (from <code>src/genfiles/cards.json</code>).
+      Hover a name for a card preview; click to open it in the
+      <a href="/cards#consortium">card gallery</a>.
       After adding or changing cards, rerun <code>make:cards</code> then this script.
     </p>
     <div class="catalog-wrap">
@@ -580,6 +795,62 @@ def build_html(cards: list[dict]) -> str:
       </p>
     </footer>
   </div>
+  <script>
+  (function () {{
+    var openTip = null;
+    var openLink = null;
+
+    function hideTip() {{
+      if (openTip) {{
+        openTip.classList.remove('is-open');
+        openTip.style.left = '';
+        openTip.style.top = '';
+        openTip = null;
+        openLink = null;
+      }}
+    }}
+
+    function placeTip(link, tip) {{
+      tip.classList.add('is-open');
+      var r = link.getBoundingClientRect();
+      var tw = tip.offsetWidth || 260;
+      var th = tip.offsetHeight || 280;
+      var left = r.right + 10;
+      var top = r.top;
+      if (left + tw > window.innerWidth - 8) {{
+        left = r.left - tw - 10;
+      }}
+      if (left < 8) left = 8;
+      if (top + th > window.innerHeight - 8) {{
+        top = window.innerHeight - th - 8;
+      }}
+      if (top < 8) top = 8;
+      tip.style.left = left + 'px';
+      tip.style.top = top + 'px';
+    }}
+
+    function showTip(link) {{
+      var tip = link.querySelector('.card-tip');
+      if (!tip) return;
+      if (openTip && openTip !== tip) hideTip();
+      openTip = tip;
+      openLink = link;
+      placeTip(link, tip);
+    }}
+
+    document.querySelectorAll('a.card-link').forEach(function (link) {{
+      link.addEventListener('mouseenter', function () {{ showTip(link); }});
+      link.addEventListener('focus', function () {{ showTip(link); }});
+      link.addEventListener('mouseleave', hideTip);
+      link.addEventListener('blur', hideTip);
+    }});
+
+    window.addEventListener('scroll', function () {{
+      if (openLink && openTip) placeTip(openLink, openTip);
+    }}, true);
+    window.addEventListener('resize', hideTip);
+  }})();
+  </script>
 </body>
 </html>
 """
