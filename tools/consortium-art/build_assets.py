@@ -267,8 +267,8 @@ EXP_ICON_DIR = os.path.join(ASSET_DIR, 'expansion_icons')
 
 
 def _exp_ir_px(p):
-    # Slightly inset vs the resource icon so the gem clears the disc rim at 30px.
-    scale = 0.42
+    # Fill most of the disc — at 30px lobby size a small gem disappears.
+    scale = 0.50
     return (EXP_ICON_W / 2 + p[0] * EXP_ICON_W * scale,
             EXP_ICON_W / 2 + p[1] * EXP_ICON_W * scale)
 
@@ -280,16 +280,16 @@ def build_expansion_icon_consortium(path):
     cx = cy = EXP_ICON_W / 2
     r = EXP_ICON_W / 2 - 2 * EXP_ICON_SS
 
-    # Plate — cool slate, matches Structure-tag family rather than warm Ares red.
+    # Plate — cool slate with enough lift to separate from the dark lobby button.
     d.ellipse([cx - r, cy - r, cx + r, cy + r],
-              fill=(36, 42, 52, 255),
-              outline=(12, 14, 18, 255),
+              fill=(48, 58, 72, 255),
+              outline=(18, 22, 28, 255),
               width=int(2.5 * EXP_ICON_SS))
-    # Thin cool rim so it reads against the dark lobby button.
+    # Cool rim so it reads against charcoal expansion buttons.
     rim = r - 1.5 * EXP_ICON_SS
     d.ellipse([cx - rim, cy - rim, cx + rim, cy + rim],
-              outline=(120, 150, 170, 220),
-              width=max(1, int(1.2 * EXP_ICON_SS)))
+              outline=(160, 190, 210, 240),
+              width=max(1, int(1.4 * EXP_ICON_SS)))
 
     body = [_IR_TOP, _IR_UR, _IR_LR, _IR_BOT, _IR_LL, _IR_UL]
     d.polygon([_exp_ir_px(p) for p in body], fill=(24, 27, 34, 255))
