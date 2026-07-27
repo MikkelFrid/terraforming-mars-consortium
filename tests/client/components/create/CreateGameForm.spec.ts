@@ -133,6 +133,24 @@ describe('CreateGameForm', () => {
     expect(wrapper.find('[data-test="consortium-map-preview"]').exists()).to.be.false;
   });
 
+  it('links Consortium board info to the in-instance rulebook map anchors', async () => {
+    // Upstream wiki Maps#consortium is empty / not editable from this fork.
+    const wrapper = mount(CreateGameForm, {
+      ...globalConfig,
+    });
+    (wrapper.vm as any).expansions.consortium = true;
+    await wrapper.vm.$nextTick();
+
+    expect((wrapper.vm as any).boardHref(BoardName.CONSORTIUM))
+      .eq('/assets/consortium/rulebook.html#massif');
+    expect((wrapper.vm as any).boardHref(BoardName.CONSORTIUM_RIFT))
+      .eq('/assets/consortium/rulebook.html#rift-basin');
+    expect((wrapper.vm as any).boardHref(BoardName.CONSORTIUM_ARCHIPELAGO))
+      .eq('/assets/consortium/rulebook.html#archipelago');
+    expect((wrapper.vm as any).boardHref(BoardName.THARSIS))
+      .eq('https://github.com/terraforming-mars/terraforming-mars/wiki/Maps#tharsis');
+  });
+
   it('restores the last saved game settings on load', async () => {
     new CreateGameSettingsStorage(localStorage).saveSettings(createGameSettings({
       expansions: {...DEFAULT_EXPANSIONS, venus: true},

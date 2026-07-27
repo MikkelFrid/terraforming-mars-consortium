@@ -1010,6 +1010,18 @@ export default defineComponent({
       return playerColorClass(color, 'bg_transparent');
     },
     boardHref(boardName: BoardName | RandomBoardOption) {
+      // Consortium maps are not on the upstream wiki Maps page (and we cannot
+      // edit that wiki from this fork). Point ⓘ at the in-instance rulebook
+      // gallery — same previews as the lobby. Paste-ready upstream wiki text:
+      // docs/consortium/wiki-Maps-consortium.md
+      if (isConsortiumBoard(boardName)) {
+        const anchors: Partial<Record<BoardName, string>> = {
+          [BoardName.CONSORTIUM]: 'massif',
+          [BoardName.CONSORTIUM_RIFT]: 'rift-basin',
+          [BoardName.CONSORTIUM_ARCHIPELAGO]: 'archipelago',
+        };
+        return `/assets/consortium/rulebook.html#${anchors[boardName as BoardName] ?? 'consortium'}`;
+      }
       const options: Record<BoardName | RandomBoardOption, string> = {
         [BoardName.THARSIS]: 'tharsis',
         [BoardName.HELLAS]: 'hellas',

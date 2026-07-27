@@ -38,10 +38,17 @@ Do not hand-edit JSON/LESS/PNG — change `VARIANTS` in the generator and rerun.
 
 Terrain previews (Mars disc + hex overlays + legend) are used by:
 
-- Player rulebook §2 (`assets/consortium/rulebook.html`)
+- Player rulebook §2 (`assets/consortium/rulebook.html#board`, anchors `#massif` / `#rift-basin` / `#archipelago` / `#consortium`)
 - Lobby create-game board column when Consortium is enabled
+- Lobby board ⓘ → rulebook anchors (not upstream wiki — see below)
 
 Paths come from `consortiumBoardPreviewUrl()` in `src/common/boards/ConsortiumBoards.ts`.
+
+### Upstream wiki Maps#consortium
+
+https://github.com/terraforming-mars/terraforming-mars/wiki/Maps has no Consortium
+section yet, and this fork cannot write that wiki. Paste-ready markdown (absolute
+Railway image URLs): `docs/consortium/wiki-Maps-consortium.md`.
 
 ## Lobby / API
 
