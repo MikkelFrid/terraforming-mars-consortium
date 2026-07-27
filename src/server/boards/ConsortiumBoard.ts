@@ -1,3 +1,5 @@
+import {BoardName} from '../../common/boards/BoardName';
+import {isConsortiumBoard} from '../../common/boards/ConsortiumBoards';
 import {SpaceBonus} from '../../common/boards/SpaceBonus';
 import {SpaceName} from '../../common/boards/SpaceName';
 import {SpaceType} from '../../common/boards/SpaceType';
@@ -8,6 +10,8 @@ import {CanAffordOptions, IPlayer} from '../IPlayer';
 import {MarsBoard} from './MarsBoard';
 import {Space} from './Space';
 import consortiumSpaces from './consortiumSpaces.json';
+import consortiumRiftSpaces from './consortiumRiftSpaces.json';
+import consortiumArchipelagoSpaces from './consortiumArchipelagoSpaces.json';
 
 type ConsortiumSpaceJson = {
   q: number;
@@ -35,6 +39,12 @@ const TYPE_MAP: Record<ConsortiumSpaceJson['type'], SpaceType> = {
 const AXIAL_DIRS: ReadonlyArray<readonly [number, number]> = [
   [0, -1], [1, -1], [1, 0], [0, 1], [-1, 1], [-1, 0],
 ];
+
+const SPACES_BY_BOARD: Record<BoardName.CONSORTIUM | BoardName.CONSORTIUM_RIFT | BoardName.CONSORTIUM_ARCHIPELAGO, ReadonlyArray<ConsortiumSpaceJson>> = {
+  [BoardName.CONSORTIUM]: consortiumSpaces as ConsortiumSpaceJson[],
+  [BoardName.CONSORTIUM_RIFT]: consortiumRiftSpaces as ConsortiumSpaceJson[],
+  [BoardName.CONSORTIUM_ARCHIPELAGO]: consortiumArchipelagoSpaces as ConsortiumSpaceJson[],
+};
 
 function colonySpace(id: SpaceId): Space {
   return {id, spaceType: SpaceType.COLONY, x: -1, y: -1, bonus: []};
@@ -75,15 +85,23 @@ export function unlockBridgeSector(spaces: ReadonlyArray<Space>, sector: number)
   }
 }
 
+function spacesFor(boardName: BoardName): ReadonlyArray<ConsortiumSpaceJson> {
+  if (!isConsortiumBoard(boardName)) {
+    // Safe default if a non-consortium name reaches the factory.
+    return SPACES_BY_BOARD[BoardName.CONSORTIUM];
+  }
+  return SPACES_BY_BOARD[boardName as keyof typeof SPACES_BY_BOARD];
+}
+
 export class ConsortiumBoard extends MarsBoard {
-  public static newInstance(_gameOptions: GameOptions, _rng: Random): ConsortiumBoard {
+  public static newInstance(gameOptions: GameOptions, _rng: Random): ConsortiumBoard {
     const spaces: Array<Space> = [
       colonySpace(SpaceName.GANYMEDE_COLONY),
       colonySpace(SpaceName.PHOBOS_SPACE_HAVEN),
     ];
 
     const N = 6; // map radius — matches build_board.py
-    for (const entry of consortiumSpaces as ConsortiumSpaceJson[]) {
+    for (const entry of spacesFor(gameOptions.boardName)) {
       const space: Space = {
         id: spaceId(entry.id),
         spaceType: TYPE_MAP[entry.type],

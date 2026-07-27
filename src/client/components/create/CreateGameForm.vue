@@ -185,15 +185,15 @@
 
                         <div class="create-game-page-column">
                             <h4 v-i18n>Board</h4>
-                            <div v-if="expansions.consortium" class="create-game-subsection-label" v-i18n>Locked to Consortium map</div>
+                            <div v-if="expansions.consortium" class="create-game-subsection-label" v-i18n>Consortium maps</div>
 
                             <div v-for="boardName in boards" :key="boardName">
                               <div v-if="!expansions.consortium && boardName==='utopia planitia'" class="create-game-subsection-label" v-i18n>Fan-made</div>
                               <!-- Board radios must not reuse expansion checkbox ids (e.g. consortium-checkbox). -->
-                              <input type="radio" :value="boardName" name="board" v-model="board" :id="'board-' + boardName + '-radio'" :disabled="expansions.consortium">
-                              <label :for="'board-' + boardName + '-radio'" class="expansion-button">
+                              <input type="radio" :value="boardName" name="board" v-model="board" :id="boardRadioId(boardName)">
+                              <label :for="boardRadioId(boardName)" class="expansion-button">
                                   <span :class="getBoardColorClass(boardName)">&#x2B22;</span>
-                                  <span class="capitalized" v-i18n>{{ boardName }}</span>
+                                  <span class="capitalized" v-i18n>{{ boardLabel(boardName) }}</span>
                                   <template v-if="boardName !== RandomBoardOption.OFFICIAL && boardName !== RandomBoardOption.ALL">
                                     &nbsp;<a :href="boardHref(boardName)" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                                   </template>
@@ -581,6 +581,7 @@ import * as constants from '@/common/constants';
 import {defineComponent, nextTick} from 'vue';
 import {Color, PLAYER_COLORS} from '@/common/Color';
 import {BoardName} from '@/common/boards/BoardName';
+import {CONSORTIUM_BOARDS, consortiumBoardLabel, isConsortiumBoard} from '@/common/boards/ConsortiumBoards';
 import {RandomBoardOption} from '@/common/boards/RandomBoardOption';
 import {CardName} from '@/common/cards/CardName';
 import CeosFilter from '@/client/components/create/CeosFilter.vue';
@@ -680,10 +681,12 @@ export default defineComponent({
       }
     },
     'expansions.consortium': function(value: boolean) {
-      // Terrain, frontier unlock and Consortium MAs require ConsortiumBoard.
+      // Terrain, frontier unlock and Consortium MAs require a Consortium map.
       if (value === true) {
-        this.board = BoardName.CONSORTIUM;
-      } else if (this.board === BoardName.CONSORTIUM) {
+        if (!isConsortiumBoard(this.board)) {
+          this.board = BoardName.CONSORTIUM;
+        }
+      } else if (isConsortiumBoard(this.board)) {
         this.board = BoardName.THARSIS;
       }
     },
@@ -717,10 +720,9 @@ export default defineComponent({
       return PLAYER_COLORS;
     },
     boards() {
-      // Consortium expansion is map-locked: chasms, crater fields, highlands and
-      // bridge → frontier unlock only exist on ConsortiumBoard.
+      // Consortium expansion is map-locked to the three Consortium variants.
       if (this.expansions.consortium) {
-        return [BoardName.CONSORTIUM];
+        return [...CONSORTIUM_BOARDS];
       }
       return [
         BoardName.THARSIS,
@@ -740,6 +742,16 @@ export default defineComponent({
     },
   },
   methods: {
+    boardRadioId(boardName: BoardName | BoardNameType | RandomBoardOption): string {
+      const slug = String(boardName).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      return `board-${slug}-radio`;
+    },
+    boardLabel(boardName: BoardName | BoardNameType | RandomBoardOption): string {
+      if (isConsortiumBoard(boardName)) {
+        return consortiumBoardLabel(boardName);
+      }
+      return String(boardName);
+    },
     restoreLastSettings() {
       const settings = createGameSettingsStorage.loadSettings();
       if (settings === undefined) {
@@ -762,7 +774,7 @@ export default defineComponent({
       this.uploading = true;
       try {
         processor.applyJSON(json);
-        if (component.expansions.consortium) {
+        if (component.expansions.consortium && !isConsortiumBoard(component.board)) {
           component.board = BoardName.CONSORTIUM;
         }
       } catch (e) {
@@ -781,7 +793,7 @@ export default defineComponent({
             component.seed = Math.random();
           }
           component.solarPhaseOption = Boolean(processor.solarPhaseOption);
-          if (component.expansions.consortium) {
+          if (component.expansions.consortium && !isConsortiumBoard(component.board)) {
             component.board = BoardName.CONSORTIUM;
           }
         } finally {
@@ -955,6 +967,8 @@ export default defineComponent({
       case BoardName.HOLLANDIA:
         return 'create-game-board-hexagon create-game-hollandia';
       case BoardName.CONSORTIUM:
+      case BoardName.CONSORTIUM_RIFT:
+      case BoardName.CONSORTIUM_ARCHIPELAGO:
         return 'create-game-board-hexagon create-game-consortium';
       default:
         return 'create-game-board-hexagon create-game-random';
@@ -980,6 +994,8 @@ export default defineComponent({
         [BoardName.TERRA_CIMMERIA_NOVA]: 'terra-cimmeria-nova',
         [BoardName.HOLLANDIA]: 'hollandia',
         [BoardName.CONSORTIUM]: 'consortium',
+        [BoardName.CONSORTIUM_RIFT]: 'consortium',
+        [BoardName.CONSORTIUM_ARCHIPELAGO]: 'consortium',
         [RandomBoardOption.OFFICIAL]: '',
         [RandomBoardOption.ALL]: '',
       };
@@ -1044,7 +1060,7 @@ export default defineComponent({
       const customPreludes = this.customPreludes;
       const bannedCards = this.bannedCards;
       const includedCards = this.includedCards;
-      if (this.expansions.consortium) {
+      if (this.expansions.consortium && !isConsortiumBoard(this.board)) {
         this.board = BoardName.CONSORTIUM;
       }
       const board = this.board;

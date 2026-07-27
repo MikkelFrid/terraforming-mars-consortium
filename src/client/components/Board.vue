@@ -360,6 +360,7 @@ import {SpaceType} from '@/common/boards/SpaceType';
 import {SpaceId} from '@/common/Types';
 import {TileView} from '@/client/components/board/TileView';
 import {BoardName} from '@/common/boards/BoardName';
+import {isConsortiumBoard} from '@/common/boards/ConsortiumBoards';
 import {LEGENDS} from '@/client/components/Legends';
 import {Expansion} from '@/common/cards/GameModule';
 import {SpaceName} from '@/common/boards/SpaceName';
@@ -503,7 +504,7 @@ export default defineComponent({
     },
     getGameBoardClassName(): string {
       const venus = this.expansions.venus ? 'board-with-venus' : 'board-without-venus';
-      const consortium = this.boardName === BoardName.CONSORTIUM ? ' board-consortium' : '';
+      const consortium = isConsortiumBoard(this.boardName) ? ' board-consortium' : '';
       return `board-cont ${venus}${consortium}`;
     },
   },

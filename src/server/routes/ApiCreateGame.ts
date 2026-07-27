@@ -3,6 +3,7 @@ import {Handler} from './Handler';
 import {Context} from './IHandler';
 import {Database} from '../database/Database';
 import {BoardName} from '../../common/boards/BoardName';
+import {isConsortiumBoard} from '../../common/boards/ConsortiumBoards';
 import {RandomBoardOption} from '../../common/boards/RandomBoardOption';
 import {Cloner} from '../database/Cloner';
 import {Game} from '../Game';
@@ -121,12 +122,16 @@ export class ApiCreateGame extends Handler {
             }
           }
 
-          // Consortium terrain / frontier / MA set require ConsortiumBoard.
-          // Force the map even if the client sent Tharsis or a Random* option.
+          // Consortium terrain / frontier / MA set require a Consortium map.
+          // Clamp to the Consortium set (default Massif) if the client sent
+          // Tharsis or a Random* option; keep an explicit Massif/Rift/Archipelago pick.
           if (gameReq.expansions?.consortium === true) {
-            gameReq.board = BoardName.CONSORTIUM;
+            gameReq.board = isConsortiumBoard(gameReq.board) ?
+              gameReq.board as BoardName :
+              BoardName.CONSORTIUM;
           } else {
-            const boards = ApiCreateGame.boardOptions(gameReq.board);
+            const boards = ApiCreateGame.boardOptions(gameReq.board)
+              .filter((name) => !isConsortiumBoard(name));
             gameReq.board = boards[Math.floor(Math.random() * boards.length)];
           }
 

@@ -21,7 +21,7 @@
             </li>
 
             <li><div class="setup-item" v-i18n>Board:</div>
-              <span :class="boardColorClass" v-i18n>{{ gameOptions.boardName }}</span>
+              <span :class="boardColorClass" v-i18n>{{ boardLabel }}</span>
               &nbsp;
               <span v-if="gameOptions.shuffleMapOption" class="game-config generic" v-i18n>(randomized tiles)</span>
             </li>
@@ -84,6 +84,7 @@
 import {defineComponent} from 'vue';
 import {GameOptionsModel} from '@/common/models/GameOptionsModel';
 import {BoardName} from '@/common/boards/BoardName';
+import {consortiumBoardLabel, isConsortiumBoard} from '@/common/boards/ConsortiumBoards';
 import {RandomMAOptionType} from '@/common/ma/RandomMAOptionType';
 import {translateTextWithParams} from '@/client/directives/i18n';
 import {RULEBOOK_URLS} from '@/client/utils/WikiLinks';
@@ -101,6 +102,8 @@ const boardColorClass: Record<BoardName, string> = {
   [BoardName.TERRA_CIMMERIA]: 'game-config board-terra_cimmeria map',
   [BoardName.HOLLANDIA]: 'game-config board-hollandia map',
   [BoardName.CONSORTIUM]: 'game-config board-consortium map',
+  [BoardName.CONSORTIUM_RIFT]: 'game-config board-consortium map',
+  [BoardName.CONSORTIUM_ARCHIPELAGO]: 'game-config board-consortium map',
 };
 
 export default defineComponent({
@@ -128,6 +131,13 @@ export default defineComponent({
     },
     boardColorClass(): string {
       return boardColorClass[this.gameOptions.boardName];
+    },
+    boardLabel(): string {
+      const name = this.gameOptions.boardName;
+      if (isConsortiumBoard(name)) {
+        return `Consortium — ${consortiumBoardLabel(name)}`;
+      }
+      return name;
     },
     escapeVelocityDescription(): string {
       if (this.gameOptions.escapeVelocity === undefined) {

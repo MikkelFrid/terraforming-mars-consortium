@@ -137,6 +137,8 @@ export const awardManifest: MAManifest<AwardName, IAward> = {
     [BoardName.TERRA_CIMMERIA_NOVA]: ['Electrician', 'Founder', 'Mogul', 'A. Zoologist', 'Forecaster'],
     [BoardName.HOLLANDIA]: [],
     [BoardName.CONSORTIUM]: ['Underwriter', 'Cartographer', 'Refiner'],
+    [BoardName.CONSORTIUM_RIFT]: ['Underwriter', 'Cartographer', 'Refiner'],
+    [BoardName.CONSORTIUM_ARCHIPELAGO]: ['Underwriter', 'Cartographer', 'Refiner'],
   },
   expansions: {
     venus: ['Venuphile'],

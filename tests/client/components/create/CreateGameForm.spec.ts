@@ -68,7 +68,7 @@ describe('CreateGameForm', () => {
     expect((wrapper.vm as any).expansions.consortium).eq(true);
   });
 
-  it('auto-selects and locks the Consortium board when the expansion is enabled', async () => {
+  it('auto-selects Consortium maps when the expansion is enabled', async () => {
     const wrapper = mount(CreateGameForm, {
       ...globalConfig,
     });
@@ -77,9 +77,23 @@ describe('CreateGameForm', () => {
     await wrapper.vm.$nextTick();
 
     expect((wrapper.vm as any).board).eq(BoardName.CONSORTIUM);
-    expect((wrapper.vm as any).boards).deep.eq([BoardName.CONSORTIUM]);
-    expect(wrapper.find('#board-consortium-radio').attributes('disabled')).to.equal('');
-    expect(wrapper.text()).to.include('Locked to Consortium map');
+    expect((wrapper.vm as any).boards).deep.eq([
+      BoardName.CONSORTIUM,
+      BoardName.CONSORTIUM_RIFT,
+      BoardName.CONSORTIUM_ARCHIPELAGO,
+    ]);
+    expect(wrapper.find('#board-consortium-radio').exists()).to.be.true;
+    expect(wrapper.find('#board-rift-basin-radio').exists()).to.be.true;
+    expect(wrapper.find('#board-archipelago-radio').exists()).to.be.true;
+    expect(wrapper.find('#board-consortium-radio').attributes('disabled')).to.equal(undefined);
+    expect(wrapper.text()).to.include('Consortium maps');
+    expect(wrapper.text()).to.include('Massif');
+    expect(wrapper.text()).to.include('Rift Basin');
+    expect(wrapper.text()).to.include('Archipelago');
+
+    await wrapper.find('#board-rift-basin-radio').setValue(BoardName.CONSORTIUM_RIFT);
+    await wrapper.vm.$nextTick();
+    expect((wrapper.vm as any).board).eq(BoardName.CONSORTIUM_RIFT);
 
     (wrapper.vm as any).expansions.consortium = false;
     await wrapper.vm.$nextTick();

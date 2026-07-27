@@ -12,5 +12,8 @@ export enum BoardName {
   AMAZONIS = 'amazonis p.',
   TERRA_CIMMERIA = 't. cimmeria',
   HOLLANDIA = 'Hollandia',
+  /** Consortium — Massif (default). Id kept as `consortium` for saved games. */
   CONSORTIUM = 'consortium',
+  CONSORTIUM_RIFT = 'rift basin',
+  CONSORTIUM_ARCHIPELAGO = 'archipelago',
 }

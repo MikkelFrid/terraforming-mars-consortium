@@ -164,6 +164,8 @@ export const milestoneManifest: MAManifest<MilestoneName, IMilestone> = {
     [BoardName.TERRA_CIMMERIA_NOVA]: ['Planetologist', 'Architect', 'Coastguard', 'C. Forester', 'Fundraiser'],
     [BoardName.HOLLANDIA]: [],
     [BoardName.CONSORTIUM]: ['Mason', 'Pathfinder', 'Assayer'],
+    [BoardName.CONSORTIUM_RIFT]: ['Mason', 'Pathfinder', 'Assayer'],
+    [BoardName.CONSORTIUM_ARCHIPELAGO]: ['Mason', 'Pathfinder', 'Assayer'],
   },
   expansions: {
     venus: ['Hoverlord'],

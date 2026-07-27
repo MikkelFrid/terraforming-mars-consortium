@@ -27,6 +27,44 @@ describe('ConsortiumBoard', () => {
     expect(counts).to.deep.eq({land: 72, crater: 12, chasm: 24, ocean: 13, highland: 6});
   });
 
+  it('Rift Basin and Archipelago share Massif geometry with different terrain', () => {
+    const massif = ConsortiumBoard.newInstance(
+      {...DEFAULT_GAME_OPTIONS, boardName: BoardName.CONSORTIUM, consortiumExpansion: true},
+      new SeededRandom(0),
+    );
+    const rift = ConsortiumBoard.newInstance(
+      {...DEFAULT_GAME_OPTIONS, boardName: BoardName.CONSORTIUM_RIFT, consortiumExpansion: true},
+      new SeededRandom(0),
+    );
+    const archipelago = ConsortiumBoard.newInstance(
+      {...DEFAULT_GAME_OPTIONS, boardName: BoardName.CONSORTIUM_ARCHIPELAGO, consortiumExpansion: true},
+      new SeededRandom(0),
+    );
+
+    const axialKey = (s: {q?: number, r?: number, id: string}) => `${s.id}:${s.q},${s.r}`;
+    const massifKeys = massif.spaces.filter((s) => s.spaceType !== SpaceType.COLONY).map(axialKey);
+    expect(rift.spaces.filter((s) => s.spaceType !== SpaceType.COLONY).map(axialKey)).to.deep.eq(massifKeys);
+    expect(archipelago.spaces.filter((s) => s.spaceType !== SpaceType.COLONY).map(axialKey)).to.deep.eq(massifKeys);
+
+    const count = (board: ConsortiumBoard) => ({
+      land: board.spaces.filter((s) => s.spaceType === SpaceType.LAND).length,
+      crater: board.spaces.filter((s) => s.spaceType === SpaceType.CRATER_FIELD).length,
+      chasm: board.spaces.filter((s) => s.spaceType === SpaceType.CHASM).length,
+      ocean: board.spaces.filter((s) => s.spaceType === SpaceType.OCEAN).length,
+      highland: board.spaces.filter((s) => s.spaceType === SpaceType.HIGHLAND).length,
+      locked: board.spaces.filter((s) => s.locked === true).length,
+    });
+
+    // Rift: wider chasms, scarce open frontier, clustered highlands.
+    expect(count(rift)).to.deep.eq({
+      land: 65, crater: 13, chasm: 30, ocean: 13, highland: 6, locked: 33,
+    });
+    // Archipelago: more highlands, narrower chasms, more open frontier.
+    expect(count(archipelago)).to.deep.eq({
+      land: 75, crater: 12, chasm: 18, ocean: 13, highland: 9, locked: 21,
+    });
+  });
+
   it('has 13 ocean spaces, all in the core zone, none on highland', () => {
     // Core = ring <= 4 (see build_board.py). Oceans must never overlap highland.
     const board = ConsortiumBoard.newInstance(

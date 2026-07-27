@@ -80,6 +80,8 @@ export function chooseMilestonesAndAwards(gameOptions: GameOptions): DrawnMilest
     case BoardName.VASTITAS_BOREALIS:
     case BoardName.VASTITAS_BOREALIS_NOVA:
     case BoardName.CONSORTIUM:
+    case BoardName.CONSORTIUM_RIFT:
+    case BoardName.CONSORTIUM_ARCHIPELAGO:
       push(milestoneManifest.boards[boardName], awardManifest.boards[gameOptions.boardName]);
       break;
     default:

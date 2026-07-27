@@ -598,7 +598,7 @@ def build_html(cards: list[dict]) -> str:
     <h2 id="setup">1. Setup</h2>
     <ul>
       <li>Enable the <strong>Consortium</strong> expansion in the lobby.</li>
-      <li>The board is locked to the <strong>Consortium map</strong> (chasms, crater fields, highlands, and a locked frontier).</li>
+      <li>Pick a <strong>Consortium map</strong>: Massif (balanced), Rift Basin (iridium behind bridges), or Archipelago (more highlands). All use chasms, crater fields, highlands, and a locked frontier.</li>
       <li>Recommended: <strong>3–4 players</strong>.</li>
       <li>Shuffle Consortium project cards into the deck. Include corporations if corporations are on.</li>
       <li>Place the <strong>iridium bank</strong> (28 tokens). Players start with <strong>0 iridium</strong>.</li>

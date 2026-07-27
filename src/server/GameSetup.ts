@@ -48,6 +48,8 @@ const boards: Record<BoardName, BoardFactory> = {
   [BoardName.VASTITAS_BOREALIS]: VastitasBorealisBoard,
   [BoardName.HOLLANDIA]: HollandiaBoard,
   [BoardName.CONSORTIUM]: ConsortiumBoard,
+  [BoardName.CONSORTIUM_RIFT]: ConsortiumBoard,
+  [BoardName.CONSORTIUM_ARCHIPELAGO]: ConsortiumBoard,
 } satisfies Record<BoardName, BoardFactory>;
 
 export class GameSetup {

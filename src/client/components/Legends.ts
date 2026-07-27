@@ -26,4 +26,6 @@ export const LEGENDS = {
   ],
   [BoardName.HOLLANDIA]: [],
   [BoardName.CONSORTIUM]: [],
+  [BoardName.CONSORTIUM_RIFT]: [],
+  [BoardName.CONSORTIUM_ARCHIPELAGO]: [],
 } satisfies Record<BoardName, Array<Key>>;

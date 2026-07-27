@@ -27,7 +27,8 @@ describe('ApiCreateGame', () => {
     expect(ApiCreateGame.boardOptions(RandomBoardOption.OFFICIAL)).deep.eq([BoardName.THARSIS, BoardName.HELLAS, BoardName.ELYSIUM]);
   });
   it('Fully random boards do include fan maps', () => {
-    // CONSORTIUM is included in ALL (fan-made); lobby gating is CreateGameForm-only.
+    // Consortium maps are included in ALL; CreateGameForm + create handler
+    // filter them out unless the Consortium expansion is on.
     expect(ApiCreateGame.boardOptions(RandomBoardOption.ALL)).deep.eq([
       BoardName.THARSIS,
       BoardName.HELLAS,
@@ -41,6 +42,8 @@ describe('ApiCreateGame', () => {
       BoardName.TERRA_CIMMERIA,
       BoardName.HOLLANDIA,
       BoardName.CONSORTIUM,
+      BoardName.CONSORTIUM_RIFT,
+      BoardName.CONSORTIUM_ARCHIPELAGO,
     ]);
   });
 
@@ -128,6 +131,84 @@ describe('ApiCreateGame', () => {
     expect(game).is.not.undefined;
     expect(game!.gameOptions.boardName).eq(BoardName.CONSORTIUM);
     expect(game!.gameOptions.consortiumExpansion).eq(true);
+  });
+
+  it('keeps an explicit Consortium variant when expansion is enabled', async () => {
+    const post = scaffolding.post(apiCreateGame, res);
+    const emit = Promise.resolve().then(() => {
+      const newGameConfig: NewGameConfig = {
+        players: [{
+          name: 'Robot',
+          color: 'blue',
+          beginner: false,
+          handicap: 0,
+          first: true,
+        }],
+        expansions: {
+          corpera: true,
+          promo: false,
+          venus: false,
+          colonies: false,
+          prelude: false,
+          prelude2: false,
+          turmoil: false,
+          community: false,
+          ares: false,
+          moon: false,
+          pathfinders: false,
+          ceo: false,
+          starwars: false,
+          underworld: false,
+          deltaProject: false,
+          consortium: true,
+        },
+        board: BoardName.CONSORTIUM_RIFT,
+        seed: 0,
+        randomFirstPlayer: false,
+        clonedGamedId: undefined,
+        undoOption: false,
+        showTimers: false,
+        fastModeOption: false,
+        showOtherPlayersVP: false,
+        aresExtremeVariant: false,
+        politicalAgendasExtension: 'Standard',
+        solarPhaseOption: false,
+        removeNegativeGlobalEventsOption: false,
+        modularMA: false,
+        draftVariant: false,
+        initialDraft: false,
+        preludeDraftVariant: false,
+        ceosDraftVariant: false,
+        startingCorporations: 0,
+        shuffleMapOption: false,
+        randomMA: RandomMAOptionType.NONE,
+        includeFanMA: false,
+        soloTR: false,
+        customCorporationsList: [],
+        bannedCards: [],
+        includedCards: [],
+        customColoniesList: [],
+        customPreludes: [],
+        requiresMoonTrackCompletion: false,
+        requiresVenusTrackCompletion: false,
+        moonStandardProjectVariant: false,
+        moonStandardProjectVariant1: false,
+        altVenusBoard: false,
+        escapeVelocity: undefined,
+        twoCorpsVariant: false,
+        customCeos: [],
+        startingCeos: 0,
+        startingPreludes: 0,
+      };
+      req.emitter.emit('data', JSON.stringify(newGameConfig));
+      req.emitter.emit('end');
+    });
+    await Promise.all(([emit, post]));
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    expect(game).is.not.undefined;
+    expect(game!.gameOptions.boardName).eq(BoardName.CONSORTIUM_RIFT);
   });
 
   it('simple create', async () => {

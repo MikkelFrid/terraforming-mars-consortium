@@ -1,63 +1,97 @@
 """
 Consortium board generator.
 
-Builds the Consortium map from the repository's own assets and pure geometry,
-so no binary files need to be transferred. Run from the repository root:
+Builds Consortium map variants from the repository's own assets and pure
+geometry. Run from the repository root:
 
     python3 tools/consortium-art/build_board.py
 
 Requires Pillow only.
 
-Produces:
-    assets/board/mars_consortium.png     891x860 RGBA
-    src/styles/board_positions.less      127 rules
-    src/server/boards/consortiumSpaces.json
+Produces (shared geometry — all variants use the same hex positions):
+    assets/board/mars_consortium.png
+    src/styles/board_positions.less
+    src/server/boards/consortiumSpaces.json              (Massif)
+    src/server/boards/consortiumRiftSpaces.json
+    src/server/boards/consortiumArchipelagoSpaces.json
 
-Geometry, derived from the existing Tharsis layout in
-src/styles/board_items_positions.less:
-
-    hex pitch   49 x 41 px
-    hex asset   46 x 50 px
-    field       634 x 542 px  (Tharsis is 441 x 378)
-
-The board image is the game's own mars.png upscaled 1.44x with its grain
-statistics preserved, so the Consortium map looks like it belongs beside
-Tharsis, Hellas and Elysium rather than like a different game.
+Variants differ only in terrain overlays (chasms / craters / highlands /
+oceans / frontier lock arcs). Hex radius, pitch and CSS ids stay identical.
 
 Artwork derives from the official Terraforming Mars asset sources,
 CC BY-SA 4.0.
 """
 
+from __future__ import annotations
+
 import json
 import math
 import os
 import sys
-from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageStat
+from PIL import Image, ImageChops, ImageFilter, ImageStat
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 MARS_SRC = os.path.join(ROOT, 'assets', 'board', 'mars.png')
 MARS_DST = os.path.join(ROOT, 'assets', 'board', 'mars_consortium.png')
 LESS_DST = os.path.join(ROOT, 'src', 'styles', 'board_positions.less')
-JSON_DST = os.path.join(ROOT, 'src', 'server', 'boards', 'consortiumSpaces.json')
+JSON_DIR = os.path.join(ROOT, 'src', 'server', 'boards')
 
 N = 6                       # map radius -> 3N^2+3N+1 = 127 spaces
-CHASM_HALF = 45.0           # degrees of chasm arc either side of a bridge
 SECTORS = [90.0, 210.0, 330.0]
 PITCH_X, PITCH_Y = 49, 41
 HEX_W, HEX_H = 46, 50
-# Centre the hex field on the upscaled planet disc (not pinned at 0,0).
 OFFSET_X, OFFSET_Y = 137, 134
 
-HIGHLANDS = [(0, -3), (1, -3), (0, -2), (-3, 1), (-3, 2), (-2, 1)]
-CORE_CRATERS = [(4, -2), (-2, 4), (-2, -2)]
+# ---------------------------------------------------------------------------
+# Variant terrain recipes
+# ---------------------------------------------------------------------------
+#
+# Massif     — balanced default (legacy layout).
+# Rift Basin — wider chasm belts, few core craters, clustered highlands,
+#              rich frontier crater fields (iridium behind bridges).
+# Archipelago — more scattered highlands, even core craters, narrower
+#              chasms, thinner frontier (structure / foundation play).
 
-# Ocean-reserved spaces. Tharsis has 12; this board has 13 so there is a
-# real choice of where to place the nine oceans the game needs. All sit in
-# the core so the ocean parameter can never be gated behind a bridge, and
-# none overlap a highland, which cannot take an ocean by rule.
-OCEANS = [(2, -4), (3, -4), (2, -3), (3, -3), (4, -3),
-          (2, -2), (3, -2), (1, -1), (2, -1), (3, -1),
-          (1, 0), (2, 0), (0, 1)]
+VARIANTS = {
+    'massif': {
+        'json': 'consortiumSpaces.json',
+        'chasm_half': 45.0,
+        'highlands': [(0, -3), (1, -3), (0, -2), (-3, 1), (-3, 2), (-2, 1)],
+        'core_craters': [(4, -2), (-2, 4), (-2, -2)],
+        'oceans': [(2, -4), (3, -4), (2, -3), (3, -3), (4, -3),
+                   (2, -2), (3, -2), (1, -1), (2, -1), (3, -1),
+                   (1, 0), (2, 0), (0, 1)],
+        'frontier_craters_per_sector': 3,
+    },
+    'rift': {
+        'json': 'consortiumRiftSpaces.json',
+        'chasm_half': 58.0,
+        # One highland massif in the south-west — fight for foundation.
+        'highlands': [(-2, 2), (-1, 2), (-3, 2), (-2, 1), (-1, 1), (-3, 3)],
+        # Almost no early iridium in the core.
+        'core_craters': [(0, -3)],
+        'oceans': [(2, -4), (3, -4), (2, -3), (3, -3), (4, -3),
+                   (2, -2), (3, -2), (1, -1), (2, -1), (3, -1),
+                   (1, 0), (2, 0), (3, 0)],
+        'frontier_craters_per_sector': 4,
+    },
+    'archipelago': {
+        'json': 'consortiumArchipelagoSpaces.json',
+        'chasm_half': 34.0,
+        # Nine scattered highland "islands".
+        'highlands': [
+            (0, -3), (2, -1), (-3, 1),
+            (1, 2), (-2, -1), (3, -4),
+            (-1, 3), (4, -2), (-4, 2),
+        ],
+        'core_craters': [(0, 0), (2, -3), (-3, 3), (1, -2), (-2, 2), (0, 2)],
+        # Avoid highland / core-crater keys; oceans stay in core.
+        'oceans': [(2, -4), (3, -3), (4, -3), (2, -2), (3, -2),
+                   (1, -1), (4, -1), (3, 0), (1, 0), (2, 0),
+                   (0, 1), (1, 1), (-1, 0)],
+        'frontier_craters_per_sector': 2,
+    },
+}
 
 
 def ring(q, r):
@@ -78,7 +112,19 @@ def arc_delta(a, b):
     return min(d, 360 - d)
 
 
-def build_spaces():
+def build_spaces(variant_key: str):
+    cfg = VARIANTS[variant_key]
+    highlands = set(cfg['highlands'])
+    core_craters = set(cfg['core_craters'])
+    oceans = set(cfg['oceans'])
+    chasm_half = cfg['chasm_half']
+    frontier_n = cfg['frontier_craters_per_sector']
+
+    # Overlaps are hard errors — keep the recipes honest.
+    overlap = (highlands & oceans) | (highlands & core_craters) | (oceans & core_craters)
+    if overlap:
+        raise SystemExit(f'{variant_key}: overlapping terrain keys {sorted(overlap)}')
+
     spaces = []
     for q in range(-N, N + 1):
         for r in range(-N, N + 1):
@@ -88,7 +134,7 @@ def build_spaces():
     for s in spaces:
         a = bearing(s['q'], s['r'])
         sector = min(range(3), key=lambda i: arc_delta(a, SECTORS[i]))
-        near = arc_delta(a, SECTORS[sector]) <= CHASM_HALF
+        near = arc_delta(a, SECTORS[sector]) <= chasm_half
         s['sector'] = sector
 
         if s['ring'] <= 4:
@@ -103,11 +149,16 @@ def build_spaces():
 
     for s in spaces:
         key = (s['q'], s['r'])
-        if key in HIGHLANDS:
+        if key in highlands:
+            # Highlands may sit on belt/frontier — they stay highland (no ocean).
             s['type'] = 'highland'
-        elif key in CORE_CRATERS:
+            if s.get('locked'):
+                # A locked highland is still a frontier foundation target once
+                # unlocked; keep lock/bridge so the bridge opens it.
+                pass
+        elif key in core_craters and s['zone'] == 'core' and s['type'] == 'land':
             s['type'] = 'crater'
-        elif key in OCEANS and s['zone'] == 'core':
+        elif key in oceans and s['zone'] == 'core' and s['type'] == 'land':
             s['type'] = 'ocean'
 
     for sector in range(3):
@@ -116,7 +167,7 @@ def build_spaces():
              if s['zone'] == 'frontier' and s['sector'] == sector
              and s['type'] == 'land'),
             key=lambda s: arc_delta(bearing(s['q'], s['r']), SECTORS[sector]))
-        for s in candidates[:3]:
+        for s in candidates[:frontier_n]:
             s['type'] = 'crater'
 
     pts = [(s, *axial_centre(s['q'], s['r'])) for s in spaces]
@@ -137,14 +188,17 @@ def write_less(spaces):
         f'.board-space-{s["id"]:03d} {{\n  margin: {s["y"]}px 0 0 {s["x"]}px;\n}}\n'
         for s in spaces)
     header = ('// Generated by tools/consortium-art/build_board.py\n'
-              '// Do not edit by hand. Change the generator and rerun.\n\n')
+              '// Do not edit by hand. Change the generator and rerun.\n'
+              '// Shared by Massif / Rift Basin / Archipelago (same geometry).\n\n')
     open(LESS_DST, 'w').write(header + body)
 
 
-def write_json(spaces):
-    os.makedirs(os.path.dirname(JSON_DST), exist_ok=True)
-    with open(JSON_DST, 'w') as f:
+def write_json(spaces, filename):
+    os.makedirs(JSON_DIR, exist_ok=True)
+    path = os.path.join(JSON_DIR, filename)
+    with open(path, 'w') as f:
         json.dump(spaces, f, indent=1)
+    return path
 
 
 def build_mars():
@@ -155,8 +209,6 @@ def build_mars():
     rgb, alpha = src.convert('RGB'), src.split()[3]
 
     residual = ImageChops.difference(rgb, rgb.filter(ImageFilter.GaussianBlur(1.2)))
-    # Use residual stddev (≈10.3), not max/6 (≈34) — otherwise the upscaled
-    # disc is over-grained relative to Tharsis / Hellas / Elysium.
     sigma = max(ImageStat.Stat(residual.convert('L')).stddev[0], 6.0)
 
     tw = round(src.width * 634 / 441)
@@ -175,30 +227,51 @@ def build_mars():
     return out
 
 
-def main():
-    spaces = build_spaces()
-    write_less(spaces)
-    write_json(spaces)
-    mars = build_mars()
-
+def summarize(name, spaces):
     counts, zones = {}, {}
     for s in spaces:
         counts[s['type']] = counts.get(s['type'], 0) + 1
         zones[s['zone']] = zones.get(s['zone'], 0) + 1
     locked = sum(1 for s in spaces if s.get('locked'))
+    oceans = counts.get('ocean', 0)
+    if oceans != 13:
+        raise SystemExit(f'{name}: expected 13 oceans, got {oceans}')
+    if counts.get('highland', 0) < 6:
+        raise SystemExit(f'{name}: need ≥6 highlands, got {counts.get("highland")}')
+    if locked < 9:
+        raise SystemExit(f'{name}: need locked frontier (≥9), got {locked}')
+    # Each sector must have at least one locked bridge space.
+    for sector in range(3):
+        n = sum(1 for s in spaces if s.get('locked') and s.get('bridge') == sector)
+        if n < 1:
+            raise SystemExit(f'{name}: sector {sector} has no locked frontier')
+    print(f'--- {name} ---')
+    print(f'  by type  : {counts}')
+    print(f'  by zone  : {zones}')
+    print(f'  locked   : {locked}   open frontier: {zones["frontier"] - locked}')
 
-    field_w = max(s['x'] for s in spaces) + HEX_W - OFFSET_X
-    field_h = max(s['y'] for s in spaces) + HEX_H - OFFSET_Y
 
-    print(f'spaces      : {len(spaces)}')
-    print(f'by type     : {counts}')
-    print(f'by zone     : {zones}')
-    print(f'locked      : {locked}   open frontier: {zones["frontier"] - locked}')
-    print(f'hex field   : {field_w} x {field_h} px')
-    print(f'field origin: {OFFSET_X}, {OFFSET_Y}  (centred on the planet disc)')
+def main():
+    # Geometry is identical across variants — write LESS/PNG once from Massif.
+    massif = build_spaces('massif')
+    write_less(massif)
+    mars = build_mars()
+
+    for key, cfg in VARIANTS.items():
+        spaces = build_spaces(key) if key != 'massif' else massif
+        # Sanity: shared geometry — same (q,r) → same id/x/y as Massif.
+        if key != 'massif':
+            by_qr = {(s['q'], s['r']): s for s in massif}
+            for s in spaces:
+                ref = by_qr[(s['q'], s['r'])]
+                if (s['id'], s['x'], s['y']) != (ref['id'], ref['x'], ref['y']):
+                    raise SystemExit(f'{key}: geometry drifted from Massif at {(s["q"], s["r"])}')
+        path = write_json(spaces, cfg['json'])
+        summarize(key, spaces)
+        print(f'  json     : {path}')
+
     print(f'board image : {mars.size[0]} x {mars.size[1]} px  -> {MARS_DST}')
-    print(f'css rules   : {len(spaces)}  -> {LESS_DST}')
-    print(f'space data  : {JSON_DST}')
+    print(f'css rules   : {len(massif)}  -> {LESS_DST}')
 
 
 if __name__ == '__main__':
