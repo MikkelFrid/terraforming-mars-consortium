@@ -68,6 +68,26 @@ describe('CreateGameForm', () => {
     expect((wrapper.vm as any).expansions.consortium).eq(true);
   });
 
+  it('auto-selects and locks the Consortium board when the expansion is enabled', async () => {
+    const wrapper = mount(CreateGameForm, {
+      ...globalConfig,
+    });
+    (wrapper.vm as any).board = BoardName.THARSIS;
+    (wrapper.vm as any).expansions.consortium = true;
+    await wrapper.vm.$nextTick();
+
+    expect((wrapper.vm as any).board).eq(BoardName.CONSORTIUM);
+    expect((wrapper.vm as any).boards).deep.eq([BoardName.CONSORTIUM]);
+    expect(wrapper.find('#board-consortium-radio').attributes('disabled')).to.equal('');
+    expect(wrapper.text()).to.include('Locked to Consortium map');
+
+    (wrapper.vm as any).expansions.consortium = false;
+    await wrapper.vm.$nextTick();
+    expect((wrapper.vm as any).board).eq(BoardName.THARSIS);
+    expect((wrapper.vm as any).boards).to.include(BoardName.THARSIS);
+    expect((wrapper.vm as any).boards).to.not.include(BoardName.CONSORTIUM);
+  });
+
   it('restores the last saved game settings on load', async () => {
     new CreateGameSettingsStorage(localStorage).saveSettings(createGameSettings({
       expansions: {...DEFAULT_EXPANSIONS, venus: true},

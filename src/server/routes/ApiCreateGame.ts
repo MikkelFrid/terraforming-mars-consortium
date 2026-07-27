@@ -121,8 +121,14 @@ export class ApiCreateGame extends Handler {
             }
           }
 
-          const boards = ApiCreateGame.boardOptions(gameReq.board);
-          gameReq.board = boards[Math.floor(Math.random() * boards.length)];
+          // Consortium terrain / frontier / MA set require ConsortiumBoard.
+          // Force the map even if the client sent Tharsis or a Random* option.
+          if (gameReq.expansions?.consortium === true) {
+            gameReq.board = BoardName.CONSORTIUM;
+          } else {
+            const boards = ApiCreateGame.boardOptions(gameReq.board);
+            gameReq.board = boards[Math.floor(Math.random() * boards.length)];
+          }
 
           const gameOptions: GameOptions = {
             altVenusBoard: gameReq.altVenusBoard,

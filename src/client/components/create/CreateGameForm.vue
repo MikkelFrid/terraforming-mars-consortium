@@ -185,11 +185,12 @@
 
                         <div class="create-game-page-column">
                             <h4 v-i18n>Board</h4>
+                            <div v-if="expansions.consortium" class="create-game-subsection-label" v-i18n>Locked to Consortium map</div>
 
                             <div v-for="boardName in boards" :key="boardName">
-                              <div v-if="boardName==='utopia planitia'" class="create-game-subsection-label" v-i18n>Fan-made</div>
+                              <div v-if="!expansions.consortium && boardName==='utopia planitia'" class="create-game-subsection-label" v-i18n>Fan-made</div>
                               <!-- Board radios must not reuse expansion checkbox ids (e.g. consortium-checkbox). -->
-                              <input type="radio" :value="boardName" name="board" v-model="board" :id="'board-' + boardName + '-radio'">
+                              <input type="radio" :value="boardName" name="board" v-model="board" :id="'board-' + boardName + '-radio'" :disabled="expansions.consortium">
                               <label :for="'board-' + boardName + '-radio'" class="expansion-button">
                                   <span :class="getBoardColorClass(boardName)">&#x2B22;</span>
                                   <span class="capitalized" v-i18n>{{ boardName }}</span>
@@ -678,6 +679,14 @@ export default defineComponent({
         this.preludeToggled = true;
       }
     },
+    'expansions.consortium': function(value: boolean) {
+      // Terrain, frontier unlock and Consortium MAs require ConsortiumBoard.
+      if (value === true) {
+        this.board = BoardName.CONSORTIUM;
+      } else if (this.board === BoardName.CONSORTIUM) {
+        this.board = BoardName.THARSIS;
+      }
+    },
     playersCount(value: number) {
       if (value === 1) {
         this.expansions.corpera = true;
@@ -708,7 +717,12 @@ export default defineComponent({
       return PLAYER_COLORS;
     },
     boards() {
-      const boards: Array<BoardName | RandomBoardOption> = [
+      // Consortium expansion is map-locked: chasms, crater fields, highlands and
+      // bridge → frontier unlock only exist on ConsortiumBoard.
+      if (this.expansions.consortium) {
+        return [BoardName.CONSORTIUM];
+      }
+      return [
         BoardName.THARSIS,
         BoardName.HELLAS,
         BoardName.ELYSIUM,
@@ -721,12 +735,8 @@ export default defineComponent({
         BoardName.TERRA_CIMMERIA,
         BoardName.VASTITAS_BOREALIS,
         BoardName.HOLLANDIA,
+        RandomBoardOption.ALL,
       ];
-      if (this.expansions.consortium) {
-        boards.push(BoardName.CONSORTIUM);
-      }
-      boards.push(RandomBoardOption.ALL);
-      return boards;
     },
   },
   methods: {
@@ -752,6 +762,9 @@ export default defineComponent({
       this.uploading = true;
       try {
         processor.applyJSON(json);
+        if (component.expansions.consortium) {
+          component.board = BoardName.CONSORTIUM;
+        }
       } catch (e) {
         this.uploading = false;
         throw e;
@@ -768,6 +781,9 @@ export default defineComponent({
             component.seed = Math.random();
           }
           component.solarPhaseOption = Boolean(processor.solarPhaseOption);
+          if (component.expansions.consortium) {
+            component.board = BoardName.CONSORTIUM;
+          }
         } finally {
           this.uploading = false;
         }
@@ -1028,6 +1044,9 @@ export default defineComponent({
       const customPreludes = this.customPreludes;
       const bannedCards = this.bannedCards;
       const includedCards = this.includedCards;
+      if (this.expansions.consortium) {
+        this.board = BoardName.CONSORTIUM;
+      }
       const board = this.board;
       const seed = this.seed;
       const politicalAgendasExtension = this.politicalAgendasExtension;
