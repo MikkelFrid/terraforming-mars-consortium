@@ -34,3 +34,25 @@ Iridium (sources, payment gate, 28 bank, no production), megastructures
 (segments, keystone, completion, unfinished = 0 VP), three Bridges / frontier
 unlock, chasm / crater field / highland, Structure & Prospecting tags, Core
 Sampling, Mason / Pathfinder / Assayer, Underwriter / Cartographer / Refiner.
+
+## Artwork and card index
+
+The rulebook embeds live asset paths (not hand-drawn):
+
+| Asset | Path |
+|-------|------|
+| Hero / board figure | `/assets/board/mars_consortium.png` |
+| Expansion icon | `/assets/expansion_icons/expansion_icon_consortium.png` |
+| Iridium | `/assets/resources/iridium.png` |
+| Structure / Prospecting tags | `/assets/tags/structure.png`, `prospecting.png` |
+| Megastructure emblems | `/assets/consortium/megastructures/*.png` |
+
+Section **8. Card index** lists every Consortium card from
+`src/genfiles/cards.json` (number, name → gallery link, type, cost, tags,
+full card text). Regenerate after card changes:
+
+```bash
+python3 tools/consortium/build_rulebook.py
+```
+
+The generator fails if any referenced art file is missing.
