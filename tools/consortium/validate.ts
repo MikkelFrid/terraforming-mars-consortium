@@ -13,6 +13,7 @@
  *   npx tsx tools/consortium/validate.ts
  *   npx tsx tools/consortium/validate.ts --games=200 --modes=random,weighted
  *   npx tsx tools/consortium/validate.ts --mode=weighted --quick
+ *   npx tsx tools/consortium/validate.ts --players=3 --games=20 --verbose
  */
 import * as fs from 'fs';
 import * as path from 'path';
@@ -55,6 +56,7 @@ import {SelectResource} from '../../src/server/inputs/SelectResource';
 import {SelectResources} from '../../src/server/inputs/SelectResources';
 import {SelectGlobalEvent} from '../../src/server/inputs/SelectGlobalEvent';
 import {ShiftAresGlobalParameters} from '../../src/server/inputs/ShiftAresGlobalParameters';
+import {GainResources} from '../../src/server/inputs/GainResources';
 import {CONSORTIUM_CARD_MANIFEST} from '../../src/server/cards/consortium/ConsortiumCardManifest';
 import {Megastructures} from '../../src/server/consortium/Megastructures';
 import {MEGASTRUCTURE_BALANCE} from '../../src/common/consortium/MegastructureConstants';
@@ -134,14 +136,27 @@ type InvariantFailure = {
   detail: string;
 };
 
+type GameDiagnostics = {
+  playerCount: number;
+  consortiumCardsPlayed: number;
+  megastructuresCompleted: number;
+  bridgesCompleted: number;
+  finalIridiumBank: number;
+  vpSpread: number;
+  winnerVp: number;
+  oceanCount: number;
+};
+
 type GameResult = {
   config: string;
   mode: ActorMode;
   seed: number;
+  playerCount: number;
   generations: number;
   crashed: boolean;
   crash?: CrashRecord;
   invariantFailures: Array<InvariantFailure>;
+  diagnostics?: GameDiagnostics;
 };
 
 type ConfigSpec = {
@@ -373,6 +388,14 @@ function installKeystoneGuard(): () => void {
 // Response builder
 // ---------------------------------------------------------------------------
 
+function distributeResourceAmounts(count: number, rng: SeededRandom): Array<InputResponse> {
+  const amounts = [0, 0, 0, 0, 0, 0];
+  for (let i = 0; i < count; i++) {
+    amounts[rng.nextInt(6)] += 1;
+  }
+  return amounts.map((amount) => ({type: 'amount' as const, amount}));
+}
+
 function buildResponse(
   input: PlayerInput,
   player: IPlayer,
@@ -386,6 +409,12 @@ function buildResponse(
     };
   }
   if (input instanceof AndOptions) {
+    if (input instanceof GainResources) {
+      return {
+        type: 'and',
+        responses: distributeResourceAmounts(input.count, rng),
+      };
+    }
     return {
       type: 'and',
       responses: input.options.map((o) => buildResponse(o, player, rng, mode)),
@@ -525,8 +554,9 @@ function buildResponse(
   }
   if (input instanceof SelectResources) {
     const units = Units.of({});
-    const keys: Array<keyof Units> = ['megacredits', 'steel', 'titanium', 'plants', 'energy', 'heat'];
-    for (let i = 0; i < input.count; i++) units[pick(rng, keys)] += 1;
+    for (let i = 0; i < input.count; i++) {
+      units[pick(rng, Units.keys)] += 1;
+    }
     return {type: 'resources', units};
   }
   if (input instanceof SelectGlobalEvent) {
@@ -611,6 +641,7 @@ function tryProcess(
   waiting: PlayerInput,
   rng: SeededRandom,
   mode: ActorMode,
+  debug = false,
 ): string {
   const attempts: Array<InputResponse> = [];
   if (waiting instanceof OrOptions) {
@@ -628,6 +659,9 @@ function tryProcess(
     } catch (e) {
       if (e instanceof InvariantError) throw e;
       lastErr = e instanceof Error ? e : new Error(String(e));
+      if (debug) {
+        console.error('tryProcess fail', waiting.constructor.name, titleOf(waiting), response, lastErr.message);
+      }
     }
   }
   throw lastErr ?? new Error('No viable response');
@@ -637,8 +671,44 @@ function tryProcess(
 // One game
 // ---------------------------------------------------------------------------
 
-function runOneGame(config: ConfigSpec, seed: number, mode: ActorMode): GameResult {
-  const player = new Player('Validator', 'blue' as Color, false, 0, `p-val-${mode}-${seed}`);
+const PLAYER_COLORS: ReadonlyArray<Color> = ['blue', 'red', 'yellow', 'green', 'black', 'purple'];
+
+function createPlayers(count: number, mode: ActorMode, seed: number): Array<Player> {
+  return Array.from({length: count}, (_, i) => {
+    const color = PLAYER_COLORS[i % PLAYER_COLORS.length];
+    return new Player(`Validator${i + 1}`, color, false, 0, `p-val-${mode}-${seed}-${i}`);
+  });
+}
+
+function collectDiagnostics(game: Game, playerCount: number): GameDiagnostics {
+  const vps = game.players.map((p) => p.getVictoryPoints().total);
+  const consortiumCardsPlayed = game.players.reduce((n, p) => {
+    return n + p.playedCards.filter((c) => CONSORTIUM_PROJECT_CARDS.includes(c.name)).length;
+  }, 0);
+  const structures = game.megastructuresData?.structures ?? [];
+  const bridgesCompleted = structures.filter((s) => s.kind === 'bridge' && s.completed).length;
+  return {
+    playerCount,
+    consortiumCardsPlayed,
+    megastructuresCompleted: structures.filter((s) => s.completed).length,
+    bridgesCompleted,
+    finalIridiumBank: game.iridiumBank,
+    vpSpread: Math.max(...vps) - Math.min(...vps),
+    winnerVp: Math.max(...vps),
+    oceanCount: game.board.getOceanSpaces().length,
+  };
+}
+
+function runOneGame(
+  config: ConfigSpec,
+  seed: number,
+  mode: ActorMode,
+  playerCount: number,
+  collectDiag: boolean,
+  debug = false,
+): GameResult {
+  const players = createPlayers(playerCount, mode, seed);
+  const firstPlayer = players[0];
   let uninstallKeystone = () => {};
   let game: Game | undefined;
   let lastAction = 'start';
@@ -656,11 +726,23 @@ function runOneGame(config: ConfigSpec, seed: number, mode: ActorMode): GameResu
     });
   };
 
+  const baseResult = (crashed: boolean, crash?: CrashRecord, diagnostics?: GameDiagnostics): GameResult => ({
+    config: config.name,
+    mode,
+    seed,
+    playerCount,
+    generations: game?.generation ?? 0,
+    crashed,
+    crash,
+    invariantFailures,
+    diagnostics,
+  });
+
   try {
     game = Game.newInstance(
       `g-val-${mode}-${seed}` as any,
-      [player],
-      player,
+      players,
+      firstPlayer,
       `s-val-${mode}-${seed}` as any,
       {
         ...config.options,
@@ -675,86 +757,89 @@ function runOneGame(config: ConfigSpec, seed: number, mode: ActorMode): GameResu
     uninstallKeystone = installKeystoneGuard();
     assertInvariants(game);
 
-    const actorRng = new SeededRandom(seed ^ (mode === 'random' ? 0xA11CE : 0xC0FFEE));
+    const actorRngs = players.map((_, i) =>
+      new SeededRandom(seed ^ (mode === 'random' ? 0xA11CE : 0xC0FFEE) ^ (i * 0x9E3779B9),
+      ));
     let steps = 0;
-    const MAX_STEPS = 25_000;
+    const MAX_STEPS = playerCount > 1 ? 75_000 : 25_000;
 
     while (game.phase !== Phase.END) {
       if (++steps > MAX_STEPS) {
         throw new Error(`Exceeded ${MAX_STEPS} steps (gen ${game.generation}, phase ${game.phase})`);
       }
 
-      if (player.getWaitingFor() === undefined && game.deferredActions.length > 0) {
+      if (game.deferredActions.length > 0) {
         game.deferredActions.runAll(() => {});
         assertInvariants(game);
         continue;
       }
 
-      const waiting = player.getWaitingFor();
-      if (waiting === undefined) {
-        if (game.phase === Phase.ACTION && game.activePlayer === player) {
-          player.takeAction();
+      const waitingPlayers = players.filter((p) => p.getWaitingFor() !== undefined);
+      if (waitingPlayers.length > 0) {
+        // Process one player at a time to avoid overwriting another player's waitingFor.
+        const player = waitingPlayers[0];
+        const waiting = player.getWaitingFor();
+        if (waiting !== undefined) {
+          const rng = actorRngs[players.indexOf(player)];
+          lastAction = `${player.color}:${tryProcess(player, waiting, rng, mode, debug)}`;
           assertInvariants(game);
-          continue;
         }
-        throw new Error(`Stalled (gen ${game.generation}, phase ${game.phase})`);
+        continue;
       }
 
-      lastAction = tryProcess(player, waiting, actorRng, mode);
-      assertInvariants(game);
+      if (game.phase === Phase.ACTION) {
+        const active = game.activePlayer;
+        if (!players.includes(active as Player)) {
+          throw new Error(`Active player ${active.id} not in game`);
+        }
+        active.takeAction();
+        assertInvariants(game);
+        continue;
+      }
+
+      if (game.phase === Phase.SOLAR) {
+        game.takeNextFinalGreeneryAction();
+        assertInvariants(game);
+        continue;
+      }
+
+      throw new Error(
+        `Stalled (gen ${game.generation}, phase ${game.phase}, active=${game.activePlayer.color})`,
+      );
     }
 
     assertSerializeRoundTrip(game);
     assertInvariants(game);
     uninstallKeystone();
-    return {
-      config: config.name,
-      mode,
-      seed,
-      generations: game.generation,
-      crashed: false,
-      invariantFailures,
-    };
+    return baseResult(
+      false,
+      undefined,
+      collectDiag ? collectDiagnostics(game, playerCount) : undefined,
+    );
   } catch (e) {
     uninstallKeystone();
     if (e instanceof InvariantError) {
       recordInvariant(e);
-      return {
-        config: config.name,
-        mode,
-        seed,
-        generations: game?.generation ?? 0,
-        crashed: true,
-        crash: {
-          config: config.name,
-          mode,
-          seed,
-          generation: game?.generation ?? 0,
-          phase: game ? String(game.phase) : '?',
-          action: lastAction,
-          error: e.message,
-        },
-        invariantFailures,
-      };
-    }
-    const err = e instanceof Error ? e : new Error(String(e));
-    return {
-      config: config.name,
-      mode,
-      seed,
-      generations: game?.generation ?? 0,
-      crashed: true,
-      crash: {
+      return baseResult(true, {
         config: config.name,
         mode,
         seed,
         generation: game?.generation ?? 0,
         phase: game ? String(game.phase) : '?',
         action: lastAction,
-        error: err.message,
-      },
-      invariantFailures,
-    };
+        error: e.message,
+      });
+    }
+    const err = e instanceof Error ? e : new Error(String(e));
+    return baseResult(true, {
+      config: config.name,
+      mode,
+      seed,
+      generation: game?.generation ?? 0,
+      phase: game ? String(game.phase) : '?',
+      action: lastAction,
+      error: err.message,
+    });
   }
 }
 
@@ -941,10 +1026,16 @@ function parseArgs(argv: Array<string>) {
   let seedBase = 42_000;
   let out = 'docs/consortium/16-validation.md';
   let modes: Array<ActorMode> = ['random'];
+  let playerCount = 1;
+  let verbose = false;
+  let debugSeed: number | undefined;
   for (const a of argv) {
     if (a.startsWith('--games=')) games = Number(a.slice(8));
     else if (a.startsWith('--seed-base=')) seedBase = Number(a.slice(12));
     else if (a.startsWith('--out=')) out = a.slice(6);
+    else if (a.startsWith('--players=')) playerCount = Number(a.slice(10));
+    else if (a === '--verbose') verbose = true;
+    else if (a.startsWith('--debug-seed=')) debugSeed = Number(a.slice(13));
     else if (a.startsWith('--mode=')) {
       const m = a.slice(7);
       if (m !== 'random' && m !== 'weighted') {
@@ -960,7 +1051,10 @@ function parseArgs(argv: Array<string>) {
       });
     } else if (a === '--quick') games = 5;
   }
-  return {games, seedBase, out, modes};
+  if (playerCount < 1 || playerCount > 6) {
+    throw new Error(`Invalid --players=${playerCount}; expected 1-6`);
+  }
+  return {games, seedBase, out, modes, playerCount, verbose, debugSeed};
 }
 
 function configs(): Array<ConfigSpec> {
@@ -1011,24 +1105,36 @@ function configs(): Array<ConfigSpec> {
 }
 
 async function main() {
-  const {games, seedBase, out, modes} = parseArgs(process.argv.slice(2));
-  const cfgs = configs();
+  const {games, seedBase, out, modes, playerCount, verbose, debugSeed} = parseArgs(process.argv.slice(2));
+  const cfgs = debugSeed !== undefined ?
+    configs().filter((c) => c.name === 'consortium+turmoil') :
+    configs();
   const resultsByKey = new Map<string, Array<GameResult>>();
   let seed = seedBase;
 
   for (const mode of modes) {
     for (const cfg of cfgs) {
       const key = `${mode}::${cfg.name}`;
-      console.log(`\n=== [${mode}] ${cfg.name} (${games} games) ===`);
+      console.log(`\n=== [${mode}] ${cfg.name} (${games} games, ${playerCount}p) ===`);
       const results: Array<GameResult> = [];
       for (let i = 0; i < games; i++) {
         const s = seed++;
-        const result = runOneGame(cfg, s, mode);
+        const result = runOneGame(
+          cfg, s, mode, playerCount, verbose && i === 0, debugSeed === s,
+        );
         results.push(result);
         if (result.crashed) {
           console.log(
             `  FAIL seed=${s} gen=${result.crash?.generation}: ` +
             `${result.crash?.error.slice(0, 120)}`,
+          );
+        } else if (verbose && result.diagnostics) {
+          const d = result.diagnostics;
+          console.log(
+            `  seed=${s} gen=${result.generations} oceans=${d.oceanCount} ` +
+            `bridges=${d.bridgesCompleted} megas=${d.megastructuresCompleted} ` +
+            `consortiumCards=${d.consortiumCardsPlayed} iridiumBank=${d.finalIridiumBank} ` +
+            `vpSpread=${d.vpSpread} winnerVp=${d.winnerVp}`,
           );
         } else if ((i + 1) % 25 === 0 || i === 0) {
           console.log(`  ${i + 1}/${games} ok gen=${result.generations}`);
@@ -1038,6 +1144,13 @@ async function main() {
       const crashes = results.filter((r) => r.crashed).length;
       const inv = results.reduce((n, r) => n + r.invariantFailures.length, 0);
       console.log(`  done: ${games - crashes}/${games} completed, ${crashes} crashes, ${inv} invariant failures`);
+      if (playerCount > 1 && !verbose) {
+        const completed = results.filter((r) => !r.crashed);
+        if (completed.length > 0) {
+          const avgGen = completed.reduce((n, r) => n + r.generations, 0) / completed.length;
+          console.log(`  avg generations: ${avgGen.toFixed(1)}`);
+        }
+      }
     }
   }
 
