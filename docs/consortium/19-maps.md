@@ -30,8 +30,18 @@ Writes:
 - `src/server/boards/consortiumSpaces.json` (Massif)
 - `src/server/boards/consortiumRiftSpaces.json`
 - `src/server/boards/consortiumArchipelagoSpaces.json`
+- `assets/consortium/maps/massif.png` / `rift.png` / `archipelago.png` (terrain previews)
 
 Do not hand-edit JSON/LESS/PNG — change `VARIANTS` in the generator and rerun.
+
+## Previews
+
+Terrain previews (Mars disc + hex overlays + legend) are used by:
+
+- Player rulebook §2 (`assets/consortium/rulebook.html`)
+- Lobby create-game board column when Consortium is enabled
+
+Paths come from `consortiumBoardPreviewUrl()` in `src/common/boards/ConsortiumBoards.ts`.
 
 ## Lobby / API
 

@@ -14,9 +14,14 @@ Produces (shared geometry — all variants use the same hex positions):
     src/server/boards/consortiumSpaces.json              (Massif)
     src/server/boards/consortiumRiftSpaces.json
     src/server/boards/consortiumArchipelagoSpaces.json
+    assets/consortium/maps/massif.png                    (terrain preview)
+    assets/consortium/maps/rift.png
+    assets/consortium/maps/archipelago.png
 
 Variants differ only in terrain overlays (chasms / craters / highlands /
 oceans / frontier lock arcs). Hex radius, pitch and CSS ids stay identical.
+Previews composite the shared Mars disc with per-space hex tiles so the
+rulebook and lobby can show the three maps distinctly.
 
 Artwork derives from the official Terraforming Mars asset sources,
 CC BY-SA 4.0.
@@ -28,19 +33,28 @@ import json
 import math
 import os
 import sys
-from PIL import Image, ImageChops, ImageFilter, ImageStat
+from PIL import Image, ImageChops, ImageDraw, ImageEnhance, ImageFilter, ImageStat
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 MARS_SRC = os.path.join(ROOT, 'assets', 'board', 'mars.png')
 MARS_DST = os.path.join(ROOT, 'assets', 'board', 'mars_consortium.png')
 LESS_DST = os.path.join(ROOT, 'src', 'styles', 'board_positions.less')
 JSON_DIR = os.path.join(ROOT, 'src', 'server', 'boards')
+PREVIEW_DIR = os.path.join(ROOT, 'assets', 'consortium', 'maps')
 
 N = 6                       # map radius -> 3N^2+3N+1 = 127 spaces
 SECTORS = [90.0, 210.0, 330.0]
 PITCH_X, PITCH_Y = 49, 41
 HEX_W, HEX_H = 46, 50
 OFFSET_X, OFFSET_Y = 137, 134
+
+HEX_ASSET = {
+    'land': 'hex_black.png',
+    'ocean': 'hex_blue.png',
+    'chasm': 'hex_chasm.png',
+    'crater': 'hex_crater_field.png',
+    'highland': 'hex_highland.png',
+}
 
 # ---------------------------------------------------------------------------
 # Variant terrain recipes
@@ -55,6 +69,7 @@ OFFSET_X, OFFSET_Y = 137, 134
 VARIANTS = {
     'massif': {
         'json': 'consortiumSpaces.json',
+        'preview': 'massif.png',
         'chasm_half': 45.0,
         'highlands': [(0, -3), (1, -3), (0, -2), (-3, 1), (-3, 2), (-2, 1)],
         'core_craters': [(4, -2), (-2, 4), (-2, -2)],
@@ -65,6 +80,7 @@ VARIANTS = {
     },
     'rift': {
         'json': 'consortiumRiftSpaces.json',
+        'preview': 'rift.png',
         'chasm_half': 58.0,
         # One highland massif in the south-west — fight for foundation.
         'highlands': [(-2, 2), (-1, 2), (-3, 2), (-2, 1), (-1, 1), (-3, 3)],
@@ -77,6 +93,7 @@ VARIANTS = {
     },
     'archipelago': {
         'json': 'consortiumArchipelagoSpaces.json',
+        'preview': 'archipelago.png',
         'chasm_half': 34.0,
         # Nine scattered highland "islands".
         'highlands': [
@@ -251,11 +268,79 @@ def summarize(name, spaces):
     print(f'  locked   : {locked}   open frontier: {zones["frontier"] - locked}')
 
 
+def _load_hex_tiles():
+    tiles = {}
+    for key, filename in HEX_ASSET.items():
+        path = os.path.join(ROOT, 'assets', filename)
+        if not os.path.exists(path):
+            raise SystemExit(f'missing hex asset {path}')
+        tiles[key] = Image.open(path).convert('RGBA')
+    return tiles
+
+
+def _tint_locked(hex_img):
+    """Purple wash so locked frontier reads distinctly from open land."""
+    tinted = hex_img.copy()
+    overlay = Image.new('RGBA', tinted.size, (90, 70, 150, 0))
+    # Keep hex silhouette via alpha mask; wash the opaque interior.
+    alpha = tinted.split()[3]
+    wash = Image.new('RGBA', tinted.size, (110, 80, 170, 110))
+    wash.putalpha(ImageEnhance.Brightness(alpha).enhance(0.55))
+    return Image.alpha_composite(tinted, wash)
+
+
+def build_preview(mars_base, spaces, filename, tiles):
+    """Composite terrain hexes onto the shared Mars disc for lobby/rulebook."""
+    os.makedirs(PREVIEW_DIR, exist_ok=True)
+    img = mars_base.copy()
+    # Slight dim so hex colours read on the bright disc.
+    dim = Image.new('RGBA', img.size, (0, 0, 0, 50))
+    img = Image.alpha_composite(img, dim)
+
+    locked_land = _tint_locked(tiles['land'])
+    for s in spaces:
+        tile = tiles.get(s['type'], tiles['land'])
+        if s.get('locked') and s['type'] == 'land':
+            tile = locked_land
+        elif s.get('locked') and s['type'] == 'crater':
+            tile = _tint_locked(tiles['crater'])
+        elif s.get('locked') and s['type'] == 'highland':
+            tile = _tint_locked(tiles['highland'])
+        img.alpha_composite(tile, (s['x'], s['y']))
+
+    # Compact legend strip along the bottom of the disc area.
+    legend = Image.new('RGBA', img.size, (0, 0, 0, 0))
+    d = ImageDraw.Draw(legend)
+    d.rectangle([12, img.height - 54, img.width - 12, img.height - 10],
+                fill=(12, 16, 22, 200))
+    swatches = [
+        (tiles['land'], 'Land'),
+        (tiles['ocean'], 'Ocean'),
+        (tiles['highland'], 'Highland'),
+        (tiles['crater'], 'Crater'),
+        (tiles['chasm'], 'Chasm'),
+        (locked_land, 'Locked'),
+    ]
+    x = 24
+    y = img.height - 48
+    for swatch, label in swatches:
+        thumb = swatch.resize((22, 24), Image.LANCZOS)
+        legend.alpha_composite(thumb, (x, y))
+        d.text((x + 26, y + 5), label, fill=(220, 228, 236, 255))
+        x += 100
+    img = Image.alpha_composite(img, legend)
+
+    path = os.path.join(PREVIEW_DIR, filename)
+    img.save(path)
+    return path
+
+
 def main():
     # Geometry is identical across variants — write LESS/PNG once from Massif.
     massif = build_spaces('massif')
     write_less(massif)
     mars = build_mars()
+    tiles = _load_hex_tiles()
 
     for key, cfg in VARIANTS.items():
         spaces = build_spaces(key) if key != 'massif' else massif
@@ -267,8 +352,10 @@ def main():
                 if (s['id'], s['x'], s['y']) != (ref['id'], ref['x'], ref['y']):
                     raise SystemExit(f'{key}: geometry drifted from Massif at {(s["q"], s["r"])}')
         path = write_json(spaces, cfg['json'])
+        preview = build_preview(mars, spaces, cfg['preview'], tiles)
         summarize(key, spaces)
         print(f'  json     : {path}')
+        print(f'  preview  : {preview}')
 
     print(f'board image : {mars.size[0]} x {mars.size[1]} px  -> {MARS_DST}')
     print(f'css rules   : {len(massif)}  -> {LESS_DST}')

@@ -102,6 +102,37 @@ describe('CreateGameForm', () => {
     expect((wrapper.vm as any).boards).to.not.include(BoardName.CONSORTIUM);
   });
 
+  it('shows a Consortium map preview that follows the selected board', async () => {
+    const wrapper = mount(CreateGameForm, {
+      ...globalConfig,
+    });
+
+    expect(wrapper.find('[data-test="consortium-map-preview"]').exists()).to.be.false;
+
+    (wrapper.vm as any).expansions.consortium = true;
+    await wrapper.vm.$nextTick();
+
+    const preview = wrapper.find('[data-test="consortium-map-preview"]');
+    expect(preview.exists()).to.be.true;
+    expect(preview.find('img').attributes('src')).eq('/assets/consortium/maps/massif.png');
+    expect(preview.text()).to.include('Massif');
+    expect(preview.text()).to.include('Balanced');
+
+    await wrapper.find('#board-rift-basin-radio').setValue(BoardName.CONSORTIUM_RIFT);
+    await wrapper.vm.$nextTick();
+    expect(preview.find('img').attributes('src')).eq('/assets/consortium/maps/rift.png');
+    expect(preview.text()).to.include('Rift Basin');
+
+    await wrapper.find('#board-archipelago-radio').setValue(BoardName.CONSORTIUM_ARCHIPELAGO);
+    await wrapper.vm.$nextTick();
+    expect(preview.find('img').attributes('src')).eq('/assets/consortium/maps/archipelago.png');
+    expect(preview.text()).to.include('Archipelago');
+
+    (wrapper.vm as any).expansions.consortium = false;
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('[data-test="consortium-map-preview"]').exists()).to.be.false;
+  });
+
   it('restores the last saved game settings on load', async () => {
     new CreateGameSettingsStorage(localStorage).saveSettings(createGameSettings({
       expansions: {...DEFAULT_EXPANSIONS, venus: true},

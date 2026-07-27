@@ -199,6 +199,23 @@
                                   </template>
                               </label>
                             </div>
+
+                            <div
+                              v-if="expansions.consortium && consortiumPreviewUrl"
+                              class="consortium-map-preview"
+                              data-test="consortium-map-preview"
+                            >
+                              <img
+                                :src="consortiumPreviewUrl"
+                                :alt="boardLabel(board) + ' map preview'"
+                                width="891"
+                                height="860"
+                              />
+                              <p class="consortium-map-preview-caption">
+                                <strong v-i18n>{{ boardLabel(board) }}</strong>
+                                — <span v-i18n>{{ consortiumPreviewBlurb }}</span>
+                              </p>
+                            </div>
                         </div>
 
                         <div class="create-game-page-column">
@@ -581,7 +598,13 @@ import * as constants from '@/common/constants';
 import {defineComponent, nextTick} from 'vue';
 import {Color, PLAYER_COLORS} from '@/common/Color';
 import {BoardName} from '@/common/boards/BoardName';
-import {CONSORTIUM_BOARDS, consortiumBoardLabel, isConsortiumBoard} from '@/common/boards/ConsortiumBoards';
+import {
+  CONSORTIUM_BOARDS,
+  consortiumBoardBlurb,
+  consortiumBoardLabel,
+  consortiumBoardPreviewUrl,
+  isConsortiumBoard,
+} from '@/common/boards/ConsortiumBoards';
 import {RandomBoardOption} from '@/common/boards/RandomBoardOption';
 import {CardName} from '@/common/cards/CardName';
 import CeosFilter from '@/client/components/create/CeosFilter.vue';
@@ -739,6 +762,12 @@ export default defineComponent({
         BoardName.HOLLANDIA,
         RandomBoardOption.ALL,
       ];
+    },
+    consortiumPreviewUrl(): string | undefined {
+      return this.expansions.consortium ? consortiumBoardPreviewUrl(this.board) : undefined;
+    },
+    consortiumPreviewBlurb(): string {
+      return consortiumBoardBlurb(this.board);
     },
   },
   methods: {
