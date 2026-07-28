@@ -60,8 +60,11 @@ export class ServeAsset extends Handler {
       return;
     }
 
-    // Remove leading slash.
-    const path = req.url.substring(1);
+    // Strip query/hash only. Messengers (Facebook/Messenger fbclid, etc.) append
+    // ?fbclid=…; matching endsWith('.html') against the full req.url then 404s
+    // the Consortium rulebook for shared links. Keep the raw path segment so
+    // toFile path-traversal checks (e.g. chunks/../…) still apply.
+    const path = req.url.split(/[?#]/, 1)[0].substring(1);
 
     const supportedEncodings = this.supportedEncodings(req);
     const toFile: {file?: string, encoding?: Encoding } = this.toFile(path, supportedEncodings);

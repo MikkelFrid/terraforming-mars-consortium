@@ -74,6 +74,17 @@ describe('ServeAsset', () => {
     expect(String(res.content)).to.include('Iridium');
   });
 
+  it('serves Consortium rulebook HTML when messengers append query params', async () => {
+    // Regression: Facebook/Messenger adds ?fbclid=…; ServeAsset used to match
+    // endsWith('.html') against the full req.url and return 404.
+    scaffolding.url = '/assets/consortium/rulebook.html?fbclid=IwZXh0bgNhZW0CMTEAc3J0Yw';
+    scaffolding.req.headers['accept-encoding'] = '';
+    await scaffolding.get(instance, res);
+    expect(res.statusCode).eq(statusCode.ok);
+    expect(String(res.content)).to.include('Consortium');
+    expect(String(res.content)).to.include('map-gallery');
+  });
+
   it('styles.css', async () => {
     instance = new ServeAsset(undefined, false, fileApi);
     scaffolding.url = '/styles.css';
