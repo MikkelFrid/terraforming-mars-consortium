@@ -41,7 +41,8 @@ The rulebook embeds live asset paths (not hand-drawn):
 
 | Asset | Path |
 |-------|------|
-| Hero / board figure | `/assets/board/mars_consortium.png` |
+| Hero background | `/assets/board/mars_consortium.png` |
+| Map previews (Massif / Rift / Archipelago) | `/assets/consortium/maps/*.png` (rulebook `#board`; lobby ⓘ → `#massif` / `#rift-basin` / `#archipelago`) |
 | Expansion icon | `/assets/expansion_icons/expansion_icon_consortium.png` (iridium badge from `build_assets.py`) |
 | Iridium | `/assets/resources/iridium.png` |
 | Structure / Prospecting tags | `/assets/tags/structure.png`, `prospecting.png` |

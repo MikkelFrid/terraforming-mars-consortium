@@ -182,6 +182,42 @@
       color: #c5d0da;
       padding: .5rem .25rem 0;
     }
+    .map-gallery {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      margin: 1rem 0 1.25rem;
+    }
+    @media (min-width: 720px) {
+      .map-gallery { grid-template-columns: 1fr 1fr 1fr; }
+    }
+    .map-card {
+      border: 1px solid var(--line);
+      background: #0e1620;
+      overflow: hidden;
+    }
+    .map-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+      background: #000;
+    }
+    .map-card .map-body {
+      padding: .65rem .7rem .75rem;
+      font: 13px/1.4 system-ui, -apple-system, sans-serif;
+      color: #c5d0da;
+    }
+    .map-card .map-body strong {
+      display: block;
+      color: #fff;
+      font-size: 14px;
+      margin-bottom: .25rem;
+    }
+    .map-card .map-stats {
+      margin: .4rem 0 0;
+      color: #8a97a6;
+      font-size: 12px;
+    }
     .terrain {
       display: inline-block;
       width: .85rem;
@@ -381,10 +417,36 @@
     </div>
 
     <h2 id="board">2. The Consortium board</h2>
-    <figure class="board-figure">
-      <img src="/assets/board/mars_consortium.png" alt="Consortium Mars board" width="891" height="860" />
-      <figcaption>Consortium board art — main zone with chasms, crater fields, highlands, and locked frontier sectors.</figcaption>
-    </figure>
+    <p id="consortium">
+      All three maps share the same hex geometry. Terrain overlays differ —
+      pick the map in the lobby when you enable Consortium.
+    </p>
+    <div class="map-gallery">
+      <figure class="map-card" id="massif">
+        <img src="/assets/consortium/maps/massif.png" alt="Massif map preview" width="891" height="860" />
+        <figcaption class="map-body">
+          <strong>Massif</strong>
+          Balanced default. Even crater spread, mid-width chasms, playable early core.
+          <p class="map-stats">6 highlands · 12 craters · 24 chasms · 27 locked</p>
+        </figcaption>
+      </figure>
+      <figure class="map-card" id="rift-basin">
+        <img src="/assets/consortium/maps/rift.png" alt="Rift Basin map preview" width="891" height="860" />
+        <figcaption class="map-body">
+          <strong>Rift Basin</strong>
+          Iridium hunger. Wide chasm belts, scarce core craters, rich locked frontier.
+          <p class="map-stats">6 highlands (clustered) · 13 craters · 30 chasms · 33 locked</p>
+        </figcaption>
+      </figure>
+      <figure class="map-card" id="archipelago">
+        <img src="/assets/consortium/maps/archipelago.png" alt="Archipelago map preview" width="891" height="860" />
+        <figcaption class="map-body">
+          <strong>Archipelago</strong>
+          Structure play. More highland islands, narrower chasms, wider open frontier.
+          <p class="map-stats">9 highlands · 12 craters · 18 chasms · 21 locked</p>
+        </figcaption>
+      </figure>
+    </div>
 
     <h3>Terrain</h3>
     <table>
