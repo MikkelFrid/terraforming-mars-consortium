@@ -56,7 +56,9 @@ N = 6                       # map radius -> 3N^2+3N+1 = 127 spaces
 SECTORS = [90.0, 210.0, 330.0]
 PITCH_X, PITCH_Y = 49, 41
 HEX_W, HEX_H = 46, 50
-OFFSET_X, OFFSET_Y = 137, 134
+# Shifted (+7,+26) from the first Consortium OFFSET so the hex field centres
+# on the Tharsis chrome / HTML O2·temp pin frame (not up-left of it).
+OFFSET_X, OFFSET_Y = 144, 160
 
 HEX_ASSET = {
     'land': 'hex_black.png',
@@ -234,10 +236,10 @@ BOARD_W, BOARD_H = 891, 860
 ART_SCALE = 2
 ART_W, ART_H = BOARD_W * ART_SCALE, BOARD_H * ART_SCALE
 
-# Locked to the hex-field centre so tiles sit on the planet, not up/left of it.
-# Logical (891×860): centre = (454, 405), planet_r ≈ 304 (covers all hex centres).
-# Chrome arcs are recalibrated to HTML pins around this centre.
-DISC_CX0, DISC_CY0, DISC_R0 = 315.91, 282.56, 211.81
+# REF silhouette centre (scaled mars.png) — same frame as HTML O2/temp pins.
+# Hex OFFSET is chosen so the hex-field centre lands here too.
+# Logical (891×860): centre ≈ (461, 431), planet_r ≈ 304.
+DISC_CX0, DISC_CY0, DISC_R0 = 320.75, 300.47, 211.85
 
 
 def build_mars():

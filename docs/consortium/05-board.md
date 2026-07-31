@@ -14,10 +14,9 @@ Base: `main` after iridium merge (`24b0137cf`)
 | `src/styles/board_positions.less` | 127 CSS margin rules (`.board-space-001` …) |
 | `src/server/boards/consortiumSpaces.json` | 127 space records |
 
-Confirmed: **127 spaces**, hex field **634×542**, field origin **137, 134**.
-Planet paint is locked to the **hex-field centre** `(454, 405)` / r≈304
-(`DISC_*` in `build_board.py`) so tiles are not shifted up-left of the
-disc. Chrome arcs are recalibrated to HTML O2/temp pins around that centre.
+Confirmed: **127 spaces**, hex field **634×542**, field origin **144, 160**
+(shifted +7/+26 from the first OFFSET so hexes share the Tharsis chrome /
+HTML O2·temp pin frame). Planet `DISC_*` centre ≈ `(461, 431)` / r≈304.
 Massif (default) types: land 72 / crater 12 / chasm 24 / ocean 13 / highland 6.
 Filled-board visual QA: `python3 tools/consortium-art/simulate_filled_board.py`.
 

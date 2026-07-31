@@ -92,18 +92,29 @@ def main():
     for s in lands[n_city + n_green:n_city + n_green + n_special]:
         img.alpha_composite(special, (s['x'], s['y']))
 
-    # Crosshair at hex-field centre + planet centre note.
+    # Crosshair at shared hex/planet centre; mark HTML O2/temp pin boxes.
     d = ImageDraw.Draw(img)
-    fcx, fcy = 454.0, 405.0
+    fcx, fcy = 461.0, 431.0
     d.line([(fcx - 18, fcy), (fcx + 18, fcy)], fill=(255, 220, 80, 220), width=2)
     d.line([(fcx, fcy - 18), (fcx, fcy + 18)], fill=(255, 220, 80, 220), width=2)
+    import re
+    text = open(os.path.join(ROOT, 'src/styles/globs.less')).read()
+    for name, col in [('oxygen-vals', (80, 180, 255, 220)),
+                      ('temperature-vals', (255, 150, 70, 220))]:
+        m = re.search(rf'@{name}:\s*((?:.|\n)*?);', text)
+        for line in m.group(1).split('\n'):
+            nums = re.findall(r'-?\d+\.?\d*', line)
+            if len(nums) >= 3:
+                t = float(nums[1]) * BOARD_H / 600
+                l = float(nums[2]) * BOARD_W / 620
+                d.rectangle([l, t, l + 26, t + 26], outline=col, width=2)
     try:
         font = ImageFont.truetype(
             '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 16)
     except OSError:
         font = ImageFont.load_default()
-    d.rectangle([8, 8, 520, 52], fill=(0, 0, 0, 180))
-    d.text((14, 12), 'Filled sim — yellow cross = hex field centre',
+    d.rectangle([8, 8, 620, 52], fill=(0, 0, 0, 180))
+    d.text((14, 12), 'Filled sim — yellow=centre  blue boxes=O2 pins  orange=temp pins',
            font=font, fill=(255, 230, 120, 255))
     d.text((14, 32), f'cities={n_city} greenery={n_green} oceans={len(oceans)} special={n_special}',
            font=font, fill=(200, 220, 240, 255))
