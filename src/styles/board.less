@@ -54,15 +54,28 @@
 
   // Ocean / oxygen / temperature tracks and colony tiles are painted onto the
   // upscaled mars art. Scale Tharsis chrome (620 x 600) to match 891 x 860.
-  // Pin to the board-cont origin with margin 0 so transform does not compound
-  // the default .global-numbers 11/16 margin into the track coordinates.
-  .global-numbers,
+  //
+  // Pin tables in globs.less are relative to .global-numbers, which on Tharsis
+  // sits at margin 11/16 against the 620×600 board art. Scale that inset with
+  // the chrome — margin: 0 here used to drop it and shift every parameter
+  // number toward the top-left of the disc.
+  .global-numbers {
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: (11px * 860 / 600) 0 0 (16px * 891 / 620);
+    // Less 4 requires parens for division; values = 891/620 and 860/600.
+    transform: scale((891 / 620), (860 / 600));
+    transform-origin: 0 0;
+  }
+
+  // Colony tile positions are already in board-cont coordinates (no 11/16
+  // inset), so only scale — do not inherit the global-numbers margin.
   .board-outer-spaces {
     position: absolute;
     top: 0;
     left: 0;
     margin: 0;
-    // Less 4 requires parens for division; values = 891/620 and 860/600.
     transform: scale((891 / 620), (860 / 600));
     transform-origin: 0 0;
   }
