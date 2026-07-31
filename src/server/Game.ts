@@ -1752,6 +1752,7 @@ export class Game implements IGame, Logger {
     gameOptions.boardName = normalizeBoardName(gameOptions.boardName);
     // Backward compatibility: games saved before Consortium was added.
     gameOptions.consortiumExpansion = gameOptions.consortiumExpansion ?? false;
+    gameOptions.padConsortiumMA = gameOptions.padConsortiumMA ?? false;
     if (gameOptions.expansions !== undefined) {
       gameOptions.expansions.consortium = gameOptions.expansions.consortium ?? gameOptions.consortiumExpansion;
     }

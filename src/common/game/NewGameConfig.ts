@@ -65,6 +65,8 @@ export interface NewGameConfig {
   shuffleMapOption: boolean;
   randomMA: RandomMAOptionType;
   includeFanMA: boolean,
+  /** Pad Consortium's 3 fixed MAs to 5 from official boards (ignored when Random MA is on). */
+  padConsortiumMA: boolean;
   soloTR: boolean; // Solo victory by getting TR 63 by game end
   customCorporationsList: Array<CardName>;
   bannedCards: Array<CardName>;
