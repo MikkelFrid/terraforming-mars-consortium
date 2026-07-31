@@ -251,19 +251,72 @@
 }
 
 // Board: locked frontier + bridge-sector highlight (driven by SpaceModel.bridge / locked).
+// Use an overlay (not filter) so the padlock stays bright.
 .board-space--frontier-locked {
-  filter: brightness(0.55) saturate(0.7);
-  outline: 1px dashed fade(#c9a227, 35%);
+  outline: 1px dashed fade(#c9a227, 40%);
   outline-offset: -1px;
+
+  > :not(.board-space__frontier-lock):not(.board-log-highlight) {
+    filter: brightness(0.55) saturate(0.7);
+  }
+}
+
+// CSS padlock (no PNG) — visible until the space's bridge unlocks.
+.board-space__frontier-lock {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 14px;
+  height: 16px;
+  margin-left: -7px;
+  margin-top: -8px;
+  z-index: 4;
+  pointer-events: none;
+
+  // Shackle
+  &::before {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 0;
+    width: 10px;
+    height: 8px;
+    border: 2px solid #f3e2b2;
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    box-sizing: border-box;
+    opacity: 0.95;
+  }
+
+  // Body
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 6px;
+    width: 14px;
+    height: 10px;
+    background: linear-gradient(#e8d49a, #b8963a);
+    border: 1px solid #1a1510;
+    border-radius: 2px;
+    box-sizing: border-box;
+    box-shadow: 0 1px 2px fade(#000, 55%);
+  }
 }
 
 .board-space--bridge-highlight {
-  filter: brightness(1.25) saturate(1.15);
   box-shadow: 0 0 0 2px fade(#7eb8e8, 90%), 0 0 10px fade(#7eb8e8, 55%);
   z-index: 3;
+
+  > :not(.board-space__frontier-lock):not(.board-log-highlight) {
+    filter: brightness(1.2) saturate(1.15);
+  }
 }
 
 .board-space--bridge-highlight.board-space--frontier-locked {
-  filter: brightness(0.85) saturate(1.05);
   box-shadow: 0 0 0 2px fade(#7eb8e8, 80%), 0 0 8px fade(#c9a227, 40%);
+
+  > :not(.board-space__frontier-lock):not(.board-log-highlight) {
+    filter: brightness(0.8) saturate(1.05);
+  }
 }
