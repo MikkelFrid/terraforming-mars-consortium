@@ -132,11 +132,120 @@
 }
 
 .megastructure-track__outcome {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
   font-family: Prototype, sans-serif;
   font-size: 11px;
   line-height: 1.25;
   color: #a8b0bc;
   margin-bottom: 4px;
+}
+
+.megastructure-outcome-chip {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px 4px;
+}
+
+.megastructure-outcome-chip__label {
+  color: #c0c6d0;
+}
+
+.megastructure-outcome-chip__suffix {
+  color: #8e96a2;
+}
+
+.megastructure-outcome-chip__icons {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.megastructure-reward {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  position: relative;
+
+  .resource_icon {
+    width: 18px;
+    height: 18px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    position: relative;
+  }
+
+  &--production {
+    background: #7b5c42;
+    border: 1px solid #000;
+    border-radius: 2px;
+    padding: 1px;
+    box-shadow: inset 0 0 0 1px fade(#c9a27a, 35%);
+  }
+}
+
+.megastructure-reward__text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Prototype, sans-serif;
+  font-size: 10px;
+  font-weight: bold;
+  color: #111;
+  text-shadow: 0 0 1px #fff8;
+  line-height: 1;
+}
+
+.megastructure-reward__aside {
+  font-family: Prototype, sans-serif;
+  font-size: 11px;
+  color: #d0d6e0;
+  margin-left: 1px;
+}
+
+.megastructure-reward__temperature {
+  width: 18px !important;
+  height: 18px !important;
+  background-size: contain !important;
+  transform: scale(1);
+  margin: 0 !important;
+}
+
+.megastructure-reward__tag {
+  width: 18px !important;
+  height: 18px !important;
+  background-size: 20px 20px !important;
+  background-position: center !important;
+  margin: 0 !important;
+}
+
+.megastructure-reward__vp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 3px;
+  border-radius: 3px;
+  background: linear-gradient(#cc8b00, #805700);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.55);
+  font-family: Prototype, sans-serif;
+  font-size: 10px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 0 1px #000;
+  position: relative;
+
+  .megastructure-reward__text {
+    position: static;
+    color: #fff;
+    text-shadow: 0 0 1px #000;
+  }
 }
 
 .megastructure-track__segments {
@@ -193,18 +302,31 @@
     }
   }
 
+  // board-cube defaults to absolute + board-space margins — reset for the strip.
   .board-cube {
+    position: static;
+    margin: 0;
     transform: scale(0.72);
+    filter: drop-shadow(1px 1px 1px black);
   }
 }
 
 .megastructure-segment__iridium {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
   font-family: Prototype, sans-serif;
-  font-size: 8px;
+  font-size: 9px;
   line-height: 1;
   color: #f3e2b2;
   white-space: nowrap;
   z-index: 1;
+}
+
+.megastructure-segment__iridium-icon {
+  width: 12px !important;
+  height: 12px !important;
+  background-size: contain !important;
 }
 
 .megastructure-track__status {
@@ -242,7 +364,10 @@
   gap: 3px;
 
   .board-cube {
+    position: static;
+    margin: 0;
     transform: scale(0.65);
+    filter: drop-shadow(1px 1px 1px black);
   }
 }
 

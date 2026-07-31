@@ -52,4 +52,30 @@ describe('BoardSpace', () => {
     });
     expect(wrapper.find('[data-test="frontier-lock"]').exists()).is.false;
   });
+
+  it('emits highlight-sector when hovering a bridge frontier space', async () => {
+    const wrapper = mount(BoardSpace, {
+      ...globalConfig,
+      props: {
+        space: {id: '042', bonus: [], bridge: 2, locked: true},
+        tileView: 'show',
+      },
+    });
+    await wrapper.trigger('mouseenter');
+    expect(wrapper.emitted('highlight-sector')?.at(-1)).to.deep.eq([2]);
+    await wrapper.trigger('mouseleave');
+    expect(wrapper.emitted('highlight-sector')?.at(-1)).to.deep.eq([undefined]);
+  });
+
+  it('does not emit highlight-sector for spaces without a bridge', async () => {
+    const wrapper = mount(BoardSpace, {
+      ...globalConfig,
+      props: {
+        space: {id: '001', bonus: []},
+        tileView: 'show',
+      },
+    });
+    await wrapper.trigger('mouseenter');
+    expect(wrapper.emitted('highlight-sector')).to.eq(undefined);
+  });
 });

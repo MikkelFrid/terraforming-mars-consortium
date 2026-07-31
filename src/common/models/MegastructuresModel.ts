@@ -20,6 +20,32 @@ export type MegastructureContributorModel = {
   keystone: boolean;
 };
 
+/** Resource / effect icons used in the compact megastructure outcome strip. */
+export type MegastructureRewardIconKind =
+  | 'megacredits'
+  | 'heat'
+  | 'plants'
+  | 'titanium'
+  | 'iridium'
+  | 'temperature'
+  | 'vp'
+  | 'space';
+
+export type MegastructureRewardIcon = {
+  kind: MegastructureRewardIconKind;
+  /** Wrap in a production box (brown frame). */
+  production?: boolean;
+  /** Optional numeral drawn on/near the icon (e.g. "1", "−2"). */
+  text?: string;
+};
+
+/** One chip in the outcome strip: label + icons + optional suffix. */
+export type MegastructureOutcomeChip = {
+  label?: string;
+  icons?: ReadonlyArray<MegastructureRewardIcon>;
+  suffix?: string;
+};
+
 export type MegastructureModel = {
   id: MegastructureId;
   kind: MegastructureKind;
@@ -41,6 +67,8 @@ export type MegastructureModel = {
   completionGranted: string | undefined;
   /** Always-on outcome blurb (unlock / global / contributor reward). */
   outcome: string;
+  /** Icon-backed outcome chips for the strip UI (additive; older clients ignore). */
+  outcomeChips: ReadonlyArray<MegastructureOutcomeChip>;
 };
 
 export type MegastructuresModel = {

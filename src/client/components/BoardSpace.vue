@@ -1,5 +1,11 @@
 <template>
-  <div v-if="space !== undefined" :class="mainClass" :data_space_id="space.id">
+  <div
+    v-if="space !== undefined"
+    :class="mainClass"
+    :data_space_id="space.id"
+    @mouseenter="onBridgeHover(true)"
+    @mouseleave="onBridgeHover(false)"
+  >
     <BoardSpaceTile
       :space="space"
       :aresExtension="aresExtension"
@@ -73,6 +79,7 @@ export default defineComponent({
       default: undefined,
     },
   },
+  emits: ['highlight-sector'],
   data() {
     return {};
   },
@@ -80,6 +87,15 @@ export default defineComponent({
     Bonus,
     BoardSpaceTile,
     UndergroundToken,
+  },
+  methods: {
+    onBridgeHover(enter: boolean) {
+      const sector = this.space?.bridge;
+      if (sector === undefined) {
+        return;
+      }
+      this.$emit('highlight-sector', enter ? sector : undefined);
+    },
   },
   computed: {
     mainClass(): string {
