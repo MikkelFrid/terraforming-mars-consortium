@@ -11,27 +11,25 @@ from __future__ import annotations
 import math
 from PIL import Image, ImageChops, ImageDraw, ImageFont
 
-# Logical calibration (891×860). Ratios scale with planet_r.
+# Logical calibration (891×860) around hex-field centre (454, 405).
 # Angles are PIL/screen: 0° = east, increasing CCW with y-down.
-_CAL_PLANET_R = 320.0
+_CAL_PLANET_R = 304.0
 _TRACKS = {
-    # O2 pins ~132–214° at r≈415 (slightly outside painted outer — track under pins).
     'oxygen': {
-        'start': 132.0, 'end': 214.0, 'r_mid': 405.0, 'half': 11.0,
+        'start': 129.0, 'end': 212.0, 'r_mid': 412.0, 'half': 12.0,
         'segments': 14, 'fill': (50, 120, 190, 255), 'tick': (255, 140, 70, 230),
     },
-    # Venus / top sandy track.
     'venus': {
-        'start': 225.0, 'end': 307.0, 'r_mid': 385.0, 'half': 12.0,
+        'start': 223.0, 'end': 311.0, 'r_mid': 367.0, 'half': 12.0,
         'segments': 10, 'fill': (160, 120, 70, 255), 'tick': (230, 200, 140, 200),
     },
-    # Temperature pins ~316→60° (unwrap to 420) at r≈353 — closer to planet.
+    # Temperature wraps past east: 320 → 421 (=61°).
     'temperature': {
-        'start': 316.0, 'end': 420.0, 'r_mid': 353.0, 'half': 13.0,
+        'start': 320.0, 'end': 421.0, 'r_mid': 362.0, 'half': 13.0,
         'segments': 19, 'fill': (60, 160, 200, 255), 'tick': (255, 150, 80, 220),
     },
 }
-_OUTER_R = 392.0
+_OUTER_R = 400.0
 
 
 def _font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:

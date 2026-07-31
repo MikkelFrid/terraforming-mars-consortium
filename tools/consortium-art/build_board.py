@@ -234,10 +234,10 @@ BOARD_W, BOARD_H = 891, 860
 ART_SCALE = 2
 ART_W, ART_H = BOARD_W * ART_SCALE, BOARD_H * ART_SCALE
 
-# Calibrated to scaled mars.png silhouette + hex coverage (620×600 space).
-# Logical (891×860): centre ≈ (461, 431), planet_r ≈ 320.
-# Do not drift these — HTML O2/temp pins and hex field assume this frame.
-DISC_CX0, DISC_CY0, DISC_R0 = 320.75, 300.47, 222.96
+# Locked to the hex-field centre so tiles sit on the planet, not up/left of it.
+# Logical (891×860): centre = (454, 405), planet_r ≈ 304 (covers all hex centres).
+# Chrome arcs are recalibrated to HTML pins around this centre.
+DISC_CX0, DISC_CY0, DISC_R0 = 315.91, 282.56, 211.81
 
 
 def build_mars():
