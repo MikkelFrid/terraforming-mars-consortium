@@ -17,6 +17,8 @@ Produces:
     assets/resources/iridium.png     331x331 RGBA
     assets/expansion_icons/expansion_icon_consortium.png  64x64 RGBA
     assets/consortium/megastructures/*.png  116x116 RGBA (8 placeholders)
+    assets/ma/{mason,pathfinder,assayer,underwriter,cartographer,refiner}.png
+                             140x83 RGBA (milestone / award medals)
 
 Design constraints, derived from the existing game assets:
 
@@ -531,6 +533,170 @@ def build_massif_group(path):
     _recolor_special('highland_anchor.png', path, 1.05, 0.92, 0.75, glyph)
 
 
+# ------------------------------------------------- milestone / award medals
+#
+# Player-home MA cards load background-image from assets/ma/<slug>.png
+# (140×83). Consortium names were renamed (Mason / Underwriter / …) without
+# matching PNGs or @ma-name CSS entries, so the cards rendered as empty boxes
+# and the score row looked "broken". Build medals from the renamed chrome
+# (architect / founder) plus digit patches from peer milestones.
+
+MA_DIR = os.path.join(ASSET_DIR, 'ma')
+_MA_W, _MA_H = 140, 83
+_MA_DIGIT_BOX = (7, 9, 35, 37)  # left threshold tab on milestone chrome
+_MA_ICON_CENTRE = (70, 28)
+_MA_ICON_R = 22
+
+
+def _ma_load(name):
+    path = os.path.join(MA_DIR, f'{name}.png')
+    if not os.path.exists(path):
+        raise SystemExit(f'missing MA chrome source {path}')
+    im = Image.open(path).convert('RGBA')
+    if im.size == (_MA_W, _MA_H):
+        return im
+    # Wider sources (architect is 146×83): centre-crop.
+    left = max(0, (im.width - _MA_W) // 2)
+    top = max(0, (im.height - _MA_H) // 2)
+    return im.crop((left, top, left + _MA_W, top + _MA_H))
+
+
+def _ma_digit_patch(source_name):
+    return _ma_load(source_name).crop(_MA_DIGIT_BOX)
+
+
+def _ma_set_digit(chrome, digit_src_name):
+    out = chrome.copy()
+    out.paste(_ma_digit_patch(digit_src_name), _MA_DIGIT_BOX[:2])
+    return out
+
+
+def _ma_clear_milestone_icon(chrome):
+    """Paint a light disc over the centre icon so a new glyph can be drawn."""
+    out = chrome.copy()
+    d = ImageDraw.Draw(out)
+    cx, cy = _MA_ICON_CENTRE
+    r = _MA_ICON_R
+    # Match the pale medal face used by architect / hoverlord.
+    d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=(210, 212, 216, 255))
+    d.ellipse([cx - r, cy - r, cx + r, cy + r], outline=(40, 40, 40, 220), width=1)
+    return out
+
+
+def _ma_draw_mason_icon(draw, cx, cy):
+    # Keystone arch — reads as structure / masonry.
+    draw.rectangle([cx - 10, cy - 2, cx + 10, cy + 12], fill=(40, 42, 48, 255))
+    draw.pieslice([cx - 12, cy - 16, cx + 12, cy + 8], 180, 360, fill=(40, 42, 48, 255))
+    draw.polygon([(cx - 5, cy - 4), (cx, cy - 12), (cx + 5, cy - 4)],
+                 fill=(200, 170, 80, 255))
+
+
+def _ma_draw_pathfinder_icon(draw, cx, cy):
+    # Compass rose for frontier pathfinding.
+    gold = (40, 42, 48, 255)
+    draw.polygon([(cx, cy - 14), (cx + 4, cy - 2), (cx, cy), (cx - 4, cy - 2)], fill=gold)
+    draw.polygon([(cx, cy + 14), (cx + 4, cy + 2), (cx, cy), (cx - 4, cy + 2)], fill=gold)
+    draw.polygon([(cx - 14, cy), (cx - 2, cy - 4), (cx, cy), (cx - 2, cy + 4)], fill=gold)
+    draw.polygon([(cx + 14, cy), (cx + 2, cy - 4), (cx, cy), (cx + 2, cy + 4)], fill=gold)
+    draw.ellipse([cx - 3, cy - 3, cx + 3, cy + 3], fill=(200, 170, 80, 255))
+
+
+def _ma_draw_assayer_icon(draw, cx, cy):
+    # Pick head + short handle (prospecting).
+    draw.polygon([(cx - 12, cy - 8), (cx + 2, cy - 14), (cx + 6, cy - 8),
+                  (cx - 2, cy - 2)], fill=(40, 42, 48, 255))
+    draw.line([(cx - 1, cy - 3), (cx + 10, cy + 12)], fill=(40, 42, 48, 255), width=3)
+    draw.ellipse([cx + 8, cy + 10, cx + 14, cy + 16], fill=(200, 170, 80, 255))
+
+
+def _ma_clear_award_icon(chrome):
+    """Blank the dual-hex award face (founder chrome) for a new glyph."""
+    out = chrome.copy()
+    d = ImageDraw.Draw(out)
+    # Cover the whole hex pair + wing roots, then place a clean medal disc.
+    # Sample brushed metal from the top-left so the patch matches the plate.
+    plate = out.getpixel((8, 8))
+    d.rectangle([28, 0, 112, 54], fill=plate)
+    d.ellipse([46, 6, 94, 50], fill=(235, 235, 238, 255))
+    d.ellipse([46, 6, 94, 50], outline=(180, 140, 50, 255), width=2)
+    return out
+
+
+def _ma_draw_cartographer_icon(draw, cx, cy):
+    # Hex map fragment.
+    r = 12
+    pts = [(cx + r * math.cos(math.radians(a)),
+            cy + r * math.sin(math.radians(a)))
+           for a in range(0, 360, 60)]
+    draw.polygon(pts, outline=(40, 42, 48, 255), fill=(210, 200, 170, 255))
+    draw.line([(cx - 8, cy + 2), (cx - 2, cy - 6), (cx + 6, cy + 4)],
+              fill=(40, 42, 48, 255), width=2)
+
+
+def _ma_draw_refiner_icon(draw, cx, cy):
+    # Faceted iridium chunk (small).
+    body = [(cx, cy - 12), (cx + 8, cy - 4), (cx + 6, cy + 10),
+            (cx - 6, cy + 10), (cx - 8, cy - 4)]
+    draw.polygon(body, fill=(200, 210, 220, 255), outline=(40, 42, 48, 255))
+    draw.line([(cx, cy - 12), (cx, cy + 4)], fill=(40, 42, 48, 255), width=1)
+    draw.line([(cx - 8, cy - 4), (cx + 8, cy - 4)], fill=(40, 42, 48, 255), width=1)
+
+
+def _ma_draw_underwriter_icon(draw, cx, cy):
+    # Segment track: three filled cells + keystone.
+    x0, y0 = cx - 14, cy - 4
+    for i in range(3):
+        draw.rectangle([x0 + i * 8, y0, x0 + i * 8 + 6, y0 + 10],
+                       fill=(40, 42, 48, 255), outline=(200, 170, 80, 255))
+    draw.rectangle([x0 + 26, y0 - 2, x0 + 34, y0 + 12],
+                   fill=(200, 170, 80, 255), outline=(40, 42, 48, 255))
+
+
+def build_consortium_ma_medals():
+    """Write the six Consortium milestone/award medal PNGs (140×83)."""
+    os.makedirs(MA_DIR, exist_ok=True)
+    cx, cy = _MA_ICON_CENTRE
+
+    # Mason (milestone, threshold 5) — architect chrome + legend digit.
+    mason = _ma_set_digit(_ma_clear_milestone_icon(_ma_load('architect')), 'legend')
+    _ma_draw_mason_icon(ImageDraw.Draw(mason), cx, cy)
+    mason.save(os.path.join(MA_DIR, 'mason.png'))
+
+    # Pathfinder (milestone, threshold 3) — digit already 3 on architect.
+    pathfinder = _ma_clear_milestone_icon(_ma_load('architect'))
+    _ma_draw_pathfinder_icon(ImageDraw.Draw(pathfinder), cx, cy)
+    pathfinder.save(os.path.join(MA_DIR, 'pathfinder.png'))
+
+    # Assayer (milestone, threshold 6) — energizer digit.
+    assayer = _ma_set_digit(_ma_clear_milestone_icon(_ma_load('architect')), 'energizer')
+    _ma_draw_assayer_icon(ImageDraw.Draw(assayer), cx, cy)
+    assayer.save(os.path.join(MA_DIR, 'assayer.png'))
+
+    # Underwriter (award) — founder chrome with segment-track glyph.
+    underwriter = _ma_clear_award_icon(_ma_load('founder'))
+    _ma_draw_underwriter_icon(ImageDraw.Draw(underwriter), 70, 28)
+    underwriter.save(os.path.join(MA_DIR, 'underwriter.png'))
+
+    # Cartographer (award).
+    cartographer = _ma_clear_award_icon(_ma_load('founder'))
+    _ma_draw_cartographer_icon(ImageDraw.Draw(cartographer), 70, 28)
+    cartographer.save(os.path.join(MA_DIR, 'cartographer.png'))
+
+    # Refiner (award).
+    refiner = _ma_clear_award_icon(_ma_load('founder'))
+    _ma_draw_refiner_icon(ImageDraw.Draw(refiner), 70, 28)
+    refiner.save(os.path.join(MA_DIR, 'refiner.png'))
+
+    return [
+        'assets/ma/mason.png',
+        'assets/ma/pathfinder.png',
+        'assets/ma/assayer.png',
+        'assets/ma/underwriter.png',
+        'assets/ma/cartographer.png',
+        'assets/ma/refiner.png',
+    ]
+
+
 # --------------------------------------------------------------------- main
 
 def main():
@@ -582,6 +748,8 @@ def main():
         build_megastructure_emblem(os.path.join(ROOT, rel), rgb, shape)
         emblem_paths.append(rel)
 
+    ma_paths = build_consortium_ma_medals()
+
     print('generated:')
     for p in ('assets/tags/structure.png', 'assets/tags/prospecting.png',
               'assets/hex_chasm.png', 'assets/hex_crater_field.png',
@@ -596,7 +764,8 @@ def main():
               'assets/tiles/special_tile_icons/ejecta_blanket.png',
               'assets/tiles/special_tile_icons/plateau_reservoir.png',
               'assets/tiles/special_tile_icons/massif_group.png',
-              *emblem_paths):
+              *emblem_paths,
+              *ma_paths):
         f = os.path.join(ROOT, p)
         im = Image.open(f)
         print(f'  {p:52} {im.size[0]}x{im.size[1]} {im.mode} '
