@@ -15,10 +15,11 @@ Base: `main` after iridium merge (`24b0137cf`)
 | `src/server/boards/consortiumSpaces.json` | 127 space records |
 
 Confirmed: **127 spaces**, hex field **634×542**, field origin **137, 134**.
-Planet paint is locked to calibrated disc centre/radius (see `DISC_*` in
-`build_board.py`) so generative art stays under the hexes and HTML track
-pins. Massif (default) types: land 72 / crater 12 / chasm 24 / ocean 13 /
-highland 6.
+Planet paint is locked to the **hex-field centre** `(454, 405)` / r≈304
+(`DISC_*` in `build_board.py`) so tiles are not shifted up-left of the
+disc. Chrome arcs are recalibrated to HTML O2/temp pins around that centre.
+Massif (default) types: land 72 / crater 12 / chasm 24 / ocean 13 / highland 6.
+Filled-board visual QA: `python3 tools/consortium-art/simulate_filled_board.py`.
 
 Three terrain variants share this geometry — see `docs/consortium/19-maps.md`
 (Massif / Rift Basin / Archipelago).
