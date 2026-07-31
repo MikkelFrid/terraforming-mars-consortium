@@ -1,8 +1,8 @@
 """
-Top-tier SVG Consortium board (planet + chrome).
+SVG Consortium board chrome (tracks / labels / icons).
 
-Authoring format is SVG; the game still consumes the rasterized PNG
-(mars_consortium.png) via CSS background-size. Geometry contracts
+Hybrid pipeline: DEM hillshade planet (_board_dem.py) + this SVG chrome,
+composited in build_board.py → mars_consortium.png. Geometry contracts
 (OFFSET / DISC / track arcs) stay locked to the HTML pin frame.
 
     python3 tools/consortium-art/build_board.py
@@ -489,109 +489,42 @@ def _chrome(cx, cy, planet_r) -> str:
     return '\n'.join(parts)
 
 
-def build_svg(seed: int = 20260731) -> str:
-    """Full-board SVG string (logical 891×860 viewBox)."""
+def build_chrome_svg() -> str:
+    """
+    Chrome-only SVG (logical 891×860). Planet disc is transparent so a DEM
+    disc can composite underneath. Black void outside the outer chrome ring.
+    """
     cx, cy, r = DISC_CX, DISC_CY, DISC_R
-    lx, ly = cx - r * 0.30, cy - r * 0.34
-
-    planet = f'''
-    <g id="planet">
-      <circle cx="{cx}" cy="{cy}" r="{r}" fill="url(#marsBase)"/>
-      <!-- Fine terrain grain (low amplitude — structure comes from vectors) -->
-      <g clip-path="url(#planetClip)" style="mix-blend-mode:soft-light" opacity="0.55">
-        <rect x="{cx - r}" y="{cy - r}" width="{2 * r}" height="{2 * r}"
-              filter="url(#terrainNoise)" fill="#c07040"/>
-      </g>
-      {_albedo_continents(cx, cy, r)}
-      {_highland_blobs(cx, cy, r)}
-      {_volcanoes(cx, cy, r)}
-      {_ridge_lines(cx, cy, r, seed)}
-      {_chasm_belts(cx, cy, r)}
-      {_canyon_paths(cx, cy, r)}
-      {_crater_field(cx, cy, r, seed)}
-      {_polar_cap(cx, cy, r)}
-      <!-- Dust streaks — warm ochre, not glossy white -->
-      <g clip-path="url(#planetClip)" opacity="0.22">
-        <ellipse cx="{cx + r * 0.12}" cy="{cy - r * 0.02}" rx="{r * 0.58}" ry="{r * 0.06}"
-                 fill="#c88858" transform="rotate(-16 {cx} {cy})" filter="url(#softBlur)"/>
-        <ellipse cx="{cx - r * 0.08}" cy="{cy + r * 0.28}" rx="{r * 0.42}" ry="{r * 0.04}"
-                 fill="#a86838" transform="rotate(14 {cx} {cy})" filter="url(#softBlur)"/>
-      </g>
-      <circle cx="{cx}" cy="{cy}" r="{r}" fill="url(#sphereLit)"/>
-      <circle cx="{cx}" cy="{cy}" r="{r}" fill="url(#sphereShade)"/>
-      <circle cx="{cx}" cy="{cy}" r="{r}" fill="url(#atmosphere)"/>
-      <circle cx="{cx}" cy="{cy}" r="{r - 0.8}" fill="none" stroke="#e0b090"
-              stroke-opacity="0.20" stroke-width="1.4"/>
-    </g>'''
-
+    outer = _OUTER_R * (r / DISC_R)
     return f'''<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="{BOARD_W}" height="{BOARD_H}"
      viewBox="0 0 {BOARD_W} {BOARD_H}" version="1.1">
-  <title>Consortium Mars board (SVG)</title>
-  <desc>Top-tier vector board. Hex OFFSET (144,160) / DISC
+  <title>Consortium Mars board chrome (SVG)</title>
+  <desc>Vector chrome for hybrid board. Planet is DEM hillshade composited
+        under this layer. Hex OFFSET (144,160) / DISC
         ({DISC_CX},{DISC_CY},r={DISC_R}) locked to HTML pin frame.</desc>
   <defs>
-    <clipPath id="planetClip">
-      <circle cx="{cx}" cy="{cy}" r="{r}"/>
-    </clipPath>
-    <radialGradient id="marsBase" cx="34%" cy="30%" r="72%">
-      <stop offset="0%" stop-color="#f0c8a0"/>
-      <stop offset="22%" stop-color="#d48858"/>
-      <stop offset="48%" stop-color="#a85832"/>
-      <stop offset="72%" stop-color="#6e3020"/>
-      <stop offset="100%" stop-color="#2a120c"/>
-    </radialGradient>
-    <radialGradient id="highlandGrad" cx="40%" cy="35%" r="65%">
-      <stop offset="0%" stop-color="#ffe8c8" stop-opacity="0.80"/>
-      <stop offset="55%" stop-color="#e0b080" stop-opacity="0.40"/>
-      <stop offset="100%" stop-color="#a06038" stop-opacity="0"/>
-    </radialGradient>
-    <!-- Darkness-only shade (no mix-blend needed for rsvg). Lit side stays clear. -->
-    <radialGradient id="sphereShade" gradientUnits="userSpaceOnUse"
-                    cx="{lx:.1f}" cy="{ly:.1f}" r="{r * 1.42:.1f}">
-      <stop offset="0%" stop-color="#000000" stop-opacity="0"/>
-      <stop offset="42%" stop-color="#000000" stop-opacity="0"/>
-      <stop offset="70%" stop-color="#000000" stop-opacity="0.18"/>
-      <stop offset="100%" stop-color="#000000" stop-opacity="0.62"/>
-    </radialGradient>
-    <radialGradient id="sphereLit" gradientUnits="userSpaceOnUse"
-                    cx="{lx:.1f}" cy="{ly:.1f}" r="{r * 0.85:.1f}">
-      <stop offset="0%" stop-color="#ffd8b0" stop-opacity="0.14"/>
-      <stop offset="55%" stop-color="#ffd8b0" stop-opacity="0.03"/>
-      <stop offset="100%" stop-color="#ffd8b0" stop-opacity="0"/>
-    </radialGradient>
-    <radialGradient id="atmosphere" cx="50%" cy="50%" r="50%">
-      <stop offset="84%" stop-color="#c8a090" stop-opacity="0"/>
-      <stop offset="93%" stop-color="#e0c4b0" stop-opacity="0.32"/>
-      <stop offset="100%" stop-color="#f0ddd0" stop-opacity="0.50"/>
-    </radialGradient>
-    <filter id="terrainNoise" x="-10%" y="-10%" width="120%" height="120%"
-            color-interpolation-filters="sRGB">
-      <feTurbulence type="fractalNoise" baseFrequency="0.018 0.022"
-                    numOctaves="3" seed="{seed % 1000}" result="n"/>
-      <feColorMatrix in="n" type="matrix" values="
-         0.55 0.25 0.10 0 0.15
-         0.28 0.16 0.08 0 0.08
-         0.12 0.08 0.04 0 0.04
-         0    0    0    0.65 0"/>
-      <feGaussianBlur stdDeviation="0.45"/>
-    </filter>
     <filter id="softBlur" x="-20%" y="-20%" width="140%" height="140%">
       <feGaussianBlur stdDeviation="1.1"/>
     </filter>
   </defs>
-
-  <rect width="100%" height="100%" fill="#000000"/>
-  {planet}
+  <!-- Black outside outer ring; interior (incl. planet disc) stays transparent. -->
+  <path fill="#000000" fill-rule="evenodd" d="
+    M0,0 H{BOARD_W} V{BOARD_H} H0 Z
+    M{cx + outer:.2f},{cy:.2f}
+    A{outer:.2f},{outer:.2f} 0 1 0 {cx - outer:.2f},{cy:.2f}
+    A{outer:.2f},{outer:.2f} 0 1 0 {cx + outer:.2f},{cy:.2f} Z"/>
   {_chrome(cx, cy, r)}
 </svg>
 '''
 
 
 def write_svg(path: str, seed: int = 20260731) -> str:
+    """Write chrome-only SVG (seed kept for API compat; unused)."""
+    del seed  # chrome is deterministic; planet seed lives in _board_dem
     os.makedirs(os.path.dirname(path) or '.', exist_ok=True)
     with open(path, 'w', encoding='utf-8') as f:
-        f.write(build_svg(seed=seed))
+        f.write(build_chrome_svg())
     return path
 
 
@@ -599,15 +532,18 @@ def rasterize_svg(svg_path: str, png_path: str, scale: int = 2) -> str:
     """Rasterize SVG → PNG at `scale` × viewBox (default 2 → 1782×1720)."""
     w, h = BOARD_W * scale, BOARD_H * scale
     os.makedirs(os.path.dirname(png_path) or '.', exist_ok=True)
+    # Preserve alpha so the planet disc hole stays transparent.
     rsvg = subprocess.run(
-        ['rsvg-convert', '-w', str(w), '-h', str(h), '-o', png_path, svg_path],
+        ['rsvg-convert', '-w', str(w), '-h', str(h),
+         '--background-color=transparent', '-o', png_path, svg_path],
         capture_output=True, text=True)
     if rsvg.returncode == 0 and os.path.exists(png_path):
         return png_path
     try:
         import cairosvg
         cairosvg.svg2png(url=svg_path, write_to=png_path,
-                         output_width=w, output_height=h)
+                         output_width=w, output_height=h,
+                         background_color='rgba(0,0,0,0)')
         return png_path
     except Exception as exc:  # noqa: BLE001
         raise SystemExit(

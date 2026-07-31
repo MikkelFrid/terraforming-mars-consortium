@@ -10,8 +10,8 @@ Base: `main` after iridium merge (`24b0137cf`)
 
 | Output | Spec |
 |--------|------|
-| `assets/board/mars_consortium.svg` | Authoring source — top-tier vector planet + chrome (`_board_svg.py`). |
-| `assets/board/mars_consortium.png` | **1782×1720** RGBA (2× raster of the SVG). CSS paints at 891×860 via `background-size`. No Tharsis `mars.png` composite. Hex geometry unchanged. |
+| `assets/board/mars_consortium.svg` | SVG **chrome** authoring source (`_board_svg.py`) — tracks/icons. |
+| `assets/board/mars_consortium.png` | **1782×1720** hybrid: DEM hillshade planet (`_board_dem.py`) + SVG chrome. CSS paints at 891×860 via `background-size`. Hex geometry unchanged. |
 | `src/styles/board_positions.less` | 127 CSS margin rules (`.board-space-001` …) |
 | `src/server/boards/consortiumSpaces.json` | 127 space records |
 
