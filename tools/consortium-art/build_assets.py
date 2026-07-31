@@ -17,6 +17,8 @@ Produces:
     assets/resources/iridium.png     331x331 RGBA
     assets/expansion_icons/expansion_icon_consortium.png  64x64 RGBA
     assets/consortium/megastructures/*.png  116x116 RGBA (8 placeholders)
+    assets/ma/{mason,pathfinder,assayer,underwriter,cartographer,refiner}.png
+                             140x83 RGBA milestone / award medals
 
 Design constraints, derived from the existing game assets:
 
@@ -38,13 +40,15 @@ import math
 import os
 import sys
 from collections import deque
-from PIL import Image, ImageDraw, ImageFilter
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 HEX_SRC = os.path.join(ROOT, 'assets', 'hex_black.png')
 TAG_DIR = os.path.join(ROOT, 'assets', 'tags')
 RES_DIR = os.path.join(ROOT, 'assets', 'resources')
 ASSET_DIR = os.path.join(ROOT, 'assets')
+MA_DIR = os.path.join(ASSET_DIR, 'ma')
+PROTOTYPE_FONT = os.path.join(ASSET_DIR, 'Prototype.ttf')
 
 S, SS = 116, 8
 W = S * SS
@@ -531,6 +535,199 @@ def build_massif_group(path):
     _recolor_special('highland_anchor.png', path, 1.05, 0.92, 0.75, glyph)
 
 
+# ------------------------------------------------------- milestones / awards
+#
+# Client medals are 140x83 PNGs referenced from player_home.less via
+# `.ma-name--{slug} { background-image: url("assets/ma/{slug}.png"); }`.
+# The Vue component overlays the name on the bottom bar (padding-top: 60px),
+# so the PNG itself leaves that strip blank.
+#
+# Milestone chrome mirrors base-game medals (left threshold, centre icon,
+# right "TM", coloured name bar). Award chrome mirrors Venus/Ares awards
+# (winged emblem, orange name bar, no threshold).
+
+MA_W, MA_H = 140, 83
+# Cool slate name-bar — Consortium's iridium palette, distinct from Venus blue
+# and Underworld gold.
+_MA_BAR = (72, 96, 118)
+_MA_GOLD = (240, 176, 72)
+_MA_GOLD_HI = (255, 230, 140)
+_MA_GOLD_LO = (180, 120, 40)
+
+
+def _ma_bg():
+    img = Image.new('RGBA', (MA_W, MA_H), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    for x in range(MA_W):
+        t = abs(x - MA_W / 2) / (MA_W / 2)
+        v = int(185 - 45 * t)
+        d.line([(x, 0), (x, MA_H)], fill=(v, v, v, 255))
+    return img
+
+
+def _ma_hex_points(cx, cy, r):
+    pts = []
+    for i in range(6):
+        a = math.radians(60 * i - 30)
+        pts.append((cx + r * math.cos(a), cy + r * math.sin(a)))
+    return pts
+
+
+def _ma_gold_wing(d, box):
+    x0, y0, x1, y1 = box
+    for y in range(y0, y1 + 1):
+        t = (y - y0) / max(1, y1 - y0)
+        col = _lerp(_MA_GOLD_HI, _MA_GOLD_LO, t)
+        d.line([(x0, y), (x1, y)], fill=col + (255,))
+    d.rectangle([x0, y0, x1, y1], outline=(90, 60, 20, 255))
+
+
+def _ma_draw_text(img, text, cx, cy, size, fill=(20, 16, 10, 255)):
+    font = ImageFont.truetype(PROTOTYPE_FONT, size)
+    d = ImageDraw.Draw(img)
+    bbox = font.getbbox(text)
+    tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
+    d.text((cx - tw / 2 - bbox[0], cy - th / 2 - bbox[1]), text,
+           font=font, fill=fill)
+
+
+def _ma_name_bar(d, rgb):
+    # Rounded strip under the medal; name text is CSS-overlaid.
+    x0, y0, x1, y1 = 6, 58, MA_W - 7, MA_H - 4
+    mid = (y0 + y1) / 2
+    half = max(1, (y1 - y0) / 2)
+    hi_rgb = _lerp(rgb, (255, 255, 255), 0.28)
+    for y in range(y0, y1 + 1):
+        t = (y - y0) / max(1, y1 - y0)
+        base = _lerp(_lerp(rgb, hi_rgb, 0.35), _lerp(rgb, (0, 0, 0), 0.28), t)
+        lift = 0.22 * (1 - abs(y - mid) / half)
+        col = _lerp(base, hi_rgb, lift)
+        d.line([(x0 + 2, y), (x1 - 2, y)], fill=col + (255,))
+    d.rounded_rectangle([x0, y0, x1, y1], radius=6,
+                        outline=_MA_GOLD + (255,), width=2)
+
+
+def _ma_icon_segments(size=36):
+    """Stacked megastructure blocks — Mason / Underwriter."""
+    img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    blocks = [
+        (6, 22, 30, 32, (210, 218, 224)),
+        (10, 12, 26, 22, (186, 198, 208)),
+        (13, 4, 23, 12, (243, 226, 178)),
+    ]
+    for x0, y0, x1, y1, rgb in blocks:
+        d.rounded_rectangle([x0, y0, x1, y1], radius=2, fill=rgb + (255,),
+                            outline=(20, 22, 28, 255), width=1)
+    return img
+
+
+def _ma_icon_frontier(size=36):
+    """Path / bridge into a crater hex — Pathfinder / Cartographer."""
+    img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    # crater field hex
+    hx, hy, hr = size * 0.62, size * 0.38, size * 0.28
+    d.polygon(_ma_hex_points(hx, hy, hr), fill=(56, 110, 150, 255),
+              outline=(20, 24, 30, 255))
+    d.ellipse([hx - 4, hy - 3, hx + 5, hy + 4], fill=(30, 70, 100, 255))
+    # path from bottom-left
+    d.line([(4, size - 4), (size * 0.42, size * 0.62), (hx - 2, hy + 2)],
+           fill=(230, 210, 150, 255), width=3)
+    d.line([(4, size - 4), (size * 0.42, size * 0.62), (hx - 2, hy + 2)],
+           fill=(120, 90, 40, 255), width=1)
+    return img
+
+
+def _ma_icon_assayer(size=36):
+    """Prospecting pick over structure plate — Assayer."""
+    img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    # structure plate
+    d.rounded_rectangle([4, 14, 20, 30], radius=2, fill=(186, 198, 208, 255),
+                        outline=(20, 22, 28, 255), width=1)
+    d.polygon([(8, 14), (16, 14), (14, 8), (10, 8)], fill=(243, 226, 178, 255),
+              outline=(20, 22, 28, 255))
+    # pick
+    d.line([(12, 28), (28, 6)], fill=(40, 36, 40, 255), width=3)
+    d.arc([18, 2, 34, 18], 200, 340, fill=(40, 36, 40, 255), width=3)
+    return img
+
+
+def _ma_icon_iridium(size=36):
+    """Faceted iridium chunk — Refiner."""
+    # Reuse the expansion-icon gem scaled down onto a transparent field.
+    gem = Image.open(os.path.join(EXP_ICON_DIR, 'expansion_icon_consortium.png')).convert('RGBA')
+    gem = gem.resize((size, size), Image.LANCZOS)
+    return gem
+
+
+def _build_ma_milestone(path, number, icon, bar_rgb=_MA_BAR):
+    img = _ma_bg()
+    d = ImageDraw.Draw(img)
+    # left threshold wing
+    _ma_gold_wing(d, (16, 16, 48, 44))
+    _ma_draw_text(img, str(number), 32, 30, 20)
+    # right TM wing
+    _ma_gold_wing(d, (92, 16, 124, 44))
+    _ma_draw_text(img, 'TM', 108, 30, 16)
+    # centre hex medal
+    cx, cy, r = 70, 30, 22
+    d.polygon(_ma_hex_points(cx, cy, r + 2), fill=_MA_GOLD + (255,))
+    d.polygon(_ma_hex_points(cx, cy, r), fill=(170, 172, 176, 255),
+              outline=(40, 36, 30, 255))
+    icon_s = 28
+    icon = icon.resize((icon_s, icon_s), Image.LANCZOS)
+    img.paste(icon, (cx - icon_s // 2, cy - icon_s // 2), icon)
+    _ma_name_bar(ImageDraw.Draw(img), bar_rgb)
+    img.save(path)
+
+
+def _build_ma_award(path, icon, bar_rgb=(228, 152, 50)):
+    img = _ma_bg()
+    d = ImageDraw.Draw(img)
+    # winged emblem (award style) — mirrors Venuphile / Landlord chrome
+    cx, cy = 70, 28
+    for sign in (-1, 1):
+        base = cx + sign * 16
+        pts = [
+            (base, cy - 12),
+            (base + sign * 28, cy - 6),
+            (base + sign * 30, cy + 2),
+            (base + sign * 24, cy + 10),
+            (base + sign * 4, cy + 8),
+            (base, cy + 2),
+        ]
+        d.polygon(pts, fill=_MA_GOLD + (255,), outline=(90, 60, 20, 255))
+    # centre disc
+    d.ellipse([cx - 20, cy - 20, cx + 20, cy + 20], fill=_MA_GOLD + (255,))
+    d.ellipse([cx - 17, cy - 17, cx + 17, cy + 17], fill=(48, 70, 92, 255),
+              outline=(20, 24, 30, 255))
+    icon_s = 26
+    icon = icon.resize((icon_s, icon_s), Image.LANCZOS)
+    img.paste(icon, (cx - icon_s // 2, cy - icon_s // 2), icon)
+    _ma_name_bar(ImageDraw.Draw(img), bar_rgb)
+    img.save(path)
+
+
+def build_consortium_ma_medals():
+    if not os.path.exists(PROTOTYPE_FONT):
+        sys.exit(f'missing {PROTOTYPE_FONT}')
+    os.makedirs(MA_DIR, exist_ok=True)
+    # Expansion icon must exist for Refiner's gem.
+    if not os.path.exists(os.path.join(EXP_ICON_DIR, 'expansion_icon_consortium.png')):
+        os.makedirs(EXP_ICON_DIR, exist_ok=True)
+        build_expansion_icon_consortium(
+            os.path.join(EXP_ICON_DIR, 'expansion_icon_consortium.png'))
+
+    _build_ma_milestone(os.path.join(MA_DIR, 'mason.png'), 5, _ma_icon_segments())
+    _build_ma_milestone(os.path.join(MA_DIR, 'pathfinder.png'), 3, _ma_icon_frontier())
+    _build_ma_milestone(os.path.join(MA_DIR, 'assayer.png'), 6, _ma_icon_assayer())
+    _build_ma_award(os.path.join(MA_DIR, 'underwriter.png'), _ma_icon_segments())
+    _build_ma_award(os.path.join(MA_DIR, 'cartographer.png'), _ma_icon_frontier())
+    _build_ma_award(os.path.join(MA_DIR, 'refiner.png'), _ma_icon_iridium())
+
+
 # --------------------------------------------------------------------- main
 
 def main():
@@ -582,6 +779,16 @@ def main():
         build_megastructure_emblem(os.path.join(ROOT, rel), rgb, shape)
         emblem_paths.append(rel)
 
+    build_consortium_ma_medals()
+    ma_paths = [
+        'assets/ma/mason.png',
+        'assets/ma/pathfinder.png',
+        'assets/ma/assayer.png',
+        'assets/ma/underwriter.png',
+        'assets/ma/cartographer.png',
+        'assets/ma/refiner.png',
+    ]
+
     print('generated:')
     for p in ('assets/tags/structure.png', 'assets/tags/prospecting.png',
               'assets/hex_chasm.png', 'assets/hex_crater_field.png',
@@ -596,7 +803,8 @@ def main():
               'assets/tiles/special_tile_icons/ejecta_blanket.png',
               'assets/tiles/special_tile_icons/plateau_reservoir.png',
               'assets/tiles/special_tile_icons/massif_group.png',
-              *emblem_paths):
+              *emblem_paths,
+              *ma_paths):
         f = os.path.join(ROOT, p)
         im = Image.open(f)
         print(f'  {p:52} {im.size[0]}x{im.size[1]} {im.mode} '
