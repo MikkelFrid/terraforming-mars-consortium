@@ -1,7 +1,7 @@
 import {IColony} from './IColony';
 import {ColonyName} from '../../common/colonies/ColonyName';
 import {Random} from '../../common/utils/Random';
-import {ALL_COLONIES_TILES, BASE_COLONIES_TILES, COMMUNITY_COLONIES_TILES, PATHFINDERS_COLONIES_TILES} from './ColonyManifest';
+import {ALL_COLONIES_TILES, BASE_COLONIES_TILES, COMMUNITY_COLONIES_TILES, CONSORTIUM_COLONIES_TILES, PATHFINDERS_COLONIES_TILES} from './ColonyManifest';
 import {GameOptions} from '../game/GameOptions';
 
 // TODO(kberg): Add ability to hard-code chosen colonies, separate from customColoniesList, so as to not be
@@ -22,6 +22,12 @@ export class ColonyDealer {
     }
     if (gameOptions.pathfindersExpansion || gameOptions.moonExpansion) {
       colonyTiles = colonyTiles.concat(PATHFINDERS_COLONIES_TILES);
+    }
+    // Consortium colonies are gated strictly — never in BASE — so ongoing
+    // non-Consortium saves do not suddenly gain Psyche/Vesta/Davida in
+    // discardedColonies on restore.
+    if (ColonyDealer.includesConsortiumColonies(gameOptions)) {
+      colonyTiles = colonyTiles.concat(CONSORTIUM_COLONIES_TILES);
     }
     if (gameOptions.moonExpansion && !this.gameOptions.pathfindersExpansion) {
       // Leavitt II isn't built yet but this is pre-emptive
@@ -45,6 +51,14 @@ export class ColonyDealer {
     }
     const communityColonyNames = COMMUNITY_COLONIES_TILES.map((cf) => cf.colonyName);
     return gameOptions.customColoniesList.some((colonyName) => communityColonyNames.includes(colonyName));
+  }
+
+  private static includesConsortiumColonies(gameOptions: GameOptions): boolean {
+    if (gameOptions.consortiumExpansion) {
+      return true;
+    }
+    const names = CONSORTIUM_COLONIES_TILES.map((cf) => cf.colonyName);
+    return gameOptions.customColoniesList.some((colonyName) => names.includes(colonyName));
   }
 
   private shuffle(cards: Array<IColony> | ReadonlyArray<IColony>): Array<IColony> {

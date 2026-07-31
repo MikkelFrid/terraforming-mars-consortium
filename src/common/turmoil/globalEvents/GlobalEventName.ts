@@ -53,4 +53,10 @@ export enum GlobalEventName {
     MIGRATION_UNDERGROUND = 'Migration Underground',
     SEISMIC_PREDICTIONS = 'Seismic Predictions',
     MEDIA_STIR = 'Media Stir',
+
+    // Consortium
+    CHARTER_REVIEW = 'Charter Review',
+    IRIDIUM_EMBARGO = 'Iridium Embargo',
+    MEGASTRUCTURE_AUDIT = 'Megastructure Audit',
+    RIM_QUAKE = 'Rim Quake',
 }

@@ -17,6 +17,7 @@ Produces:
     assets/resources/iridium.png     331x331 RGBA
     assets/expansion_icons/expansion_icon_consortium.png  64x64 RGBA
     assets/consortium/megastructures/*.png  116x116 RGBA (8 placeholders)
+    assets/colonies-planets/{psyche,vesta,davida}.png  160x160 RGBA
 
 Design constraints, derived from the existing game assets:
 
@@ -533,6 +534,50 @@ def build_massif_group(path):
 
 # --------------------------------------------------------------------- main
 
+# --------------------------------------------------------------- colony planets
+
+COLONY_PLANET_DIR = os.path.join(ROOT, 'assets', 'colonies-planets')
+
+
+def build_colony_planet(path, base_rgb, crater_rgb, seed_shift=0):
+    """Procedural asteroid disk (~160x160) for Consortium colony tiles."""
+    size = 160
+    img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(img)
+    cx = cy = size / 2
+    r = 68
+    # Body
+    for y in range(size):
+        for x in range(size):
+            dx, dy = x - cx, y - cy
+            d = (dx * dx + dy * dy) ** 0.5
+            if d > r:
+                continue
+            t = d / r
+            shade = 1.0 - 0.35 * t
+            # crude lighting from top-left
+            nx, ny = dx / r, dy / r
+            light = max(0.55, min(1.15, 0.85 - 0.35 * nx - 0.25 * ny))
+            rgb = tuple(max(0, min(255, int(c * shade * light))) for c in base_rgb)
+            img.putpixel((x, y), rgb + (255,))
+    # Craters
+    craters = [
+        (cx - 18 + seed_shift, cy - 10, 14),
+        (cx + 22 - seed_shift // 2, cy + 16, 10),
+        (cx - 8, cy + 28, 8),
+        (cx + 10, cy - 30, 7),
+    ]
+    for (cx0, cy0, cr) in craters:
+        bbox = [cx0 - cr, cy0 - cr, cx0 + cr, cy0 + cr]
+        draw.ellipse(bbox, fill=crater_rgb + (220,))
+        draw.ellipse([cx0 - cr * 0.55, cy0 - cr * 0.55,
+                      cx0 + cr * 0.35, cy0 + cr * 0.35],
+                     fill=tuple(min(255, c + 30) for c in crater_rgb) + (180,))
+    # Rim
+    draw.ellipse([cx - r, cy - r, cx + r, cy + r], outline=(20, 20, 24, 255), width=2)
+    img.save(path)
+
+
 def main():
     if not os.path.exists(HEX_SRC):
         sys.exit(f'missing {HEX_SRC} — run from the repository root')
@@ -540,6 +585,7 @@ def main():
     os.makedirs(RES_DIR, exist_ok=True)
     os.makedirs(MEGASTRUCTURE_EMBLEM_DIR, exist_ok=True)
     os.makedirs(SPECIAL_TILE_DIR, exist_ok=True)
+    os.makedirs(COLONY_PLANET_DIR, exist_ok=True)
 
     build_tag(os.path.join(TAG_DIR, 'structure.png'),
               (74, 104, 122), (128, 158, 174),
@@ -582,6 +628,17 @@ def main():
         build_megastructure_emblem(os.path.join(ROOT, rel), rgb, shape)
         emblem_paths.append(rel)
 
+    colony_planets = [
+        ('psyche.png', (140, 168, 196), (90, 110, 130), 0),
+        ('vesta.png', (196, 148, 74), (140, 100, 50), 4),
+        ('davida.png', (120, 132, 148), (80, 88, 98), 8),
+    ]
+    colony_paths = []
+    for name, base, crater, shift in colony_planets:
+        rel = f'assets/colonies-planets/{name}'
+        build_colony_planet(os.path.join(ROOT, rel), base, crater, shift)
+        colony_paths.append(rel)
+
     print('generated:')
     for p in ('assets/tags/structure.png', 'assets/tags/prospecting.png',
               'assets/hex_chasm.png', 'assets/hex_crater_field.png',
@@ -596,7 +653,8 @@ def main():
               'assets/tiles/special_tile_icons/ejecta_blanket.png',
               'assets/tiles/special_tile_icons/plateau_reservoir.png',
               'assets/tiles/special_tile_icons/massif_group.png',
-              *emblem_paths):
+              *emblem_paths,
+              *colony_paths):
         f = os.path.join(ROOT, p)
         im = Image.open(f)
         print(f'  {p:52} {im.size[0]}x{im.size[1]} {im.mode} '

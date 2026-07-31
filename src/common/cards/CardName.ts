@@ -1138,6 +1138,22 @@ export enum CardName {
   IRIDIUM_AUTHORITY = 'Iridium Authority',
   CHARTER_SYNDICATE = 'Charter Syndicate',
 
+  // Consortium Preludes
+  CLAIM_STAKES = 'Claim Stakes',
+  TRUSS_CHARTER = 'Truss Charter',
+  HIGHLAND_GRANT = 'Highland Grant',
+  CRATER_LEASE = 'Crater Lease',
+  RIM_SURVEY = 'Rim Survey',
+  ASSAY_BOND = 'Assay Bond',
+  MASSIF_DEED = 'Massif Deed',
+  PREFAB_DEPOT = 'Prefab Depot',
+
+  // Consortium CEOs
+  FOREPERSON_VALE = 'Foreperson Vale',
+  SURVEYOR_KADE = 'Surveyor Kade',
+  RACKHAM = 'Rackham',
+  MASON_RHEE = 'Mason Rhee',
+
   // Underworld Replacement Cards
   STANDARD_TECHNOLOGY_UNDERWORLD = 'Standard Technology:u',
   HACKERS_UNDERWORLD = 'Hackers:u',
