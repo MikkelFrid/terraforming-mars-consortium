@@ -26,6 +26,13 @@
       <div v-if="space.excavator !== undefined" class="underground-excavator" :class="'underground-excavator--' + space.excavator"></div>
       <div v-if="space.spaceType === SpaceType.DEFLECTION_ZONE" class="board-space-type-deflection-zone"></div>
     </template>
+    <div
+      v-if="space.locked === true"
+      class="board-space__frontier-lock"
+      data-test="frontier-lock"
+      :title="frontierLockTitle"
+      aria-label="Locked frontier"
+    ></div>
     <div class="board-log-highlight" :data_log_highlight_id="space.id"></div>
     </div>
 </template>
@@ -111,6 +118,13 @@ export default defineComponent({
     },
     SpaceType(): typeof SpaceType {
       return SpaceType;
+    },
+    frontierLockTitle(): string {
+      const sector = this.space?.bridge;
+      if (sector === undefined) {
+        return 'Locked frontier — complete its Bridge to unlock';
+      }
+      return `Locked frontier — complete Bridge (Sector ${sector}) to unlock`;
     },
   },
 });
