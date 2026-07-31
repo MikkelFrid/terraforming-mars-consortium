@@ -14,9 +14,11 @@ Base: `main` after iridium merge (`24b0137cf`)
 | `src/styles/board_positions.less` | 127 CSS margin rules (`.board-space-001` …) |
 | `src/server/boards/consortiumSpaces.json` | 127 space records |
 
-Confirmed: **127 spaces**, hex field **634×542**, field origin **137, 134**
-(centred on the planet disc). Massif (default) types: land 72 / crater 12 /
-chasm 24 / ocean 13 / highland 6.
+Confirmed: **127 spaces**, hex field **634×542**, field origin **137, 134**.
+Planet paint is locked to calibrated disc centre/radius (see `DISC_*` in
+`build_board.py`) so generative art stays under the hexes and HTML track
+pins. Massif (default) types: land 72 / crater 12 / chasm 24 / ocean 13 /
+highland 6.
 
 Three terrain variants share this geometry — see `docs/consortium/19-maps.md`
 (Massif / Rift Basin / Archipelago).
