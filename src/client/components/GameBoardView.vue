@@ -12,6 +12,7 @@
     :altVenusBoard="game.gameOptions.altVenusBoard"
     :aresData="game.aresData"
     :tileView="tileView"
+    :highlightBridgeSector="highlightSector"
     @toggleTileView="$emit('toggleTileView')"
     id="shortkey-board"
   />
@@ -36,7 +37,9 @@
     <MegastructuresPanel
       :megastructures="game.megastructures"
       :canAct="canContribute"
+      :highlightSector="highlightSector"
       @contribute="$emit('contribute', $event)"
+      @highlight-sector="onHighlightSector"
     />
   </template>
 
@@ -77,7 +80,6 @@ export default defineComponent({
     },
     players: {
       type: Array as PropType<ReadonlyArray<PublicPlayerModel>>,
-      required: true,
     },
     /** When true, show Contribute buttons on eligible structures. */
     canContribute: {
@@ -86,6 +88,16 @@ export default defineComponent({
     },
   },
   emits: ['toggleTileView', 'contribute'],
+  data() {
+    return {
+      highlightSector: undefined as number | undefined,
+    };
+  },
+  methods: {
+    onHighlightSector(sector: number | undefined) {
+      this.highlightSector = sector;
+    },
+  },
   components: {
     Board,
     DeltaProjectBoard,

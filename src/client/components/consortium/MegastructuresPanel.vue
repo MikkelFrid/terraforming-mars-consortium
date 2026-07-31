@@ -1,30 +1,19 @@
 <template>
   <div v-if="megastructures" class="megastructures_cont" data-test="megastructures-panel">
     <div class="megastructures">
-      <div class="ma-title">
-        <a
-          class="ma-clickable"
-          href="#"
-          data-test="toggle-megastructures"
-          @click.prevent="toggleList()"
-          v-i18n
-        >Megastructures</a>
-        <span
-          v-for="s in completedStructures"
-          :key="s.id"
-          class="milestone-award-inline paid"
-          :title="s.name"
-        >
-          <span v-i18n>{{ s.name }}</span>
-        </span>
-      </div>
-      <div v-show="showDetails" data-test="megastructures-details">
+      <div class="megastructures__title" data-test="megastructures-title" v-i18n>Megastructures</div>
+      <p class="megastructures__hint" data-test="megastructures-hint" v-i18n>
+        Hover a Bridge to highlight its frontier on the map. Rewards pay out when a track completes.
+      </p>
+      <div class="megastructures__grid" data-test="megastructures-details">
         <MegastructureTrack
           v-for="structure in megastructures.structures"
           :key="structure.id"
           :structure="structure"
           :canAct="canAct"
+          :highlighted="isHighlighted(structure)"
           @contribute="onContribute"
+          @highlight-sector="onHighlightSector"
         />
       </div>
     </div>
@@ -33,9 +22,8 @@
 
 <script lang="ts">
 import {defineComponent} from 'vue';
-import {MegastructuresModel} from '@/common/models/MegastructuresModel';
+import {MegastructuresModel, MegastructureModel} from '@/common/models/MegastructuresModel';
 import {MegastructureId} from '@/common/consortium/MegastructureKind';
-import {Preferences, PreferencesManager} from '@/client/utils/PreferencesManager';
 import MegastructureTrack from '@/client/components/consortium/MegastructureTrack.vue';
 
 export default defineComponent({
@@ -51,31 +39,24 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
-    preferences: {
-      type: Object as () => Readonly<Preferences>,
-      default: () => PreferencesManager.INSTANCE.values(),
+    /** Currently highlighted bridge sector (from parent / board sync). */
+    highlightSector: {
+      type: Number as () => number | undefined,
+      default: undefined,
     },
   },
-  emits: ['contribute'],
-  data() {
-    // Default collapsed — mirrors Turmoil Policies (visibility defaults false)
-    // and keeps five tracks from fighting the Consortium board for space.
-    return {
-      showDetails: this.preferences?.show_megastructure_details === true,
-    };
-  },
-  computed: {
-    completedStructures() {
-      return this.megastructures?.structures.filter((s) => s.completed) ?? [];
-    },
-  },
+  emits: ['contribute', 'highlight-sector'],
   methods: {
-    toggleList() {
-      this.showDetails = !this.showDetails;
-      PreferencesManager.INSTANCE.set('show_megastructure_details', this.showDetails);
+    isHighlighted(structure: MegastructureModel): boolean {
+      return structure.kind === 'bridge' &&
+        structure.sector !== undefined &&
+        structure.sector === this.highlightSector;
     },
     onContribute(id: MegastructureId) {
       this.$emit('contribute', id);
+    },
+    onHighlightSector(sector: number | undefined) {
+      this.$emit('highlight-sector', sector);
     },
   },
 });

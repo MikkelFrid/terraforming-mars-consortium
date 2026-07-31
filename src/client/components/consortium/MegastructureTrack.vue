@@ -4,9 +4,15 @@
     :class="{
       'megastructure-track--completed': structure.completed,
       'megastructure-track--eligible': structure.canContribute,
+      'megastructure-track--highlighted': highlighted,
+      'megastructure-track--bridge': structure.kind === 'bridge',
     }"
     :data-test="'megastructure-' + structure.id"
     :data-structure-id="structure.id"
+    @mouseenter="onHover(true)"
+    @mouseleave="onHover(false)"
+    @focusin="onHover(true)"
+    @focusout="onHover(false)"
   >
     <div class="megastructure-track__emblem" :class="'megastructure-emblem--' + structure.id" :title="structure.name"></div>
     <div class="megastructure-track__body">
@@ -17,6 +23,8 @@
           <span v-i18n>Next</span>: {{ nextCostLabel }}
         </span>
       </div>
+
+      <div class="megastructure-track__outcome" data-test="outcome" v-i18n>{{ structure.outcome }}</div>
 
       <div class="megastructure-track__segments" data-test="segments">
         <div
@@ -50,9 +58,6 @@
             <span v-if="c.keystone" class="megastructure-contributor__keystone" v-i18n>(keystone)</span>
           </span>
         </div>
-        <div v-if="structure.completionGranted" class="megastructure-track__granted" data-test="completion-granted">
-          {{ structure.completionGranted }}
-        </div>
       </div>
 
       <div v-else class="megastructure-track__status">
@@ -69,6 +74,7 @@
           v-else-if="structure.ineligibility"
           class="megastructure-track__ineligible"
           data-test="ineligibility"
+          :title="ineligibilityText(structure.ineligibility)"
         >{{ ineligibilityText(structure.ineligibility) }}</span>
       </div>
     </div>
@@ -91,8 +97,12 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    highlighted: {
+      type: Boolean,
+      default: false,
+    },
   },
-  emits: ['contribute'],
+  emits: ['contribute', 'highlight-sector'],
   computed: {
     nextCostLabel(): string {
       const cost = this.structure.nextSegmentCost;
@@ -100,12 +110,18 @@ export default defineComponent({
         return '';
       }
       if (this.structure.nextIsKeystone || this.structure.nextMinIridium > 0) {
-        return `${cost} M€ + min ${this.structure.keystoneMinIridium} iridium (keystone)`;
+        return `${cost} M€ · ${this.structure.keystoneMinIridium} Ir keystone`;
       }
       return `${cost} M€`;
     },
   },
   methods: {
+    onHover(enter: boolean) {
+      if (this.structure.kind !== 'bridge' || this.structure.sector === undefined) {
+        return;
+      }
+      this.$emit('highlight-sector', enter ? this.structure.sector : undefined);
+    },
     segmentClasses(seg: MegastructureSegmentModel): Array<string> {
       const classes = ['megastructure-segment'];
       if (seg.isKeystone) {
@@ -131,7 +147,7 @@ export default defineComponent({
       case 'cannot_afford':
         return 'Cannot afford';
       case 'missing_foundation':
-        return 'Missing highland foundation';
+        return 'Need highland';
       case 'completed':
         return 'Complete';
       }

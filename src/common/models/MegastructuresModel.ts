@@ -39,6 +39,8 @@ export type MegastructureModel = {
   contributors: ReadonlyArray<MegastructureContributorModel>;
   /** Short description of what completion granted (stub until phase 6c). */
   completionGranted: string | undefined;
+  /** Always-on outcome blurb (unlock / global / contributor reward). */
+  outcome: string;
 };
 
 export type MegastructuresModel = {

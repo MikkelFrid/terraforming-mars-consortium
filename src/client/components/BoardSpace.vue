@@ -60,6 +60,11 @@ export default defineComponent({
       type: String as () => TileView,
       required: true,
     },
+    /** Consortium: highlight spaces belonging to this bridge sector. */
+    highlightBridgeSector: {
+      type: Number as () => number | undefined,
+      default: undefined,
+    },
   },
   data() {
     return {};
@@ -73,6 +78,15 @@ export default defineComponent({
     mainClass(): string {
       let css = 'board-space board-space-' + this.space?.id.toString();
       css += ' board-space-selectable';
+      if (this.space?.locked === true) {
+        css += ' board-space--frontier-locked';
+      }
+      if (
+        this.highlightBridgeSector !== undefined &&
+        this.space?.bridge === this.highlightBridgeSector
+      ) {
+        css += ' board-space--bridge-highlight';
+      }
       return css;
     },
     showBonus(): boolean {

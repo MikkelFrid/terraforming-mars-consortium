@@ -408,6 +408,13 @@ export class Server {
       if (space.coOwner !== undefined) {
         model.coOwner = space.coOwner.color;
       }
+      // Consortium frontier metadata — optional; ignored by older clients.
+      if (space.bridge !== undefined) {
+        model.bridge = space.bridge;
+      }
+      if (space.locked === true) {
+        model.locked = true;
+      }
 
       return model;
     });
