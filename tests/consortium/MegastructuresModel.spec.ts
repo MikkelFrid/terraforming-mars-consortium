@@ -8,6 +8,7 @@ import {Payment} from '../../src/common/inputs/Payment';
 import {Server} from '../../src/server/models/ServerModel';
 import {CONSORTIUM_CARD_MANIFEST} from '../../src/server/cards/consortium/ConsortiumCardManifest';
 import {SeededRandom} from '../../src/common/utils/Random';
+import {BoardName} from '../../src/common/boards/BoardName';
 
 describe('Consortium megastructures model', () => {
   it('exposes five structures with eligibility for the viewing player', () => {
@@ -54,13 +55,29 @@ describe('Consortium megastructures model', () => {
     expect(done.contributors[0].count).eq(4);
     expect(done.contributors[0].keystone).is.true;
     expect(done.completionGranted).to.include('Opens sector');
+    expect(done.outcome).to.include('Opens sector');
   });
 
-  it('ServerModel embeds megastructures for the viewing player', () => {
+  it('always includes outcome text before completion', () => {
     const [game, player] = testGame(1, {consortiumExpansion: true});
+    const model = createMegastructuresModel(game, player)!;
+    for (const s of model.structures) {
+      expect(s.outcome.length).to.be.greaterThan(0);
+    }
+    expect(model.structures.find((s) => s.id === 'bridge-0')!.outcome).to.include('Opens sector 0');
+  });
+
+  it('ServerModel embeds megastructures and frontier space metadata', () => {
+    const [game, player] = testGame(1, {
+      consortiumExpansion: true,
+      boardName: BoardName.CONSORTIUM,
+    });
     const view = Server.getPlayerModel(player);
     expect(view.game.megastructures).to.not.be.undefined;
     expect(view.game.megastructures!.structures).to.have.length(5);
+    const frontier = view.game.spaces.find((s) => s.bridge !== undefined);
+    expect(frontier).to.not.be.undefined;
+    expect(frontier!.locked).eq(true);
   });
 
   it('Tharsis games have no megastructures model', () => {

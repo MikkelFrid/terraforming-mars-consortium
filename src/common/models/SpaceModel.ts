@@ -25,4 +25,9 @@ export type SpaceModel = {
 
   undergroundResource?: UndergroundResourceToken;
   excavator?: Color;
+
+  /** Consortium: bridge sector this frontier space belongs to (0–2). */
+  bridge?: number;
+  /** Consortium: frontier space still locked behind its bridge. */
+  locked?: boolean;
 }

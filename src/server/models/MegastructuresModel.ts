@@ -89,6 +89,7 @@ function toModel(
     ineligibility: ineligibilityFor(viewer, structure),
     contributors: Array.from(byPlayer.values()),
     completionGranted: completionGrantedText(structure),
+    outcome: completionEffectSummary(structure.kind, structure.sector),
   };
 }
 

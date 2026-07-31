@@ -80,6 +80,7 @@
               :space="curSpace"
               :aresExtension="expansions.ares"
               :tileView="tileView"
+              :highlightBridgeSector="highlightBridgeSector"
               data-test="board-space"
             />
 
@@ -411,6 +412,11 @@ export default defineComponent({
     tileView: {
       type: String as () => TileView,
       default: 'show',
+    },
+    /** Consortium: highlight frontier spaces for this bridge sector (0–2). */
+    highlightBridgeSector: {
+      type: Number as () => number | undefined,
+      default: undefined,
     },
   },
   components: {
