@@ -10,7 +10,7 @@ Base: `main` after iridium merge (`24b0137cf`)
 
 | Output | Spec |
 |--------|------|
-| `assets/board/mars_consortium.png` | 891×860 RGBA — chrome/silhouette from upscaled `mars.png`; planet disc progressively upscaled + Consortium grade/sector washes. Hex CSS/JSON geometry is independent and must not change with art. |
+| `assets/board/mars_consortium.png` | **1782×1720** RGBA (2×). CSS paints it at 891×860 via `background-size` so hex coords stay put. Planet disc = EDSR neural upscale of `mars.png`; chrome (tracks/labels/icons) is redrawn crisp in the generator — not soft-upscaled 620px text. |
 | `src/styles/board_positions.less` | 127 CSS margin rules (`.board-space-001` …) |
 | `src/server/boards/consortiumSpaces.json` | 127 space records |
 
@@ -46,7 +46,8 @@ apply to a radius-6 hexagon). `SpaceId` accepts 3-digit ids (`001`–`127`).
 
 ## CSS sizing (Consortium-scoped)
 
-`.board-cont.board-consortium` is 891×860 with `mars_consortium.png`.
+`.board-cont.board-consortium` is logically 891×860 with
+`background-size: 891px 860px` on the 2× `mars_consortium.png`.
 Inner `.board` is full-size (hex margins include the generator OFFSET).
 Ocean / oxygen / temperature tracks and colony tiles are scaled from the
 Tharsis 620×600 chrome (`transform: scale(891/620, 860/600)`), pinned to the
