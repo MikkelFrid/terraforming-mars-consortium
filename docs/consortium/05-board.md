@@ -10,7 +10,7 @@ Base: `main` after iridium merge (`24b0137cf`)
 
 | Output | Spec |
 |--------|------|
-| `assets/board/mars_consortium.png` | **1782×1720** RGBA (2×). CSS paints it at 891×860 via `background-size` so hex coords stay put. Planet disc = EDSR neural upscale of `mars.png`; chrome (tracks/labels/icons) is redrawn crisp in the generator — not soft-upscaled 620px text. |
+| `assets/board/mars_consortium.png` | **1782×1720** RGBA (2×). CSS paints at 891×860 via `background-size` so hex coords stay put. **Fully generative** — planet from `_board_planet.py`, chrome from `_board_chrome.py`. Does not sample/upscale Tharsis `mars.png` RGB. |
 | `src/styles/board_positions.less` | 127 CSS margin rules (`.board-space-001` …) |
 | `src/server/boards/consortiumSpaces.json` | 127 space records |
 

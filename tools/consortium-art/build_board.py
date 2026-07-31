@@ -6,7 +6,7 @@ geometry. Run from the repository root:
 
     python3 tools/consortium-art/build_board.py
 
-Requires Pillow + opencv-contrib-python-headless (EDSR upscale of the disc).
+Requires Pillow + numpy (procedural planet). No mars.png sampling, no EDSR.
 
 Produces (shared geometry — all variants use the same hex positions):
     assets/board/mars_consortium.png   (2× bitmap; CSS paints at 891×860)
@@ -23,13 +23,10 @@ oceans / frontier lock arcs). Hex radius, pitch and CSS ids stay identical.
 Previews composite the shared Mars disc with per-space hex tiles so the
 rulebook and lobby can show the three maps distinctly.
 
-Artwork derives from the official Terraforming Mars asset sources,
-CC BY-SA 4.0.
-
 Board art contract: hex coordinates / LESS / JSON are geometry, not paint.
-Logical layout stays 891×860. The PNG may be 2× denser; CSS uses
-background-size so placements do not move. Chrome is redrawn crisp —
-never a soft upscale of the 620×600 labels.
+Logical layout stays 891×860. The PNG is 2× denser; CSS uses
+background-size so placements do not move. Planet + chrome are fully
+generated — we do not upscale or restyle the official Tharsis mars.png.
 """
 
 from __future__ import annotations
@@ -38,30 +35,23 @@ import json
 import math
 import os
 import sys
-import urllib.request
 from PIL import (
     Image,
     ImageChops,
     ImageDraw,
     ImageEnhance,
-    ImageFilter,
-    ImageOps,
 )
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _board_chrome import draw_chrome  # noqa: E402
+from _board_planet import render_planet  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-MARS_SRC = os.path.join(ROOT, 'assets', 'board', 'mars.png')
+MARS_SRC = os.path.join(ROOT, 'assets', 'board', 'mars.png')  # size reference only
 MARS_DST = os.path.join(ROOT, 'assets', 'board', 'mars_consortium.png')
 LESS_DST = os.path.join(ROOT, 'src', 'styles', 'board_positions.less')
 JSON_DIR = os.path.join(ROOT, 'src', 'server', 'boards')
 PREVIEW_DIR = os.path.join(ROOT, 'assets', 'consortium', 'maps')
-CACHE_DIR = os.path.join(os.path.dirname(__file__), '.cache')
-MODEL_DIR = os.path.join(os.path.dirname(__file__), 'models')
-EDSR_X2 = os.path.join(MODEL_DIR, 'EDSR_x2.pb')
-EDSR_URL = ('https://github.com/Saafke/EDSR_Tensorflow/raw/master/models/'
-            'EDSR_x2.pb')
 
 N = 6                       # map radius -> 3N^2+3N+1 = 127 spaces
 SECTORS = [90.0, 210.0, 330.0]
@@ -249,164 +239,47 @@ ART_W, ART_H = BOARD_W * ART_SCALE, BOARD_H * ART_SCALE
 DISC_CX0, DISC_CY0, DISC_R0 = 294.0, 286.0, 251.05
 
 
-def _lerp_rgb(a, b, t):
-    t = max(0.0, min(1.0, t))
-    return tuple(int(round(a[i] + (b[i] - a[i]) * t)) for i in range(3))
-
-
-def _fit_disc_mask(width: int, height: int, cx: float, cy: float, radius: float,
-                   feather: float = 1.4) -> Image.Image:
-    mask = Image.new('L', (width, height), 0)
-    ImageDraw.Draw(mask).ellipse(
-        [cx - radius, cy - radius, cx + radius, cy + radius], fill=255)
-    if feather > 0:
-        mask = mask.filter(ImageFilter.GaussianBlur(feather))
-    return mask
-
-
-def _ensure_edsr_model():
-    os.makedirs(MODEL_DIR, exist_ok=True)
-    if os.path.exists(EDSR_X2) and os.path.getsize(EDSR_X2) > 1_000_000:
-        return EDSR_X2
-    print(f'downloading EDSR x2 model -> {EDSR_X2}')
-    urllib.request.urlretrieve(EDSR_URL, EDSR_X2)
-    return EDSR_X2
-
-
-def _edsr_x2(src_rgba: Image.Image) -> Image.Image:
-    """Neural 2× upscale (EDSR). Cached — first run is slow, then free."""
-    os.makedirs(CACHE_DIR, exist_ok=True)
-    cache = os.path.join(CACHE_DIR, 'mars_edsr_x2.png')
-    if os.path.exists(cache):
-        cached = Image.open(cache).convert('RGBA')
-        if cached.size == (src_rgba.width * 2, src_rgba.height * 2):
-            return cached
-    try:
-        import cv2
-        import numpy as np
-    except ImportError:
-        sys.exit(
-            'opencv-contrib-python-headless is required for board art.\n'
-            '  pip3 install opencv-contrib-python-headless')
-
-    model = _ensure_edsr_model()
-    # Copy from /tmp if we already fetched there this session.
-    if not os.path.exists(model) and os.path.exists('/tmp/sr-models/EDSR_x2.pb'):
-        import shutil
-        shutil.copy('/tmp/sr-models/EDSR_x2.pb', model)
-
-    arr = np.array(src_rgba)
-    bgr = arr[:, :, 2::-1].copy()  # RGB->BGR
-    alpha = arr[:, :, 3]
-    sr = cv2.dnn_superres.DnnSuperResImpl_create()
-    sr.readModel(model)
-    sr.setModel('edsr', 2)
-    print('EDSR x2 upscaling mars disc (≈1–2 min CPU)...')
-    up_bgr = sr.upsample(bgr)
-    up_rgb = up_bgr[:, :, ::-1]
-    up_a = cv2.resize(alpha, (up_bgr.shape[1], up_bgr.shape[0]),
-                      interpolation=cv2.INTER_LINEAR)
-    out = Image.fromarray(up_rgb, 'RGB').convert('RGBA')
-    out.putalpha(Image.fromarray(up_a, 'L'))
-    out.save(cache, optimize=True)
-    print(f'  cached {cache} ({out.size[0]}x{out.size[1]})')
-    return out
-
-
-def _sector_belt_overlay(width: int, height: int, cx: float, cy: float,
-                         radius: float) -> Image.Image:
-    """Purple/iridium wash for the three Consortium chasm sectors."""
-    overlay = Image.new('RGBA', (width, height), (0, 0, 0, 0))
-    px = overlay.load()
-    chasm = (48, 32, 58)
-    iridium = (140, 168, 188)
-    r = radius
-    # Sparse sampling then upscale — belts are soft washes, not per-pixel art.
-    step = 2 if width >= 1200 else 1
-    if step > 1:
-        sw, sh = width // step, height // step
-        small = _sector_belt_overlay(sw, sh, cx / step, cy / step, radius / step)
-        return small.resize((width, height), Image.BILINEAR)
-    for y in range(height):
-        for x in range(width):
-            dx = x - cx
-            dy = y - cy
-            dist = math.hypot(dx, dy)
-            if dist > r:
-                continue
-            deg = math.degrees(math.atan2(-dy, dx)) % 360.0
-            rim = dist / r
-            belt = 0.0
-            for sb in SECTORS:
-                d = abs(deg - sb) % 360.0
-                d = min(d, 360.0 - d)
-                half = 20.0 + 26.0 * rim
-                if d < half:
-                    belt = max(belt, (1.0 - d / half) * (0.18 + 0.82 * rim ** 1.25))
-            if belt <= 0.02:
-                continue
-            col = _lerp_rgb(chasm, iridium, 0.25 + 0.35 * belt)
-            a = int(min(180, 30 + 130 * belt))
-            px[x, y] = col + (a,)
-    return overlay.filter(ImageFilter.GaussianBlur(1.6))
-
-
 def build_mars():
     """
-    Build mars_consortium.png at ART_SCALE denser than the CSS layout.
+    Build a fully generative mars_consortium.png.
 
     Contract (do not break):
       - Logical layout stays BOARD_W x BOARD_H (891×860) — hex CSS/JSON untouched
       - PNG is ART_W x ART_H; board.less sets background-size to logical size
-      - Planet geography comes from EDSR-upscaled official mars.png disc
-      - Chrome (tracks/labels/icons) is redrawn crisp — not soft-upscaled text
+      - Disc centre/radius stays the fitted Tharsis disc so hexes still centre
+      - Planet RGB is generated (not sampled from mars.png)
+      - Chrome is vector-drawn crisp
     """
-    if not os.path.exists(MARS_SRC):
-        sys.exit(f'missing {MARS_SRC} - run from the repository root')
+    # Keep the historical scale relationship to Tharsis mars.png dimensions
+    # so OFFSET/PITCH math and chrome HTML scale factors stay valid.
+    if os.path.exists(MARS_SRC):
+        src_w, src_h = Image.open(MARS_SRC).size
+        assert BOARD_W == round(src_w * 634 / 441)
+        assert BOARD_H == round(src_h * 542 / 378)
+        sx = ART_W / src_w
+        sy = ART_H / src_h
+    else:
+        sx = ART_W / 620.0
+        sy = ART_H / 600.0
 
-    src = Image.open(MARS_SRC).convert('RGBA')
-    assert BOARD_W == round(src.width * 634 / 441)
-    assert BOARD_H == round(src.height * 542 / 378)
-
-    # Prefer pre-fetched model from /tmp if present.
-    if not os.path.exists(EDSR_X2) and os.path.exists('/tmp/sr-models/EDSR_x2.pb'):
-        os.makedirs(MODEL_DIR, exist_ok=True)
-        import shutil
-        shutil.copy('/tmp/sr-models/EDSR_x2.pb', EDSR_X2)
-
-    hi = _edsr_x2(src)  # 1240×1200
-    # Fit EDSR output onto the 2× board canvas (same aspect as logical board).
-    board = hi.resize((ART_W, ART_H), Image.LANCZOS)
-
-    sx = ART_W / src.width
-    sy = ART_H / src.height
     cx = DISC_CX0 * sx
     cy = DISC_CY0 * sy
     radius = DISC_R0 * ((sx + sy) / 2.0)
-    disc_mask = _fit_disc_mask(ART_W, ART_H, cx, cy, radius,
-                               feather=2.2 * ART_SCALE)
+    diameter = int(round(radius * 2))
 
-    # Grade + sharpen the disc only.
-    rgb = board.convert('RGB')
-    sharp = rgb.filter(ImageFilter.UnsharpMask(radius=2.2, percent=120, threshold=2))
-    graded = ImageEnhance.Contrast(sharp).enhance(1.1)
-    graded = ImageEnhance.Color(graded).enhance(0.95)
-    cool = Image.new('RGB', (ART_W, ART_H), (165, 180, 200))
-    graded = Image.blend(graded, ImageChops.multiply(graded, cool), 0.07)
-    disc = Image.merge('RGBA', (*graded.split(), disc_mask))
+    print(f'rendering generative Consortium planet ({diameter}px disc @ {ART_SCALE}x)...')
+    planet = render_planet(diameter, seed=20260731)
+    # Mild finish — keep structure from the supersample.
+    planet_rgb = ImageEnhance.Contrast(planet.convert('RGB')).enhance(1.06)
+    planet_rgb = ImageEnhance.Color(planet_rgb).enhance(1.04)
+    planet = Image.merge('RGBA', (*planet_rgb.split(), planet.split()[3]))
 
-    belts = _sector_belt_overlay(ART_W, ART_H, cx, cy, radius)
-    ba = ImageChops.multiply(belts.split()[3], disc_mask)
-    belts.putalpha(ba.point(lambda p: int(p * 0.5)))
-    disc = Image.alpha_composite(disc, belts)
-
-    # Fresh canvas: black void + sharp disc + crisp vector chrome.
     out = Image.new('RGBA', (ART_W, ART_H), (0, 0, 0, 255))
-    out.alpha_composite(disc)
+    dx = int(round(cx - diameter / 2.0))
+    dy = int(round(cy - diameter / 2.0))
+    out.alpha_composite(planet, (dx, dy))
     out = draw_chrome(out, cx, cy, radius)
 
-    # Opaque black outside; disc+chrome carry their own alpha. Flatten to
-    # opaque PNG for simpler CSS backgrounds.
     flat = Image.new('RGBA', (ART_W, ART_H), (0, 0, 0, 255))
     flat.alpha_composite(out)
     flat.save(MARS_DST, optimize=True)
