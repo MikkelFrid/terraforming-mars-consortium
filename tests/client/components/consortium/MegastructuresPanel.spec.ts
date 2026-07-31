@@ -24,14 +24,26 @@ function fiveStructures(overrides?: Partial<MegastructuresModel['structures'][0]
     contributors: [],
     completionGranted: undefined,
     outcome: 'Opens sector 0. Contributors: +1 M€ prod / segment.',
+    outcomeChips: [
+      {label: 'Opens sector 0'},
+      {label: 'Contributors', icons: [{kind: 'megacredits' as const, production: true, text: '1'}], suffix: '/ segment'},
+    ],
   };
   return {
     structures: [
       {...base, id: 'bridge-0', name: 'Bridge (Sector 0)', sector: 0, ...overrides},
       {...base, id: 'bridge-1', name: 'Bridge (Sector 1)', sector: 1, kind: 'bridge',
-        outcome: 'Opens sector 1. Contributors: +1 M€ prod / segment.'},
+        outcome: 'Opens sector 1. Contributors: +1 M€ prod / segment.',
+        outcomeChips: [
+          {label: 'Opens sector 1'},
+          {label: 'Contributors', icons: [{kind: 'megacredits', production: true, text: '1'}], suffix: '/ segment'},
+        ]},
       {...base, id: 'bridge-2', name: 'Bridge (Sector 2)', sector: 2, kind: 'bridge',
-        outcome: 'Opens sector 2. Contributors: +1 M€ prod / segment.'},
+        outcome: 'Opens sector 2. Contributors: +1 M€ prod / segment.',
+        outcomeChips: [
+          {label: 'Opens sector 2'},
+          {label: 'Contributors', icons: [{kind: 'megacredits', production: true, text: '1'}], suffix: '/ segment'},
+        ]},
       {
         ...base,
         id: 'space_elevator',
@@ -52,6 +64,10 @@ function fiveStructures(overrides?: Partial<MegastructuresModel['structures'][0]
         canContribute: false,
         ineligibility: 'missing_foundation',
         outcome: 'All: −2 M€ on space tags. Contributors: titanium prod.',
+        outcomeChips: [
+          {label: 'All', icons: [{kind: 'megacredits', text: '−2'}, {kind: 'space'}]},
+          {label: 'Contributors', icons: [{kind: 'titanium', production: true}]},
+        ],
       },
       {
         ...base,
@@ -76,6 +92,10 @@ function fiveStructures(overrides?: Partial<MegastructuresModel['structures'][0]
         ],
         completionGranted: 'All: +1 heat prod. Contributors: iridium now + each generation.',
         outcome: 'All: +1 heat prod. Contributors: iridium now + each generation.',
+        outcomeChips: [
+          {label: 'All', icons: [{kind: 'heat', production: true, text: '1'}]},
+          {label: 'Contributors', icons: [{kind: 'iridium', text: '1'}], suffix: 'now + each gen'},
+        ],
       },
     ],
   };
@@ -96,7 +116,7 @@ describe('MegastructuresPanel', () => {
     expect(wrapper.find('[data-test="toggle-megastructures"]').exists()).is.false;
   });
 
-  it('shows outcome text on every track', () => {
+  it('shows outcome chips with resource icons on every track', () => {
     const wrapper = mount(MegastructuresPanel, {
       ...globalConfig,
       props: {
@@ -105,6 +125,29 @@ describe('MegastructuresPanel', () => {
     });
     const bridge = wrapper.find('[data-test="megastructure-bridge-0"]');
     expect(bridge.find('[data-test="outcome"]').text()).to.include('Opens sector');
+    expect(bridge.findAll('[data-test="outcome-chip"]').length).to.be.greaterThan(0);
+    const mc = bridge.find('[data-reward-kind="megacredits"]');
+    expect(mc.exists()).is.true;
+    expect(mc.classes()).to.include('megastructure-reward--production');
+    expect(mc.find('.resource_icon--megacredits').exists()).is.true;
+
+    const mohole = wrapper.find('[data-test="megastructure-mohole"]');
+    expect(mohole.find('[data-reward-kind="heat"]').exists()).is.true;
+    expect(mohole.find('[data-reward-kind="iridium"]').exists()).is.true;
+  });
+
+  it('highlights a bridge track when highlightSector matches', () => {
+    const wrapper = mount(MegastructuresPanel, {
+      ...globalConfig,
+      props: {
+        megastructures: fiveStructures(),
+        highlightSector: 2,
+      },
+    });
+    expect(wrapper.find('[data-test="megastructure-bridge-2"]').classes())
+      .to.include('megastructure-track--highlighted');
+    expect(wrapper.find('[data-test="megastructure-bridge-0"]').classes())
+      .to.not.include('megastructure-track--highlighted');
   });
 
   it('shows segment ownership with player colours', () => {
@@ -135,7 +178,8 @@ describe('MegastructuresPanel', () => {
     const keystone = bridge.find('[data-test="segment-keystone"]');
     expect(keystone.exists()).is.true;
     expect(keystone.classes()).to.include('megastructure-segment--keystone');
-    expect(keystone.find('[data-test="keystone-iridium"]').text()).to.include('2 Ir');
+    expect(keystone.find('[data-test="keystone-iridium"]').text()).to.match(/2/);
+    expect(keystone.find('.resource_icon--iridium').exists()).is.true;
     expect(bridge.find('[data-test="next-cost"]').text()).to.match(/12 M€/);
     const ordinary = bridge.findAll('[data-test="segment"]');
     expect(ordinary.length).to.be.greaterThan(0);

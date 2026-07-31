@@ -82,6 +82,7 @@
               :tileView="tileView"
               :highlightBridgeSector="highlightBridgeSector"
               data-test="board-space"
+              @highlight-sector="$emit('highlight-sector', $event)"
             />
 
             <svg id="board_legend" height="550" width="630" class="board-legend">
@@ -419,6 +420,7 @@ export default defineComponent({
       default: undefined,
     },
   },
+  emits: ['toggleTileView', 'highlight-sector'],
   components: {
     BoardSpace,
   },

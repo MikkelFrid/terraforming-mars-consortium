@@ -58,13 +58,16 @@ describe('Consortium megastructures model', () => {
     expect(done.outcome).to.include('Opens sector');
   });
 
-  it('always includes outcome text before completion', () => {
+  it('always includes outcome text and icon chips before completion', () => {
     const [game, player] = testGame(1, {consortiumExpansion: true});
     const model = createMegastructuresModel(game, player)!;
     for (const s of model.structures) {
       expect(s.outcome.length).to.be.greaterThan(0);
+      expect(s.outcomeChips.length).to.be.greaterThan(0);
     }
-    expect(model.structures.find((s) => s.id === 'bridge-0')!.outcome).to.include('Opens sector 0');
+    const bridge = model.structures.find((s) => s.id === 'bridge-0')!;
+    expect(bridge.outcome).to.include('Opens sector 0');
+    expect(bridge.outcomeChips.some((c) => c.icons?.some((i) => i.kind === 'megacredits' && i.production))).is.true;
   });
 
   it('ServerModel embeds megastructures and frontier space metadata', () => {

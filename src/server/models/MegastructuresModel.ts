@@ -8,7 +8,7 @@ import {displayName} from '../../common/consortium/MegastructureKind';
 import {IGame} from '../IGame';
 import {IPlayer} from '../IPlayer';
 import {Megastructure, Megastructures} from '../consortium/Megastructures';
-import {completionEffectSummary} from '../consortium/MegastructureEffects';
+import {completionEffectChips, completionEffectSummary} from '../consortium/MegastructureEffects';
 
 function ineligibilityFor(
   player: IPlayer | undefined,
@@ -90,6 +90,7 @@ function toModel(
     contributors: Array.from(byPlayer.values()),
     completionGranted: completionGrantedText(structure),
     outcome: completionEffectSummary(structure.kind, structure.sector),
+    outcomeChips: completionEffectChips(structure.kind, structure.sector),
   };
 }
 

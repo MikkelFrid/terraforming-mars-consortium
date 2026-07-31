@@ -14,6 +14,7 @@
     :tileView="tileView"
     :highlightBridgeSector="highlightSector"
     @toggleTileView="$emit('toggleTileView')"
+    @highlight-sector="onHighlightSector"
     id="shortkey-board"
   />
 

@@ -24,7 +24,42 @@
         </span>
       </div>
 
-      <div class="megastructure-track__outcome" data-test="outcome" v-i18n>{{ structure.outcome }}</div>
+      <div
+        class="megastructure-track__outcome"
+        data-test="outcome"
+        :title="structure.outcome"
+      >
+        <template v-if="structure.outcomeChips && structure.outcomeChips.length > 0">
+          <span
+            v-for="(chip, idx) in structure.outcomeChips"
+            :key="idx"
+            class="megastructure-outcome-chip"
+            data-test="outcome-chip"
+          >
+            <span v-if="chip.label" class="megastructure-outcome-chip__label" v-i18n>{{ chip.label }}</span>
+            <span v-if="chip.icons && chip.icons.length > 0" class="megastructure-outcome-chip__icons">
+              <span
+                v-for="(icon, j) in chip.icons"
+                :key="j"
+                class="megastructure-reward"
+                :class="{'megastructure-reward--production': icon.production}"
+                data-test="outcome-icon"
+                :data-reward-kind="icon.kind"
+              >
+                <i :class="iconClass(icon.kind)">
+                  <span v-if="icon.text && showsTextOnIcon(icon.kind)" class="megastructure-reward__text">{{ icon.text }}</span>
+                </i>
+                <span
+                  v-if="icon.text && !showsTextOnIcon(icon.kind)"
+                  class="megastructure-reward__aside"
+                >{{ icon.text }}</span>
+              </span>
+            </span>
+            <span v-if="chip.suffix" class="megastructure-outcome-chip__suffix" v-i18n>{{ chip.suffix }}</span>
+          </span>
+        </template>
+        <span v-else v-i18n>{{ structure.outcome }}</span>
+      </div>
 
       <div class="megastructure-track__segments" data-test="segments">
         <div
@@ -42,7 +77,10 @@
             v-if="seg.isKeystone"
             class="megastructure-segment__iridium"
             data-test="keystone-iridium"
-          >{{ seg.keystoneMinIridium ?? structure.keystoneMinIridium }} Ir</span>
+          >
+            <i class="resource_icon resource_icon--iridium megastructure-segment__iridium-icon"></i>
+            {{ seg.keystoneMinIridium ?? structure.keystoneMinIridium }}
+          </span>
         </div>
       </div>
 
@@ -83,7 +121,12 @@
 
 <script lang="ts">
 import {defineComponent} from 'vue';
-import {MegastructureModel, MegastructureSegmentModel, MegastructureIneligibility} from '@/common/models/MegastructuresModel';
+import {
+  MegastructureModel,
+  MegastructureSegmentModel,
+  MegastructureIneligibility,
+  MegastructureRewardIconKind,
+} from '@/common/models/MegastructuresModel';
 
 export default defineComponent({
   name: 'MegastructureTrack',
@@ -121,6 +164,29 @@ export default defineComponent({
         return;
       }
       this.$emit('highlight-sector', enter ? this.structure.sector : undefined);
+    },
+    showsTextOnIcon(kind: MegastructureRewardIconKind): boolean {
+      return kind === 'megacredits' || kind === 'vp';
+    },
+    iconClass(kind: MegastructureRewardIconKind): string {
+      switch (kind) {
+      case 'megacredits':
+        return 'resource_icon resource_icon--megacredits';
+      case 'heat':
+        return 'resource_icon resource_icon--heat';
+      case 'plants':
+        return 'resource_icon resource_icon--plants';
+      case 'titanium':
+        return 'resource_icon resource_icon--titanium';
+      case 'iridium':
+        return 'resource_icon resource_icon--iridium';
+      case 'temperature':
+        return 'tile temperature-tile megastructure-reward__temperature';
+      case 'vp':
+        return 'megastructure-reward__vp';
+      case 'space':
+        return 'resource-tag tag-space megastructure-reward__tag';
+      }
     },
     segmentClasses(seg: MegastructureSegmentModel): Array<string> {
       const classes = ['megastructure-segment'];

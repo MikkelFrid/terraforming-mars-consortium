@@ -2,6 +2,7 @@ import {Tag} from '../../common/cards/Tag';
 import {CardName} from '../../common/cards/CardName';
 import {MEGASTRUCTURE_BALANCE as BALANCE} from '../../common/consortium/MegastructureConstants';
 import {displayName, MegastructureKind} from '../../common/consortium/MegastructureKind';
+import {MegastructureOutcomeChip} from '../../common/models/MegastructuresModel';
 import {Resource} from '../../common/Resource';
 import {PlayerId} from '../../common/Types';
 import {unlockBridgeSector} from '../boards/ConsortiumBoard';
@@ -169,6 +170,81 @@ export function completionEffectSummary(kind: MegastructureKind, sector?: number
     return `Temperature +${BALANCE.SOLAR_MIRROR_TEMPERATURE_STEPS}. Contributors: heat prod.`;
   case 'arcology':
     return `All: +${BALANCE.ARCOLOGY_GLOBAL_MC_PRODUCTION} M€ prod. Contributors: +${BALANCE.ARCOLOGY_EXTRA_VP_PER_SEGMENT} VP / segment.`;
+  }
+}
+
+/** Icon-backed chips for the compact megastructure strip (additive API). */
+export function completionEffectChips(kind: MegastructureKind, sector?: number): ReadonlyArray<MegastructureOutcomeChip> {
+  switch (kind) {
+  case 'bridge':
+    return [
+      {label: `Opens sector ${sector ?? '?'}`},
+      {
+        label: 'Contributors',
+        icons: [{kind: 'megacredits', production: true, text: String(BALANCE.BRIDGE_MC_PRODUCTION_PER_SEGMENT)}],
+        suffix: '/ segment',
+      },
+    ];
+  case 'space_elevator':
+    return [
+      {
+        label: 'All',
+        icons: [
+          {kind: 'megacredits', text: `−${BALANCE.SPACE_ELEVATOR_SPACE_TAG_DISCOUNT}`},
+          {kind: 'space'},
+        ],
+      },
+      {
+        label: 'Contributors',
+        icons: [{kind: 'titanium', production: true}],
+      },
+    ];
+  case 'l1_magnetic_shield':
+    return [
+      {
+        label: 'All: greenery',
+        icons: [{kind: 'plants', text: `−${BALANCE.L1_SHIELD_GREENERY_DISCOUNT}`}],
+      },
+      {
+        label: 'Contributors',
+        icons: [{kind: 'plants', production: true}],
+      },
+    ];
+  case 'mohole':
+    return [
+      {
+        label: 'All',
+        icons: [{kind: 'heat', production: true, text: String(BALANCE.MOHOLE_GLOBAL_HEAT_PRODUCTION)}],
+      },
+      {
+        label: 'Contributors',
+        icons: [{kind: 'iridium', text: String(BALANCE.MOHOLE_IRIDIUM_PER_SEGMENT)}],
+        suffix: 'now + each gen',
+      },
+    ];
+  case 'solar_mirror':
+    return [
+      {
+        label: 'All',
+        icons: [{kind: 'temperature', text: `+${BALANCE.SOLAR_MIRROR_TEMPERATURE_STEPS}`}],
+      },
+      {
+        label: 'Contributors',
+        icons: [{kind: 'heat', production: true}],
+      },
+    ];
+  case 'arcology':
+    return [
+      {
+        label: 'All',
+        icons: [{kind: 'megacredits', production: true, text: String(BALANCE.ARCOLOGY_GLOBAL_MC_PRODUCTION)}],
+      },
+      {
+        label: 'Contributors',
+        icons: [{kind: 'vp', text: `+${BALANCE.ARCOLOGY_EXTRA_VP_PER_SEGMENT}`}],
+        suffix: '/ segment',
+      },
+    ];
   }
 }
 
