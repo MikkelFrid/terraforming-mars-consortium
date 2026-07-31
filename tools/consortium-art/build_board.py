@@ -6,7 +6,7 @@ geometry. Run from the repository root:
 
     python3 tools/consortium-art/build_board.py
 
-Requires Pillow + numpy (procedural planet). No mars.png sampling, no EDSR.
+Requires Pillow + numpy (procedural planet). No EDSR.
 
 Produces (shared geometry — all variants use the same hex positions):
     assets/board/mars_consortium.png   (2× bitmap; CSS paints at 891×860)
@@ -23,10 +23,12 @@ oceans / frontier lock arcs). Hex radius, pitch and CSS ids stay identical.
 Previews composite the shared Mars disc with per-space hex tiles so the
 rulebook and lobby can show the three maps distinctly.
 
-Board art contract: hex coordinates / LESS / JSON are geometry, not paint.
-Logical layout stays 891×860. The PNG is 2× denser; CSS uses
-background-size so placements do not move. Planet + chrome are fully
-generated — we do not upscale or restyle the official Tharsis mars.png.
+Board art contract (Epic Mars / direction B):
+  - Hex coordinates / LESS / JSON are geometry, not paint
+  - Logical layout stays 891×860; PNG is 2× denser with CSS background-size
+  - Planet RGB is generative (photographic depth)
+  - Chrome (tracks, labels, icons) is composited from official mars.png
+    with a soft hole cut for the generative disc
 """
 
 from __future__ import annotations
@@ -42,11 +44,12 @@ from PIL import (
 )
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from _board_chrome import draw_chrome  # noqa: E402
 from _board_planet import render_planet  # noqa: E402
+# _board_chrome kept for optional vector chrome experiments; Epic Mars (B)
+# composites official Tharsis chrome instead.
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-MARS_SRC = os.path.join(ROOT, 'assets', 'board', 'mars.png')  # size reference only
+MARS_SRC = os.path.join(ROOT, 'assets', 'board', 'mars.png')  # chrome source + size ref
 MARS_DST = os.path.join(ROOT, 'assets', 'board', 'mars_consortium.png')
 LESS_DST = os.path.join(ROOT, 'src', 'styles', 'board_positions.less')
 JSON_DIR = os.path.join(ROOT, 'src', 'server', 'boards')
@@ -242,19 +245,58 @@ ART_W, ART_H = BOARD_W * ART_SCALE, BOARD_H * ART_SCALE
 DISC_CX0, DISC_CY0, DISC_R0 = 320.75, 300.47, 211.85
 
 
+def _fit_disc_mask(width: int, height: int, cx: float, cy: float, radius: float,
+                   feather: float) -> Image.Image:
+    mask = Image.new('L', (width, height), 0)
+    ImageDraw.Draw(mask).ellipse(
+        [cx - radius, cy - radius, cx + radius, cy + radius], fill=255)
+    if feather > 0:
+        from PIL import ImageFilter
+        mask = mask.filter(ImageFilter.GaussianBlur(feather))
+    return mask
+
+
+def _tharsis_chrome(art_w: int, art_h: int, cx: float, cy: float,
+                    planet_r: float) -> Image.Image:
+    """
+    Official Tharsis chrome (tracks, labels, icons) from mars.png, with the
+    planet disc cut out so our generative Mars can sit underneath.
+    """
+    if not os.path.exists(MARS_SRC):
+        sys.exit(f'missing {MARS_SRC} for chrome composite')
+    src = Image.open(MARS_SRC).convert('RGBA')
+    # Progressive upscale keeps track edges cleaner than one big jump.
+    cur = src
+    while cur.width * 2 < art_w or cur.height * 2 < art_h:
+        cur = cur.resize(
+            (min(art_w, cur.width * 2), min(art_h, cur.height * 2)),
+            Image.LANCZOS)
+    if cur.size != (art_w, art_h):
+        cur = cur.resize((art_w, art_h), Image.LANCZOS)
+
+    # Soft hole for the generative planet — slightly inside planet_r so the
+    # Tharsis limb/chrome seam stays intact.
+    hole_r = planet_r * 0.985
+    disc = _fit_disc_mask(art_w, art_h, cx, cy, hole_r, feather=2.4 * ART_SCALE)
+    from PIL import ImageOps, ImageChops
+    outside = ImageOps.invert(disc)
+    chrome = cur.copy()
+    # Keep official alpha, gated to outside the disc.
+    chrome.putalpha(ImageChops.multiply(cur.split()[3], outside))
+    return chrome
+
+
 def build_mars():
     """
-    Build a fully generative mars_consortium.png.
+    Build mars_consortium.png — art direction B (Epic Mars).
 
     Contract (do not break):
-      - Logical layout stays BOARD_W x BOARD_H (891×860) — hex CSS/JSON untouched
-      - PNG is ART_W x ART_H; board.less sets background-size to logical size
-      - Disc centre/radius stays the fitted Tharsis disc so hexes still centre
-      - Planet RGB is generated (not sampled from mars.png)
-      - Chrome is vector-drawn crisp
+      - Logical layout stays BOARD_W x BOARD_H (891×860)
+      - PNG is ART_W x ART_H; CSS background-size paints at logical size
+      - Disc centre/radius locked to REF / hex / HTML pin frame (DISC_*)
+      - Planet RGB is generative (epic photographic Mars)
+      - Chrome is the official Tharsis ring from mars.png (not vector wireframe)
     """
-    # Keep the historical scale relationship to Tharsis mars.png dimensions
-    # so OFFSET/PITCH math and chrome HTML scale factors stay valid.
     if os.path.exists(MARS_SRC):
         src_w, src_h = Image.open(MARS_SRC).size
         assert BOARD_W == round(src_w * 634 / 441)
@@ -270,18 +312,21 @@ def build_mars():
     radius = DISC_R0 * ((sx + sy) / 2.0)
     diameter = int(round(radius * 2))
 
-    print(f'rendering generative Consortium planet ({diameter}px disc @ {ART_SCALE}x)...')
+    print(f'rendering epic Consortium planet ({diameter}px disc @ {ART_SCALE}x)...')
     planet = render_planet(diameter, seed=20260731)
-    # Mild finish — keep structure from the supersample.
-    planet_rgb = ImageEnhance.Contrast(planet.convert('RGB')).enhance(1.06)
-    planet_rgb = ImageEnhance.Color(planet_rgb).enhance(1.04)
+    planet_rgb = ImageEnhance.Brightness(planet.convert('RGB')).enhance(1.06)
+    planet_rgb = ImageEnhance.Contrast(planet_rgb).enhance(1.10)
+    planet_rgb = ImageEnhance.Color(planet_rgb).enhance(1.08)
     planet = Image.merge('RGBA', (*planet_rgb.split(), planet.split()[3]))
+
+    print('compositing official Tharsis chrome...')
+    chrome = _tharsis_chrome(ART_W, ART_H, cx, cy, radius)
 
     out = Image.new('RGBA', (ART_W, ART_H), (0, 0, 0, 255))
     dx = int(round(cx - diameter / 2.0))
     dy = int(round(cy - diameter / 2.0))
     out.alpha_composite(planet, (dx, dy))
-    out = draw_chrome(out, cx, cy, radius)
+    out.alpha_composite(chrome)
 
     flat = Image.new('RGBA', (ART_W, ART_H), (0, 0, 0, 255))
     flat.alpha_composite(out)

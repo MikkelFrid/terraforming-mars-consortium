@@ -10,7 +10,7 @@ Base: `main` after iridium merge (`24b0137cf`)
 
 | Output | Spec |
 |--------|------|
-| `assets/board/mars_consortium.png` | **1782×1720** RGBA (2×). CSS paints at 891×860 via `background-size` so hex coords stay put. **Fully generative** — planet from `_board_planet.py`, chrome from `_board_chrome.py`. Does not sample/upscale Tharsis `mars.png` RGB. |
+| `assets/board/mars_consortium.png` | **1782×1720** RGBA (2×). CSS paints at 891×860 via `background-size` so hex coords stay put. **Art direction B (Epic Mars):** generative planet (`_board_planet.py`) + official Tharsis chrome composited from `mars.png` (soft disc hole). Hex geometry unchanged. |
 | `src/styles/board_positions.less` | 127 CSS margin rules (`.board-space-001` …) |
 | `src/server/boards/consortiumSpaces.json` | 127 space records |
 
