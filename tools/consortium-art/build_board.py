@@ -25,6 +25,10 @@ rulebook and lobby can show the three maps distinctly.
 
 Artwork derives from the official Terraforming Mars asset sources,
 CC BY-SA 4.0.
+
+Board art contract: hex coordinates / LESS / JSON are geometry, not paint.
+`build_mars()` may restyle the planet disc but must keep canvas size,
+source alpha silhouette, and chrome outside the fitted disc.
 """
 
 from __future__ import annotations
@@ -33,7 +37,14 @@ import json
 import math
 import os
 import sys
-from PIL import Image, ImageChops, ImageDraw, ImageEnhance, ImageFilter, ImageStat
+from PIL import (
+    Image,
+    ImageChops,
+    ImageDraw,
+    ImageEnhance,
+    ImageFilter,
+    ImageOps,
+)
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 MARS_SRC = os.path.join(ROOT, 'assets', 'board', 'mars.png')
@@ -218,29 +229,146 @@ def write_json(spaces, filename):
     return path
 
 
+# Locked board canvas — hex CSS / JSON positions assume these pixel sizes.
+BOARD_W, BOARD_H = 891, 860
+
+# Fitted to assets/board/mars.png alpha (planet disc only; chrome stays outside).
+# Do not change without re-fitting — chrome tracks and hex field alignment depend on it.
+DISC_CX0, DISC_CY0, DISC_R0 = 294.0, 286.0, 251.05
+
+
+def _lerp_rgb(a, b, t):
+    t = max(0.0, min(1.0, t))
+    return tuple(int(round(a[i] + (b[i] - a[i]) * t)) for i in range(3))
+
+
+def _fit_disc_mask(width: int, height: int, cx: float, cy: float, radius: float,
+                   feather: float = 1.4) -> Image.Image:
+    mask = Image.new('L', (width, height), 0)
+    ImageDraw.Draw(mask).ellipse(
+        [cx - radius, cy - radius, cx + radius, cy + radius], fill=255)
+    if feather > 0:
+        mask = mask.filter(ImageFilter.GaussianBlur(feather))
+    return mask
+
+
+def _sector_belt_overlay(width: int, height: int, cx: float, cy: float,
+                         radius: float) -> Image.Image:
+    """Purple/iridium wash for the three Consortium chasm sectors."""
+    overlay = Image.new('RGBA', (width, height), (0, 0, 0, 0))
+    px = overlay.load()
+    chasm = (48, 32, 58)
+    iridium = (140, 168, 188)
+    r = radius
+    for y in range(height):
+        for x in range(width):
+            dx = x - cx
+            dy = y - cy
+            dist = math.hypot(dx, dy)
+            if dist > r:
+                continue
+            deg = math.degrees(math.atan2(-dy, dx)) % 360.0
+            rim = dist / r
+            belt = 0.0
+            for sb in SECTORS:
+                d = abs(deg - sb) % 360.0
+                d = min(d, 360.0 - d)
+                half = 20.0 + 26.0 * rim
+                if d < half:
+                    belt = max(belt, (1.0 - d / half) * (0.18 + 0.82 * rim ** 1.25))
+            if belt <= 0.02:
+                continue
+            # Mix chasm purple with a cool iridium glint toward belt centres.
+            col = _lerp_rgb(chasm, iridium, 0.25 + 0.35 * belt)
+            a = int(min(200, 40 + 150 * belt))
+            px[x, y] = col + (a,)
+    return overlay.filter(ImageFilter.GaussianBlur(1.2))
+
+
+def _multistep_upscale(img: Image.Image, size: tuple[int, int]) -> Image.Image:
+    """Progressive LANCZOS upscale — cleaner than a single large jump."""
+    cur = img
+    tw, th = size
+    while cur.width * 2 < tw or cur.height * 2 < th:
+        nw = min(tw, cur.width * 2)
+        nh = min(th, cur.height * 2)
+        cur = cur.resize((nw, nh), Image.LANCZOS)
+    if cur.size != size:
+        cur = cur.resize(size, Image.LANCZOS)
+    return cur
+
+
 def build_mars():
+    """
+    Build mars_consortium.png.
+
+    Contract (do not break):
+      - Canvas is BOARD_W x BOARD_H (891×860)
+      - Hex geometry (PITCH/OFFSET / board_positions.less) is untouched
+      - Source alpha silhouette is preserved (planet + chrome ring)
+      - Chrome / track art outside the planet disc is taken from the upscaled
+        official mars.png so O2 / temp / Venus chrome stay pixel-aligned
+
+    Disc treatment: progressive upscale of the official Mars geography, then a
+    Consortium color grade + three sector chasm washes. No Midjourney / no
+    hand-edited PNG — change this function and rerun.
+    """
     if not os.path.exists(MARS_SRC):
         sys.exit(f'missing {MARS_SRC} - run from the repository root')
 
     src = Image.open(MARS_SRC).convert('RGBA')
-    rgb, alpha = src.convert('RGB'), src.split()[3]
+    tw, th = BOARD_W, BOARD_H
+    assert tw == round(src.width * 634 / 441)
+    assert th == round(src.height * 542 / 378)
 
-    residual = ImageChops.difference(rgb, rgb.filter(ImageFilter.GaussianBlur(1.2)))
-    sigma = max(ImageStat.Stat(residual.convert('L')).stddev[0], 6.0)
+    # Progressive upscale for chrome + disc base + exact silhouette.
+    up = _multistep_upscale(src, (tw, th))
+    up_rgb = up.convert('RGB')
+    alpha = up.split()[3]
 
-    tw = round(src.width * 634 / 441)
-    th = round(src.height * 542 / 378)
+    sx = tw / src.width
+    sy = th / src.height
+    cx = DISC_CX0 * sx
+    cy = DISC_CY0 * sy
+    radius = DISC_R0 * ((sx + sy) / 2.0)
+    disc_mask = _fit_disc_mask(tw, th, cx, cy, radius, feather=1.6)
 
-    up = rgb.resize((tw, th), Image.LANCZOS)
-    up = up.filter(ImageFilter.UnsharpMask(radius=1.6, percent=68, threshold=2))
+    # Sharpen the disc region more aggressively than chrome.
+    sharp = up_rgb.filter(ImageFilter.UnsharpMask(radius=1.6, percent=95, threshold=2))
+    graded = ImageEnhance.Color(sharp).enhance(0.94)
+    graded = ImageEnhance.Contrast(graded).enhance(1.08)
+    # Light cool grade — keep Mars readable under hex overlays.
+    cool = Image.new('RGB', (tw, th), (165, 180, 200))
+    graded = Image.blend(graded, ImageChops.multiply(graded, cool), 0.08)
 
-    noise = Image.effect_noise((tw, th), sigma).filter(
-        ImageFilter.GaussianBlur(0.4)).convert('L')
+    disc_rgba = Image.merge('RGBA', (*graded.split(), disc_mask))
+    belts = _sector_belt_overlay(tw, th, cx, cy, radius)
+    # Belts are a hint, not a vignette — keep alpha modest.
+    ba = belts.split()[3].point(lambda p: int(p * 0.55))
+    belts.putalpha(ImageChops.multiply(ba, disc_mask))
+    disc_rgba = Image.alpha_composite(disc_rgba, belts)
+
+    # Chrome / tracks from the upscaled official art, outside the disc.
+    inv = ImageOps.invert(disc_mask)
+    chrome = Image.new('RGBA', (tw, th), (0, 0, 0, 0))
+    chrome.paste(up_rgb, (0, 0))
+    chrome.putalpha(ImageChops.multiply(alpha, inv))
+
+    out = Image.new('RGBA', (tw, th), (0, 0, 0, 0))
+    out = Image.alpha_composite(out, Image.merge('RGBA', (*up_rgb.split(), alpha)))
+    out = Image.alpha_composite(out, disc_rgba)
+    out = Image.alpha_composite(out, chrome)
+    out.putalpha(alpha)
+
+    # Very light disc-only grain.
+    noise = Image.effect_noise((tw, th), 4.0).filter(
+        ImageFilter.GaussianBlur(0.25)).convert('L')
     grain = Image.merge('RGB', (noise, noise, noise))
+    rgb = ImageChops.add(out.convert('RGB'), grain, scale=1.0, offset=-128)
+    out = Image.composite(rgb, out.convert('RGB'), disc_mask).convert('RGBA')
+    out.putalpha(alpha)
 
-    out = ImageChops.add(up, grain, scale=1.0, offset=-128).convert('RGBA')
-    out.putalpha(alpha.resize((tw, th), Image.LANCZOS))
-    out.save(MARS_DST)
+    out.save(MARS_DST, optimize=True)
     return out
 
 

@@ -10,7 +10,7 @@ Base: `main` after iridium merge (`24b0137cf`)
 
 | Output | Spec |
 |--------|------|
-| `assets/board/mars_consortium.png` | 891×860 RGBA (mars.png upscaled 1.44× with grain) |
+| `assets/board/mars_consortium.png` | 891×860 RGBA — chrome/silhouette from upscaled `mars.png`; planet disc progressively upscaled + Consortium grade/sector washes. Hex CSS/JSON geometry is independent and must not change with art. |
 | `src/styles/board_positions.less` | 127 CSS margin rules (`.board-space-001` …) |
 | `src/server/boards/consortiumSpaces.json` | 127 space records |
 
