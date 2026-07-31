@@ -313,36 +313,43 @@ def _polar_cap(cx, cy, r) -> str:
 
 def _icon_thermometer(x, y, s) -> str:
     return f'''<g transform="translate({x:.1f},{y:.1f})">
-      <defs>
-        <linearGradient id="thermBg" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#2a3850"/><stop offset="100%" stop-color="#152030"/>
-        </linearGradient>
-      </defs>
-      <rect width="{s}" height="{s}" rx="{s*0.14:.1f}" fill="url(#thermBg)"
-            stroke="#c8dcec" stroke-width="1.4"/>
-      <circle cx="{s*0.5:.1f}" cy="{s*0.70:.1f}" r="{s*0.17:.1f}" fill="#e84848"/>
-      <rect x="{s*0.42:.1f}" y="{s*0.16:.1f}" width="{s*0.16:.1f}" height="{s*0.52:.1f}"
-            rx="2" fill="#e8f0f8"/>
-      <rect x="{s*0.46:.1f}" y="{s*0.30:.1f}" width="{s*0.08:.1f}" height="{s*0.40:.1f}"
+      <rect width="{s}" height="{s}" rx="{s*0.14:.1f}" fill="url(#iconSteel)"
+            stroke="#d0e4f4" stroke-width="1.5"/>
+      <rect x="{s*0.08:.1f}" y="{s*0.08:.1f}" width="{s*0.84:.1f}" height="{s*0.84:.1f}"
+            rx="{s*0.10:.1f}" fill="none" stroke="#6a88a8" stroke-width="0.7" opacity="0.7"/>
+      <circle cx="{s*0.5:.1f}" cy="{s*0.70:.1f}" r="{s*0.18:.1f}" fill="#c02020"/>
+      <circle cx="{s*0.5:.1f}" cy="{s*0.70:.1f}" r="{s*0.10:.1f}" fill="#ff6868" opacity="0.7"/>
+      <rect x="{s*0.42:.1f}" y="{s*0.14:.1f}" width="{s*0.16:.1f}" height="{s*0.54:.1f}"
+            rx="2" fill="#eef4fa"/>
+      <rect x="{s*0.46:.1f}" y="{s*0.28:.1f}" width="{s*0.08:.1f}" height="{s*0.42:.1f}"
             fill="#e84848"/>
+      <line x1="{s*0.62:.1f}" y1="{s*0.22:.1f}" x2="{s*0.70:.1f}" y2="{s*0.22:.1f}"
+            stroke="#9ab0c4" stroke-width="0.8"/>
+      <line x1="{s*0.62:.1f}" y1="{s*0.34:.1f}" x2="{s*0.68:.1f}" y2="{s*0.34:.1f}"
+            stroke="#9ab0c4" stroke-width="0.8"/>
+      <line x1="{s*0.62:.1f}" y1="{s*0.46:.1f}" x2="{s*0.70:.1f}" y2="{s*0.46:.1f}"
+            stroke="#9ab0c4" stroke-width="0.8"/>
     </g>'''
 
 
 def _icon_heat(x, y, s) -> str:
     flames = []
-    for i, ox in enumerate((-0.22, 0.0, 0.22)):
+    cols = ('#ffcc66', '#ff9a3c', '#ffcc66')
+    for i, ox in enumerate((-0.24, 0.0, 0.24)):
         pts = []
-        for t in range(8):
-            py = s * (0.20 + 0.58 * t / 7)
-            px = s * (0.5 + ox + 0.07 * math.sin(t * 1.3 + i))
+        for t in range(10):
+            py = s * (0.18 + 0.62 * t / 9)
+            px = s * (0.5 + ox + 0.08 * math.sin(t * 1.35 + i * 0.8))
             pts.append(f'{px:.1f},{py:.1f}')
         flames.append(
-            f'<polyline points="{" ".join(pts)}" fill="none" stroke="#ffb44a" '
-            f'stroke-width="{max(2.2, s/9):.1f}" stroke-linecap="round"/>'
+            f'<polyline points="{" ".join(pts)}" fill="none" stroke="{cols[i]}" '
+            f'stroke-width="{max(2.0, s/10):.1f}" stroke-linecap="round"/>'
         )
     return f'''<g transform="translate({x:.1f},{y:.1f})">
-      <rect width="{s}" height="{s}" rx="{s*0.12:.1f}" fill="#6a3018"
-            stroke="#e09050" stroke-width="1.4"/>
+      <rect width="{s}" height="{s}" rx="{s*0.12:.1f}" fill="url(#iconHeat)"
+            stroke="#f0a860" stroke-width="1.5"/>
+      <rect x="{s*0.1:.1f}" y="{s*0.1:.1f}" width="{s*0.8:.1f}" height="{s*0.8:.1f}"
+            rx="{s*0.08:.1f}" fill="none" stroke="#ffc080" stroke-width="0.6" opacity="0.45"/>
       {''.join(flames)}
     </g>'''
 
@@ -353,138 +360,392 @@ def _icon_water(x, y, s) -> str:
         f'{s/2 + s*0.48*math.sin(math.radians(60*i-30)):.1f}'
         for i in range(6)
     )
+    hex_in = ' '.join(
+        f'{s/2 + s*0.38*math.cos(math.radians(60*i-30)):.1f},'
+        f'{s/2 + s*0.38*math.sin(math.radians(60*i-30)):.1f}'
+        for i in range(6)
+    )
     return f'''<g transform="translate({x:.1f},{y:.1f})">
-      <polygon points="{hex_pts}" fill="#1e5a9a" stroke="#a0d4ff" stroke-width="1.4"/>
-      <ellipse cx="{s*0.5:.1f}" cy="{s*0.50:.1f}" rx="{s*0.17:.1f}" ry="{s*0.20:.1f}" fill="#e0f0ff"/>
-      <polygon points="{s*0.5:.1f},{s*0.20:.1f} {s*0.34:.1f},{s*0.48:.1f} {s*0.66:.1f},{s*0.48:.1f}"
-               fill="#e0f0ff"/>
+      <polygon points="{hex_pts}" fill="url(#iconWater)" stroke="#b8e0ff" stroke-width="1.6"/>
+      <polygon points="{hex_in}" fill="none" stroke="#6ab0e8" stroke-width="0.7" opacity="0.6"/>
+      <ellipse cx="{s*0.5:.1f}" cy="{s*0.52:.1f}" rx="{s*0.17:.1f}" ry="{s*0.20:.1f}" fill="#e8f4ff"/>
+      <polygon points="{s*0.5:.1f},{s*0.18:.1f} {s*0.33:.1f},{s*0.50:.1f} {s*0.67:.1f},{s*0.50:.1f}"
+               fill="#e8f4ff"/>
+      <ellipse cx="{s*0.42:.1f}" cy="{s*0.48:.1f}" rx="{s*0.05:.1f}" ry="{s*0.08:.1f}"
+               fill="#ffffff" opacity="0.55"/>
     </g>'''
 
 
 def _icon_crystal(x, y, s) -> str:
     return f'''<g transform="translate({x:.1f},{y:.1f})">
-      <polygon points="{s*0.5:.1f},{s*0.10:.1f} {s*0.84:.1f},{s*0.5:.1f} {s*0.5:.1f},{s*0.90:.1f} {s*0.16:.1f},{s*0.5:.1f}"
-               fill="#3a88d0" stroke="#d0ecff" stroke-width="1.4"/>
-      <polygon points="{s*0.5:.1f},{s*0.22:.1f} {s*0.68:.1f},{s*0.5:.1f} {s*0.5:.1f},{s*0.72:.1f}"
-               fill="#a0d4ff" opacity="0.55"/>
+      <polygon points="{s*0.5:.1f},{s*0.08:.1f} {s*0.86:.1f},{s*0.5:.1f} {s*0.5:.1f},{s*0.92:.1f} {s*0.14:.1f},{s*0.5:.1f}"
+               fill="url(#iconCrystal)" stroke="#e0f0ff" stroke-width="1.5"/>
+      <polygon points="{s*0.5:.1f},{s*0.20:.1f} {s*0.70:.1f},{s*0.5:.1f} {s*0.5:.1f},{s*0.74:.1f}"
+               fill="#c8e8ff" opacity="0.55"/>
+      <polygon points="{s*0.5:.1f},{s*0.20:.1f} {s*0.30:.1f},{s*0.5:.1f} {s*0.5:.1f},{s*0.74:.1f}"
+               fill="#2080c8" opacity="0.35"/>
+      <line x1="{s*0.5:.1f}" y1="{s*0.08:.1f}" x2="{s*0.5:.1f}" y2="{s*0.92:.1f}"
+            stroke="#ffffff" stroke-width="0.7" opacity="0.35"/>
     </g>'''
 
 
 def _icon_percent(x, y, s) -> str:
     return f'''<g transform="translate({x:.1f},{y:.1f})">
-      <rect width="{s}" height="{s}" rx="{s*0.14:.1f}" fill="#1e5a9a"
-            stroke="#b0dcff" stroke-width="1.4"/>
-      <text x="{s*0.5:.1f}" y="{s*0.72:.1f}" text-anchor="middle" font-size="{s*0.55:.1f}"
-            font-family="DejaVu Sans, Arial, sans-serif" font-weight="700" fill="#f4faff">%</text>
+      <rect width="{s}" height="{s}" rx="{s*0.14:.1f}" fill="url(#iconSteel)"
+            stroke="#c0e0ff" stroke-width="1.5"/>
+      <circle cx="{s*0.32:.1f}" cy="{s*0.32:.1f}" r="{s*0.10:.1f}" fill="none"
+              stroke="#f4faff" stroke-width="{max(1.4, s*0.06):.1f}"/>
+      <circle cx="{s*0.68:.1f}" cy="{s*0.68:.1f}" r="{s*0.10:.1f}" fill="none"
+              stroke="#f4faff" stroke-width="{max(1.4, s*0.06):.1f}"/>
+      <line x1="{s*0.72:.1f}" y1="{s*0.22:.1f}" x2="{s*0.28:.1f}" y2="{s*0.78:.1f}"
+            stroke="#f4faff" stroke-width="{max(1.6, s*0.07):.1f}" stroke-linecap="round"/>
+    </g>'''
+
+
+def _icon_card(x, y, s) -> str:
+    return f'''<g transform="translate({x:.1f},{y:.1f})">
+      <rect width="{s}" height="{s}" rx="{s*0.12:.1f}" fill="url(#iconSteel)"
+            stroke="#c8dcec" stroke-width="1.3"/>
+      <rect x="{s*0.22:.1f}" y="{s*0.16:.1f}" width="{s*0.56:.1f}" height="{s*0.68:.1f}"
+            rx="{s*0.06:.1f}" fill="#1a4068" stroke="#a0c8e8" stroke-width="1"/>
+      <rect x="{s*0.30:.1f}" y="{s*0.28:.1f}" width="{s*0.40:.1f}" height="{s*0.08:.1f}"
+            rx="1" fill="#7ecfff" opacity="0.8"/>
+      <rect x="{s*0.30:.1f}" y="{s*0.42:.1f}" width="{s*0.40:.1f}" height="{s*0.06:.1f}"
+            rx="1" fill="#5aa0d0" opacity="0.7"/>
+      <rect x="{s*0.30:.1f}" y="{s*0.54:.1f}" width="{s*0.28:.1f}" height="{s*0.06:.1f}"
+            rx="1" fill="#5aa0d0" opacity="0.55"/>
+    </g>'''
+
+
+def _icon_plant(x, y, s) -> str:
+    return f'''<g transform="translate({x:.1f},{y:.1f})">
+      <rect width="{s}" height="{s}" rx="{s*0.12:.1f}" fill="#1a3820"
+            stroke="#80c878" stroke-width="1.3"/>
+      <path d="M{s*0.5:.1f},{s*0.78:.1f} Q{s*0.5:.1f},{s*0.45:.1f} {s*0.5:.1f},{s*0.22:.1f}"
+            fill="none" stroke="#6aad50" stroke-width="{max(1.6, s*0.07):.1f}"/>
+      <ellipse cx="{s*0.34:.1f}" cy="{s*0.40:.1f}" rx="{s*0.16:.1f}" ry="{s*0.10:.1f}"
+               fill="#7ecc60" transform="rotate(-35 {s*0.34:.1f} {s*0.40:.1f})"/>
+      <ellipse cx="{s*0.66:.1f}" cy="{s*0.36:.1f}" rx="{s*0.16:.1f}" ry="{s*0.10:.1f}"
+               fill="#90e070" transform="rotate(35 {s*0.66:.1f} {s*0.36:.1f})"/>
+      <ellipse cx="{s*0.50:.1f}" cy="{s*0.24:.1f}" rx="{s*0.12:.1f}" ry="{s*0.08:.1f}"
+               fill="#a8f088"/>
     </g>'''
 
 
 def _pointer(cx, cy, deg, size) -> str:
-    tip = _polar(cx, cy, size * 0.1, deg + 180)
-    b1 = _polar(cx, cy, size, deg - 28)
-    b2 = _polar(cx, cy, size, deg + 28)
+    tip = _polar(cx, cy, size * 0.08, deg + 180)
+    b1 = _polar(cx, cy, size, deg - 26)
+    b2 = _polar(cx, cy, size, deg + 26)
+    mid = _polar(cx, cy, size * 0.55, deg)
     return (
         f'<polygon points="{tip[0]:.1f},{tip[1]:.1f} {b1[0]:.1f},{b1[1]:.1f} '
-        f'{b2[0]:.1f},{b2[1]:.1f}" fill="#b0b6c0"/>'
+        f'{b2[0]:.1f},{b2[1]:.1f}" fill="#c8ced8" stroke="#e8eef4" stroke-width="0.6"/>'
+        f'<circle cx="{mid[0]:.1f}" cy="{mid[1]:.1f}" r="{size*0.18:.1f}" '
+        f'fill="#8a929e"/>'
     )
+
+
+def _segmented_track(cx, cy, tr, scale, name) -> str:
+    """Per-cell annular segments with glass bevel — denser than a flat arc."""
+    r_mid = tr['r_mid'] * scale
+    half = tr['half'] * scale
+    r_out, r_in = r_mid + half, r_mid - half
+    start, end = tr['start'], tr['end']
+    n = tr['segments']
+    span = end - start
+    parts = [f'<g id="track_{name}">']
+    # Soft glow under whole track.
+    glow = _annular_sector(cx, cy, r_out + 4 * scale, r_in - 3 * scale, start, end)
+    parts.append(
+        f'<path d="{glow}" fill="{tr["c1"]}" opacity="0.16" filter="url(#softBlur)"/>'
+    )
+    # Track bed (dark channel).
+    bed = _annular_sector(cx, cy, r_out + 1.5 * scale, r_in - 1.5 * scale, start, end)
+    parts.append(f'<path d="{bed}" fill="#0a121c" opacity="0.85"/>')
+    # Individual cells.
+    gap_deg = span * 0.012
+    for i in range(n):
+        a0 = start + span * i / n + gap_deg * 0.5
+        a1 = start + span * (i + 1) / n - gap_deg * 0.5
+        if a1 <= a0:
+            continue
+        # Color ramp along track.
+        t = i / max(n - 1, 1)
+        cell = _annular_sector(cx, cy, r_out, r_in, a0, a1)
+        # Alternate cell brightness for machined look.
+        op = 0.92 if i % 2 == 0 else 0.78
+        parts.append(
+            f'<path d="{cell}" fill="url(#grad_{name})" opacity="{op:.2f}"/>'
+        )
+        # Glass top highlight per cell.
+        hi = _annular_sector(cx, cy, r_out - 0.8 * scale, r_out - half * 0.55, a0, a1)
+        parts.append(f'<path d="{hi}" fill="#ffffff" opacity="0.16"/>')
+        # Inner shadow.
+        sh = _annular_sector(cx, cy, r_in + half * 0.45, r_in + 0.6 * scale, a0, a1)
+        parts.append(f'<path d="{sh}" fill="#000000" opacity="0.18"/>')
+    # Major ticks (every segment) + minor mid-ticks.
+    for i in range(n + 1):
+        a = start + span * i / n
+        x0, y0 = _polar(cx, cy, r_in - 1.5 * scale, a)
+        x1, y1 = _polar(cx, cy, r_out + 2.5 * scale, a)
+        w = max(1.1, 1.35 * scale) if i % 2 == 0 else max(0.7, 0.85 * scale)
+        parts.append(
+            f'<line x1="{x0:.2f}" y1="{y0:.2f}" x2="{x1:.2f}" y2="{y1:.2f}" '
+            f'stroke="{tr["tick"]}" stroke-width="{w:.2f}" stroke-linecap="round" '
+            f'stroke-opacity="0.90"/>'
+        )
+        if i < n:
+            am = start + span * (i + 0.5) / n
+            mx0, my0 = _polar(cx, cy, r_in + 1, am)
+            mx1, my1 = _polar(cx, cy, r_out - 1, am)
+            parts.append(
+                f'<line x1="{mx0:.2f}" y1="{my0:.2f}" x2="{mx1:.2f}" y2="{my1:.2f}" '
+                f'stroke="#ffffff" stroke-width="0.5" stroke-opacity="0.18"/>'
+            )
+    # Outer rim stroke on track.
+    rim = _annular_sector(cx, cy, r_out, r_in, start, end)
+    parts.append(
+        f'<path d="{rim}" fill="none" stroke="#e8f4ff" stroke-opacity="0.45" '
+        f'stroke-width="0.9"/>'
+    )
+    parts.append('</g>')
+    return '\n'.join(parts)
+
+
+def _ring_rivets(cx, cy, radius, count, size, color='#6a8098') -> str:
+    parts = []
+    for i in range(count):
+        a = 360.0 * i / count
+        x, y = _polar(cx, cy, radius, a)
+        parts.append(
+            f'<circle cx="{x:.2f}" cy="{y:.2f}" r="{size:.2f}" fill="{color}" '
+            f'stroke="#a8c0d4" stroke-width="0.5" opacity="0.85"/>'
+        )
+        parts.append(
+            f'<circle cx="{x - size*0.25:.2f}" cy="{y - size*0.25:.2f}" '
+            f'r="{size*0.35:.2f}" fill="#d0e0f0" opacity="0.35"/>'
+        )
+    return '\n'.join(parts)
+
+
+def _hash_marks(cx, cy, r_in, r_out, start, end, step, color, width=0.7) -> str:
+    parts = []
+    a = start
+    while a <= end + 0.01:
+        x0, y0 = _polar(cx, cy, r_in, a)
+        x1, y1 = _polar(cx, cy, r_out, a)
+        parts.append(
+            f'<line x1="{x0:.2f}" y1="{y0:.2f}" x2="{x1:.2f}" y2="{y1:.2f}" '
+            f'stroke="{color}" stroke-width="{width}" stroke-opacity="0.55"/>'
+        )
+        a += step
+    return '\n'.join(parts)
+
+
+def _consortium_emblem(cx, cy, s) -> str:
+    """Small hex emblem — Consortium mark near Venus track."""
+    pts = ' '.join(
+        f'{cx + s*math.cos(math.radians(60*i-30)):.1f},'
+        f'{cy + s*math.sin(math.radians(60*i-30)):.1f}'
+        for i in range(6)
+    )
+    pts2 = ' '.join(
+        f'{cx + s*0.62*math.cos(math.radians(60*i-30)):.1f},'
+        f'{cy + s*0.62*math.sin(math.radians(60*i-30)):.1f}'
+        for i in range(6)
+    )
+    return f'''<g id="emblem">
+      <polygon points="{pts}" fill="#1a2838" stroke="#c8a878" stroke-width="1.4"/>
+      <polygon points="{pts2}" fill="none" stroke="#e0c090" stroke-width="0.8"/>
+      <circle cx="{cx}" cy="{cy}" r="{s*0.22:.1f}" fill="#c8a878"/>
+      <circle cx="{cx}" cy="{cy}" r="{s*0.10:.1f}" fill="#1a2838"/>
+    </g>'''
 
 
 def _chrome(cx, cy, planet_r) -> str:
     scale = planet_r / DISC_R
     outer = _OUTER_R * scale
     gap = planet_r + 5.5 * scale
+    mid_ring = (outer + gap) * 0.5
     parts = ['<g id="chrome">']
 
-    # Metallic ring plate with subtle radial shade.
     parts.append(f'''
     <defs>
-      <radialGradient id="ringPlate" cx="50%" cy="45%" r="55%">
-        <stop offset="78%" stop-color="#0a0e14"/>
-        <stop offset="92%" stop-color="#141c28"/>
-        <stop offset="100%" stop-color="#1c2838"/>
+      <radialGradient id="ringPlate" cx="48%" cy="42%" r="58%">
+        <stop offset="70%" stop-color="#080c12"/>
+        <stop offset="88%" stop-color="#152030"/>
+        <stop offset="96%" stop-color="#243448"/>
+        <stop offset="100%" stop-color="#3a5068"/>
       </radialGradient>
+      <linearGradient id="iconSteel" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#3a5068"/>
+        <stop offset="100%" stop-color="#152030"/>
+      </linearGradient>
+      <linearGradient id="iconHeat" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#8a4020"/>
+        <stop offset="100%" stop-color="#4a1808"/>
+      </linearGradient>
+      <linearGradient id="iconWater" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#2a6ab0"/>
+        <stop offset="100%" stop-color="#143868"/>
+      </linearGradient>
+      <linearGradient id="iconCrystal" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#60b0e8"/>
+        <stop offset="100%" stop-color="#2060a0"/>
+      </linearGradient>
+      <filter id="chromeGlow" x="-30%" y="-30%" width="160%" height="160%">
+        <feGaussianBlur stdDeviation="1.6" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
     </defs>
-    <path fill="url(#ringPlate)" fill-opacity="0.96" d="
+    ''')
+
+    # Track gradients (shared).
+    for name, tr in _TRACKS.items():
+        parts.append(
+            f'<linearGradient id="grad_{name}" x1="0%" y1="0%" x2="100%" y2="100%">'
+            f'<stop offset="0%" stop-color="{tr["c0"]}"/>'
+            f'<stop offset="45%" stop-color="{tr["c1"]}"/>'
+            f'<stop offset="100%" stop-color="{tr["c0"]}"/>'
+            f'</linearGradient>'
+        )
+
+    # --- Ring plate (multi-layer metal) ---
+    parts.append(f'''
+    <path fill="url(#ringPlate)" fill-opacity="0.97" d="
       M{cx + outer:.2f},{cy:.2f}
       A{outer:.2f},{outer:.2f} 0 1 1 {cx - outer:.2f},{cy:.2f}
       A{outer:.2f},{outer:.2f} 0 1 1 {cx + outer:.2f},{cy:.2f}Z
       M{cx + gap:.2f},{cy:.2f}
       A{gap:.2f},{gap:.2f} 0 1 0 {cx - gap:.2f},{cy:.2f}
       A{gap:.2f},{gap:.2f} 0 1 0 {cx + gap:.2f},{cy:.2f}Z"/>
-    <circle cx="{cx}" cy="{cy}" r="{outer:.2f}" fill="none"
-            stroke="#8eb4d0" stroke-opacity="0.70" stroke-width="{2.2 * scale:.2f}"/>
-    <circle cx="{cx}" cy="{cy}" r="{gap:.2f}" fill="none"
-            stroke="#f0c8a0" stroke-opacity="0.18" stroke-width="{1.2 * scale:.2f}"/>
     ''')
+    # Concentric machined grooves.
+    for rr, col, w, op in (
+        (outer - 1.2 * scale, '#a8c8e0', 2.4 * scale, 0.75),
+        (outer - 4.5 * scale, '#4a6080', 1.0 * scale, 0.55),
+        (mid_ring, '#2a3a50', 0.8 * scale, 0.40),
+        (gap + 2.0 * scale, '#6a8098', 1.0 * scale, 0.50),
+        (gap + 0.5 * scale, '#f0d0a8', 1.4 * scale, 0.28),
+    ):
+        parts.append(
+            f'<circle cx="{cx}" cy="{cy}" r="{rr:.2f}" fill="none" '
+            f'stroke="{col}" stroke-opacity="{op}" stroke-width="{w:.2f}"/>'
+        )
 
+    # Inner hash scale around planet limb (full 360°, fine ticks).
+    parts.append('<g id="limbHash">')
+    parts.append(_hash_marks(
+        cx, cy, gap + 3.5 * scale, gap + 7.5 * scale,
+        0, 359, 3.0, '#7a90a8', width=0.55 * scale))
+    parts.append(_hash_marks(
+        cx, cy, gap + 3.5 * scale, gap + 10.5 * scale,
+        0, 359, 15.0, '#b0c8dc', width=0.9 * scale))
+    parts.append('</g>')
+
+    # Outer hash scale.
+    parts.append('<g id="outerHash">')
+    parts.append(_hash_marks(
+        cx, cy, outer - 8 * scale, outer - 3 * scale,
+        0, 359, 5.0, '#5a7088', width=0.55 * scale))
+    parts.append('</g>')
+
+    # Rivets.
+    parts.append('<g id="rivets">')
+    parts.append(_ring_rivets(cx, cy, outer - 6.5 * scale, 36, 1.35 * scale))
+    parts.append(_ring_rivets(cx, cy, gap + 9 * scale, 24, 1.1 * scale, color='#5a7088'))
+    parts.append('</g>')
+
+    # Tracks — per-cell detail.
     for name, tr in _TRACKS.items():
-        r_mid = tr['r_mid'] * scale
-        half = tr['half'] * scale
-        r_out, r_in = r_mid + half, r_mid - half
-        path = _annular_sector(cx, cy, r_out, r_in, tr['start'], tr['end'])
-        gid = f'track_{name}'
-        # Soft outer glow under track.
-        glow = _annular_sector(cx, cy, r_out + 3 * scale, r_in - 2 * scale,
-                               tr['start'], tr['end'])
-        parts.append(
-            f'<path d="{glow}" fill="{tr["c1"]}" opacity="0.12" filter="url(#softBlur)"/>'
-        )
-        parts.append(
-            f'<linearGradient id="{gid}" x1="0%" y1="0%" x2="100%" y2="100%">'
-            f'<stop offset="0%" stop-color="{tr["c0"]}"/>'
-            f'<stop offset="55%" stop-color="{tr["c1"]}"/>'
-            f'<stop offset="100%" stop-color="{tr["c0"]}"/>'
-            f'</linearGradient>'
-        )
-        parts.append(
-            f'<path d="{path}" fill="url(#{gid})" stroke="#e8f4ff" '
-            f'stroke-opacity="0.40" stroke-width="0.8"/>'
-        )
-        # Inner glass highlight strip.
-        hi = _annular_sector(cx, cy, r_out - 1, r_out - half * 0.55,
-                             tr['start'], tr['end'])
-        parts.append(f'<path d="{hi}" fill="#ffffff" opacity="0.14"/>')
-        parts.append(_arc_ticks(
-            cx, cy, r_in, r_out, tr['start'], tr['end'],
-            tr['segments'], tr['tick'], width=max(1.0, 1.15 * scale)))
+        parts.append(_segmented_track(cx, cy, tr, scale, name))
 
-    icon = max(20.0, 26 * scale)
+    # Degree labels on oxygen / temp arcs (sparse).
+    parts.append('<g id="trackLabels" font-family="DejaVu Sans, Arial, sans-serif" '
+                 'font-weight="700">')
+    o2 = _TRACKS['oxygen']
+    for i, label in enumerate(('0', '7', '14')):
+        a = o2['start'] + (o2['end'] - o2['start']) * i / 2
+        lx, ly = _polar(cx, cy, (o2['r_mid'] - o2['half'] - 8) * scale, a)
+        parts.append(
+            f'<text x="{lx:.1f}" y="{ly:.1f}" text-anchor="middle" dominant-baseline="middle" '
+            f'font-size="{8.5 * scale:.1f}" fill="#9ec8e8" opacity="0.75">{label}</text>'
+        )
+    temp = _TRACKS['temperature']
+    for i, label in enumerate(('-30', '0', '+8')):
+        a = temp['start'] + (temp['end'] - temp['start']) * i / 2
+        lx, ly = _polar(cx, cy, (temp['r_mid'] - temp['half'] - 8) * scale, a)
+        parts.append(
+            f'<text x="{lx:.1f}" y="{ly:.1f}" text-anchor="middle" dominant-baseline="middle" '
+            f'font-size="{8 * scale:.1f}" fill="#9ec8e8" opacity="0.75">{label}</text>'
+        )
+    parts.append('</g>')
 
-    def place(deg, drawer, r_frac=1.0):
+    icon = max(22.0, 28 * scale)
+
+    def place(deg, drawer, r_frac=1.0, isize=None):
+        ic = isize if isize is not None else icon
         rr = outer * r_frac
         rx, ry = _polar(cx, cy, rr, deg)
-        parts.append(_pointer(rx, ry, deg, max(6.0, 7 * scale)))
-        ix, iy = _polar(cx, cy, rr + icon * 0.55, deg)
-        parts.append(drawer(ix - icon / 2, iy - icon / 2, icon))
+        parts.append(_pointer(rx, ry, deg, max(6.5, 7.5 * scale)))
+        # Icon pedestal ring.
+        ix, iy = _polar(cx, cy, rr + ic * 0.58, deg)
+        parts.append(
+            f'<circle cx="{ix:.1f}" cy="{iy:.1f}" r="{ic*0.62:.1f}" '
+            f'fill="#0c1420" stroke="#6a88a8" stroke-width="1" opacity="0.85"/>'
+        )
+        parts.append(drawer(ix - ic / 2, iy - ic / 2, ic))
 
     place(180, _icon_thermometer)
     place(0, _icon_crystal)
     place(45, _icon_heat)
     place(55, _icon_heat)
     place(330, _icon_percent)
-    wx, wy = _polar(cx, cy, outer * 1.06, 95)
-    parts.append(_icon_water(wx - icon * 0.65, wy - icon * 0.55, icon * 1.25))
+    place(250, _icon_card, r_frac=1.02, isize=icon * 0.9)
+    place(280, _icon_plant, r_frac=1.02, isize=icon * 0.9)
 
-    ox, oy = _polar(cx, cy, outer * 1.10, 145)
+    wx, wy = _polar(cx, cy, outer * 1.07, 95)
     parts.append(
-        f'<text x="{ox:.1f}" y="{oy:.1f}" text-anchor="middle" '
-        f'font-family="DejaVu Sans, Arial, sans-serif" font-weight="700" '
-        f'font-size="{20 * scale:.1f}" fill="#7ecfff" '
-        f'style="paint-order:stroke;stroke:#0a1520;stroke-width:3px">O₂</text>'
+        f'<circle cx="{wx:.1f}" cy="{wy:.1f}" r="{icon*0.78:.1f}" '
+        f'fill="#0c1420" stroke="#6a88a8" stroke-width="1" opacity="0.85"/>'
     )
-    zx, zy = _polar(cx, cy, _TRACKS['oxygen']['r_mid'] * scale * 1.02, 128)
+    parts.append(_icon_water(wx - icon * 0.65, wy - icon * 0.55, icon * 1.3))
+
+    # Emblem near top.
+    ex, ey = _polar(cx, cy, outer * 1.08, 268)
+    parts.append(_consortium_emblem(ex, ey, 11 * scale))
+
+    # Primary labels with plate backing.
+    def label_plate(deg, r_frac, text, fs):
+        lx, ly = _polar(cx, cy, outer * r_frac, deg)
+        tw = fs * len(text) * 0.42
+        parts.append(
+            f'<rect x="{lx - tw:.1f}" y="{ly - fs*0.55:.1f}" width="{tw*2:.1f}" '
+            f'height="{fs*1.15:.1f}" rx="3" fill="#0a1520" fill-opacity="0.82" '
+            f'stroke="#4a7090" stroke-width="0.8"/>'
+        )
+        parts.append(
+            f'<text x="{lx:.1f}" y="{ly:.1f}" text-anchor="middle" dominant-baseline="middle" '
+            f'font-family="DejaVu Sans, Arial, sans-serif" font-weight="700" '
+            f'font-size="{fs:.1f}" fill="#8ad4ff" filter="url(#chromeGlow)">{text}</text>'
+        )
+
+    label_plate(145, 1.12, 'O₂', 18 * scale)
+    label_plate(75, 1.11, 't°C', 18 * scale)
+    zx, zy = _polar(cx, cy, _TRACKS['oxygen']['r_mid'] * scale * 1.0, 125)
     parts.append(
-        f'<text x="{zx:.1f}" y="{zy:.1f}" text-anchor="middle" '
+        f'<text x="{zx:.1f}" y="{zy:.1f}" text-anchor="middle" dominant-baseline="middle" '
         f'font-family="DejaVu Sans, Arial, sans-serif" font-weight="700" '
-        f'font-size="{13 * scale:.1f}" fill="#c4e4ff">0%</text>'
+        f'font-size="{12 * scale:.1f}" fill="#c4e4ff">0%</text>'
     )
-    tx, ty = _polar(cx, cy, outer * 1.08, 75)
+    # Venus label.
+    vx, vy = _polar(cx, cy, outer * 1.10, 265)
     parts.append(
-        f'<text x="{tx:.1f}" y="{ty:.1f}" text-anchor="middle" '
+        f'<text x="{vx:.1f}" y="{vy:.1f}" text-anchor="middle" '
         f'font-family="DejaVu Sans, Arial, sans-serif" font-weight="700" '
-        f'font-size="{20 * scale:.1f}" fill="#7ecfff" '
-        f'style="paint-order:stroke;stroke:#0a1520;stroke-width:3px">t°C</text>'
+        f'font-size="{11 * scale:.1f}" fill="#e0c090" opacity="0.85">VENUS</text>'
     )
+
     parts.append('</g>')
     return '\n'.join(parts)
 
