@@ -37,7 +37,6 @@ import os
 import sys
 from PIL import (
     Image,
-    ImageChops,
     ImageDraw,
     ImageEnhance,
 )
