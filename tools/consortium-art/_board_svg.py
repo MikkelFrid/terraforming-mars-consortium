@@ -20,7 +20,10 @@ BOARD_W, BOARD_H = 891, 860
 # Calibrated REF disc (same as build_board.DISC_* → logical).
 DISC_CX, DISC_CY, DISC_R = 461.0, 431.0, 304.0
 
-# Track calibration — mirrors _board_chrome._TRACKS (0°=east, +CW on screen).
+# Track calibration (0°=east, +CW on screen). Radii/angles fitted to
+# globs.less HTML pin loci after Consortium scale(891/620, 860/600).
+# Venus is deliberately off-centre — Tharsis Venus pins are not concentric
+# with the planet disc (fitted circle ≈ (425.5, 429.6), r≈388).
 _TRACKS = {
     'oxygen': {
         'start': 132.0, 'end': 214.0, 'r_mid': 415.0, 'half': 12.0,
@@ -28,9 +31,10 @@ _TRACKS = {
         'c0': '#1e5a9a', 'c1': '#5eb4f0', 'tick': '#ff9a4a',
     },
     'venus': {
-        'start': 225.0, 'end': 307.0, 'r_mid': 390.0, 'half': 12.0,
-        'segments': 10,
+        'start': 228.0, 'end': 312.0, 'r_mid': 388.0, 'half': 12.0,
+        'segments': 15,  # one cell per Venus step (0..30 / 2)
         'c0': '#8a6028', 'c1': '#e0c078', 'tick': '#f0d8a0',
+        'cx': 425.5, 'cy': 429.6,  # non-concentric with planet disc
     },
     'temperature': {
         'start': 316.0, 'end': 420.0, 'r_mid': 353.0, 'half': 13.0,
@@ -447,6 +451,10 @@ def _pointer(cx, cy, deg, size) -> str:
 
 def _segmented_track(cx, cy, tr, scale, name) -> str:
     """Per-cell annular segments with glass bevel — denser than a flat arc."""
+    # Optional per-track centre (Venus is not concentric with the planet).
+    tcx = tr.get('cx', cx)
+    tcy = tr.get('cy', cy)
+    # r_mid / half are in logical px already (calibrated to 891×860).
     r_mid = tr['r_mid'] * scale
     half = tr['half'] * scale
     r_out, r_in = r_mid + half, r_mid - half
@@ -455,12 +463,12 @@ def _segmented_track(cx, cy, tr, scale, name) -> str:
     span = end - start
     parts = [f'<g id="track_{name}">']
     # Soft glow under whole track.
-    glow = _annular_sector(cx, cy, r_out + 4 * scale, r_in - 3 * scale, start, end)
+    glow = _annular_sector(tcx, tcy, r_out + 4 * scale, r_in - 3 * scale, start, end)
     parts.append(
         f'<path d="{glow}" fill="{tr["c1"]}" opacity="0.16" filter="url(#softBlur)"/>'
     )
     # Track bed (dark channel).
-    bed = _annular_sector(cx, cy, r_out + 1.5 * scale, r_in - 1.5 * scale, start, end)
+    bed = _annular_sector(tcx, tcy, r_out + 1.5 * scale, r_in - 1.5 * scale, start, end)
     parts.append(f'<path d="{bed}" fill="#0a121c" opacity="0.85"/>')
     # Individual cells.
     gap_deg = span * 0.012
@@ -469,25 +477,23 @@ def _segmented_track(cx, cy, tr, scale, name) -> str:
         a1 = start + span * (i + 1) / n - gap_deg * 0.5
         if a1 <= a0:
             continue
-        # Color ramp along track.
-        t = i / max(n - 1, 1)
-        cell = _annular_sector(cx, cy, r_out, r_in, a0, a1)
+        cell = _annular_sector(tcx, tcy, r_out, r_in, a0, a1)
         # Alternate cell brightness for machined look.
         op = 0.92 if i % 2 == 0 else 0.78
         parts.append(
             f'<path d="{cell}" fill="url(#grad_{name})" opacity="{op:.2f}"/>'
         )
         # Glass top highlight per cell.
-        hi = _annular_sector(cx, cy, r_out - 0.8 * scale, r_out - half * 0.55, a0, a1)
+        hi = _annular_sector(tcx, tcy, r_out - 0.8 * scale, r_out - half * 0.55, a0, a1)
         parts.append(f'<path d="{hi}" fill="#ffffff" opacity="0.16"/>')
         # Inner shadow.
-        sh = _annular_sector(cx, cy, r_in + half * 0.45, r_in + 0.6 * scale, a0, a1)
+        sh = _annular_sector(tcx, tcy, r_in + half * 0.45, r_in + 0.6 * scale, a0, a1)
         parts.append(f'<path d="{sh}" fill="#000000" opacity="0.18"/>')
     # Major ticks (every segment) + minor mid-ticks.
     for i in range(n + 1):
         a = start + span * i / n
-        x0, y0 = _polar(cx, cy, r_in - 1.5 * scale, a)
-        x1, y1 = _polar(cx, cy, r_out + 2.5 * scale, a)
+        x0, y0 = _polar(tcx, tcy, r_in - 1.5 * scale, a)
+        x1, y1 = _polar(tcx, tcy, r_out + 2.5 * scale, a)
         w = max(1.1, 1.35 * scale) if i % 2 == 0 else max(0.7, 0.85 * scale)
         parts.append(
             f'<line x1="{x0:.2f}" y1="{y0:.2f}" x2="{x1:.2f}" y2="{y1:.2f}" '
@@ -496,14 +502,14 @@ def _segmented_track(cx, cy, tr, scale, name) -> str:
         )
         if i < n:
             am = start + span * (i + 0.5) / n
-            mx0, my0 = _polar(cx, cy, r_in + 1, am)
-            mx1, my1 = _polar(cx, cy, r_out - 1, am)
+            mx0, my0 = _polar(tcx, tcy, r_in + 1, am)
+            mx1, my1 = _polar(tcx, tcy, r_out - 1, am)
             parts.append(
                 f'<line x1="{mx0:.2f}" y1="{my0:.2f}" x2="{mx1:.2f}" y2="{my1:.2f}" '
                 f'stroke="#ffffff" stroke-width="0.5" stroke-opacity="0.18"/>'
             )
     # Outer rim stroke on track.
-    rim = _annular_sector(cx, cy, r_out, r_in, start, end)
+    rim = _annular_sector(tcx, tcy, r_out, r_in, start, end)
     parts.append(
         f'<path d="{rim}" fill="none" stroke="#e8f4ff" stroke-opacity="0.45" '
         f'stroke-width="0.9"/>'
