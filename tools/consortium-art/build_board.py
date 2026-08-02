@@ -46,7 +46,9 @@ N = 6                       # map radius -> 3N^2+3N+1 = 127 spaces
 SECTORS = [90.0, 210.0, 330.0]
 PITCH_X, PITCH_Y = 49, 41
 HEX_W, HEX_H = 46, 50
-OFFSET_X, OFFSET_Y = 137, 134
+# OFFSET_Y includes one hex-row nudge (+PITCH_Y) so the field sits deeper on
+# the Mars disc (Borbarad feedback: grid was one line too high).
+OFFSET_X, OFFSET_Y = 137, 134 + 41
 
 HEX_ASSET = {
     'land': 'hex_black.png',

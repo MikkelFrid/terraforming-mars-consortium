@@ -634,6 +634,34 @@
       font-size: 45px;
       top: 20px;
     }
+    // Consortium corps — fixed width so two-word names wrap clear of tags.
+    .card-siderite-holdings-logo,
+    .card-keystone-consortium-logo,
+    .card-rimward-expeditions-logo,
+    .card-massif-group-logo,
+    .card-iridium-authority-logo,
+    .card-charter-syndicate-logo {
+      position: absolute;
+      top: 8px;
+      left: 1px;
+      width: 138px;
+      line-height: 22px;
+      font-size: 16px;
+      font-family: Prototype, "Segoe UI", sans-serif;
+      font-weight: bold;
+      letter-spacing: 1px;
+      color: #d8e6f0;
+      text-shadow: -1px 0 #1a3040, 0 1px #1a3040, 1px 0 #1a3040, 0 -1px #1a3040, 2px 2px 2px #000;
+      text-transform: uppercase;
+      text-align: left;
+      word-break: normal;
+      white-space: normal;
+    }
+    .card-massif-group-logo {
+      font-size: 20px;
+      line-height: 24px;
+      top: 14px;
+    }
     .card-mars-maths-logo {
       position: absolute;
       font-size: 24px;
@@ -1607,6 +1635,40 @@
       margin-right: 0px;
       margin-bottom: 15px;
     }
+  }
+  // Consortium card-effect icons
+  .card-bridge {
+    background-image: url(./assets/consortium/megastructures/bridge-0.png);
+    width: 40px;
+    height: 40px;
+    background-size: 40px 40px;
+    background-repeat: no-repeat;
+  }
+  .card-highland {
+    background-image: url(./assets/hex_highland.png);
+    width: 40px;
+    height: 44px;
+    background-size: 40px 44px;
+    background-repeat: no-repeat;
+  }
+  .card-megastructure-segment {
+    width: 28px;
+    height: 28px;
+    border: 2px solid #0008;
+    border-radius: 2px;
+    background: linear-gradient(transparent, #0008), #555;
+    margin-left: 3px;
+    margin-right: 3px;
+  }
+  .card-keystone-segment {
+    width: 32px;
+    height: 32px;
+    border: 2px solid #f3e2b2;
+    box-shadow: inset 0 0 0 1px #8a7020, 0 0 0 1px #000;
+    border-radius: 3px;
+    background: linear-gradient(#5a4a28, #2a2418);
+    margin-left: 3px;
+    margin-right: 3px;
   }
   .card-resource-corruption {
     background-image: url(./assets/underworld/corruption.png);

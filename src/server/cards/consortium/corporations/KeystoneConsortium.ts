@@ -26,10 +26,10 @@ export class KeystoneConsortium extends CorporationCard implements ICorporationC
           b.megacredits(44).nbsp.iridium(2, {digit});
           b.corpBox('effect', (ce) => {
             ce.effect('Your megastructure segments cost 3 M€ less.', (eb) => {
-              eb.empty().startEffect.megacredits(-BALANCE.KEYSTONE_CONSORTIUM_DISCOUNT, {digit});
+              eb.megastructureSegment().startEffect.megacredits(-BALANCE.KEYSTONE_CONSORTIUM_DISCOUNT, {digit});
             });
             ce.effect('When you place a keystone segment, increase your M€ production 1 step.', (eb) => {
-              eb.empty().startEffect.production((pb) => pb.megacredits(1));
+              eb.keystoneSegment().startEffect.production((pb) => pb.megacredits(1));
             });
           });
         }),

@@ -122,13 +122,12 @@ export class ApiCreateGame extends Handler {
             }
           }
 
-          // Consortium terrain / frontier / MA set require a Consortium map.
-          // Clamp to the Consortium set (default Massif) if the client sent
-          // Tharsis or a Random* option; keep an explicit Massif/Rift/Archipelago pick.
+          // Consortium works on every map: native Massif/Rift/Archipelago, or a
+          // terrain overlay stamped onto standard/fan boards. When the expansion
+          // is off, Consortium boards are excluded from random picks.
           if (gameReq.expansions?.consortium === true) {
-            gameReq.board = isConsortiumBoard(gameReq.board) ?
-              gameReq.board as BoardName :
-              BoardName.CONSORTIUM;
+            const boards = ApiCreateGame.boardOptions(gameReq.board);
+            gameReq.board = boards[Math.floor(Math.random() * boards.length)];
           } else {
             const boards = ApiCreateGame.boardOptions(gameReq.board)
               .filter((name) => !isConsortiumBoard(name));

@@ -31,10 +31,10 @@ export class MassifGroup extends CorporationCard implements ICorporationCard {
         description:
           'You start with 45 M€. When you play this, place a special tile on a highland space.',
         renderData: CardRenderer.builder((b) => {
-          b.megacredits(45).nbsp.tile(TileType.MASSIF_GROUP, true).asterix();
+          b.megacredits(45).nbsp.tile(TileType.MASSIF_GROUP, true).highland();
           b.corpBox('effect', (ce) => {
             ce.effect('Cards that require you to own a highland tile cost 4 M€ less.', (eb) => {
-              eb.empty().startEffect.megacredits(-BALANCE.MASSIF_HIGHLAND_CARD_DISCOUNT, {digit});
+              eb.highland().startEffect.megacredits(-BALANCE.MASSIF_HIGHLAND_CARD_DISCOUNT, {digit});
             });
           });
         }),

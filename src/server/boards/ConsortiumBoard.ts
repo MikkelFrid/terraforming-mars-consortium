@@ -6,7 +6,6 @@ import {SpaceType} from '../../common/boards/SpaceType';
 import {SpaceId, isSpaceId, safeCast} from '../../common/Types';
 import {Random} from '../../common/utils/Random';
 import {GameOptions} from '../game/GameOptions';
-import {CanAffordOptions, IPlayer} from '../IPlayer';
 import {MarsBoard} from './MarsBoard';
 import {Space} from './Space';
 import consortiumSpaces from './consortiumSpaces.json';
@@ -139,15 +138,6 @@ export class ConsortiumBoard extends MarsBoard {
     });
   }
 
-  public override canPlaceTile(space: Space): boolean {
-    if (!super.canPlaceTile(space)) {
-      return false;
-    }
-    return isFrontierUnlocked(space);
-  }
-
-  public override getAvailableSpacesOnLand(player: IPlayer, canAffordOptions?: CanAffordOptions) {
-    return super.getAvailableSpacesOnLand(player, canAffordOptions)
-      .filter((space) => isFrontierUnlocked(space));
-  }
+  // Locked-frontier filtering lives on Board / MarsBoard so overlay boards
+  // share the same placement rules. Overrides removed on purpose.
 }

@@ -22,6 +22,8 @@ import {Board} from './boards/Board';
 import {Space} from './boards/Space';
 import {HollandiaBoard} from './boards/HollandiaBoard';
 import {ConsortiumBoard} from './boards/ConsortiumBoard';
+import {isConsortiumBoard} from '../common/boards/ConsortiumBoards';
+import {applyConsortiumOverlay} from './consortium/ConsortiumMapOverlay';
 
 type BoardFactory = (new (spaces: ReadonlyArray<Space>) => MarsBoard) & {newInstance: (gameOptions: GameOptions, rng: Random) => MarsBoard};
 
@@ -55,7 +57,13 @@ const boards: Record<BoardName, BoardFactory> = {
 export class GameSetup {
   public static newBoard(gameOptions: GameOptions, rng: Random): MarsBoard {
     const factory = boards[gameOptions.boardName];
-    return factory.newInstance(gameOptions, rng);
+    const board = factory.newInstance(gameOptions, rng);
+    // Native Consortium maps already encode terrain/frontier in JSON.
+    // On every other map, stamp a compressed overlay so cards and bridges work.
+    if (gameOptions.consortiumExpansion && !isConsortiumBoard(gameOptions.boardName)) {
+      applyConsortiumOverlay(board, rng);
+    }
+    return board;
   }
 
   public static deserializeBoard(players: Array<IPlayer>, gameOptions: GameOptions, d: SerializedGame) {

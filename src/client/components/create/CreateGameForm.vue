@@ -188,7 +188,9 @@
                             <div v-if="expansions.consortium" class="create-game-subsection-label" v-i18n>Consortium maps</div>
 
                             <div v-for="boardName in boards" :key="boardName">
+                              <div v-if="expansions.consortium && boardName==='tharsis'" class="create-game-subsection-label" v-i18n>All maps (terrain overlay)</div>
                               <div v-if="!expansions.consortium && boardName==='utopia planitia'" class="create-game-subsection-label" v-i18n>Fan-made</div>
+                              <div v-if="expansions.consortium && boardName==='utopia planitia'" class="create-game-subsection-label" v-i18n>Fan-made</div>
                               <!-- Board radios must not reuse expansion checkbox ids (e.g. consortium-checkbox). -->
                               <input type="radio" :value="boardName" name="board" v-model="board" :id="boardRadioId(boardName)">
                               <label :for="boardRadioId(boardName)" class="expansion-button">
@@ -704,12 +706,9 @@ export default defineComponent({
       }
     },
     'expansions.consortium': function(value: boolean) {
-      // Terrain, frontier unlock and Consortium MAs require a Consortium map.
-      if (value === true) {
-        if (!isConsortiumBoard(this.board)) {
-          this.board = BoardName.CONSORTIUM;
-        }
-      } else if (isConsortiumBoard(this.board)) {
+      // Enabling Consortium keeps the current board (overlay on standard maps).
+      // Disabling while a native Consortium map is selected falls back to Tharsis.
+      if (value === false && isConsortiumBoard(this.board)) {
         this.board = BoardName.THARSIS;
       }
     },
@@ -743,11 +742,7 @@ export default defineComponent({
       return PLAYER_COLORS;
     },
     boards() {
-      // Consortium expansion is map-locked to the three Consortium variants.
-      if (this.expansions.consortium) {
-        return [...CONSORTIUM_BOARDS];
-      }
-      return [
+      const standard = [
         BoardName.THARSIS,
         BoardName.HELLAS,
         BoardName.ELYSIUM,
@@ -762,6 +757,11 @@ export default defineComponent({
         BoardName.HOLLANDIA,
         RandomBoardOption.ALL,
       ];
+      // Native Consortium maps first; every other map gets a terrain overlay.
+      if (this.expansions.consortium) {
+        return [...CONSORTIUM_BOARDS, ...standard];
+      }
+      return standard;
     },
     consortiumPreviewUrl(): string | undefined {
       return this.expansions.consortium ? consortiumBoardPreviewUrl(this.board) : undefined;
@@ -803,8 +803,10 @@ export default defineComponent({
       this.uploading = true;
       try {
         processor.applyJSON(json);
-        if (component.expansions.consortium && !isConsortiumBoard(component.board)) {
-          component.board = BoardName.CONSORTIUM;
+        // Consortium + non-Consortium board is valid (terrain overlay).
+        // Only clamp native Consortium maps when the expansion is off.
+        if (!component.expansions.consortium && isConsortiumBoard(component.board)) {
+          component.board = BoardName.THARSIS;
         }
       } catch (e) {
         this.uploading = false;
@@ -822,8 +824,8 @@ export default defineComponent({
             component.seed = Math.random();
           }
           component.solarPhaseOption = Boolean(processor.solarPhaseOption);
-          if (component.expansions.consortium && !isConsortiumBoard(component.board)) {
-            component.board = BoardName.CONSORTIUM;
+          if (!component.expansions.consortium && isConsortiumBoard(component.board)) {
+            component.board = BoardName.THARSIS;
           }
         } finally {
           this.uploading = false;
@@ -1101,8 +1103,8 @@ export default defineComponent({
       const customPreludes = this.customPreludes;
       const bannedCards = this.bannedCards;
       const includedCards = this.includedCards;
-      if (this.expansions.consortium && !isConsortiumBoard(this.board)) {
-        this.board = BoardName.CONSORTIUM;
+      if (!this.expansions.consortium && isConsortiumBoard(this.board)) {
+        this.board = BoardName.THARSIS;
       }
       const board = this.board;
       const seed = this.seed;

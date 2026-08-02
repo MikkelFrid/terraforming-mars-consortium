@@ -79,4 +79,10 @@ export enum CardRenderItemType {
   CORRUPTION_SHIELD = 'corruptive-block',
   GEOSCAN_ICON = 'geoscan-icon',
   UNDERGROUND_SHELTERS = 'underground-shelters',
+
+  // Consortium
+  BRIDGE = 'bridge',
+  HIGHLAND = 'highland',
+  MEGASTRUCTURE_SEGMENT = 'megastructure-segment',
+  KEYSTONE_SEGMENT = 'keystone-segment',
 }

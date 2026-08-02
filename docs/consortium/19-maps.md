@@ -52,9 +52,11 @@ Railway image URLs): `docs/consortium/wiki-Maps-consortium.md`.
 
 ## Lobby / API
 
-- Consortium expansion on → board list is the three maps (radios enabled)
-- Default selection: Massif (`consortium`) for save-game compatibility
-- API clamps invalid boards to Massif; keeps an explicit Rift/Archipelago pick
+- Consortium expansion on → three native maps **plus** every other board
+  (standard / fan). Non-native boards get a terrain overlay
+  (`ConsortiumMapOverlay.ts`) — see `docs/consortium/24-borbarad-feedback.md`
+- Default selection unchanged when enabling the checkbox (current board kept)
+- API keeps an explicit board pick (Tharsis + Consortium is valid overlay)
 - Random `ALL` without Consortium filters Consortium maps out
 
 ## Code map

@@ -34,7 +34,7 @@ export class RimwardExpeditions extends CorporationCard implements ICorporationC
               eb.empty().startEffect.megacredits(-BALANCE.RIMWARD_FRONTIER_REBATE, {digit});
             });
             ce.effect('Whenever any bridge completes, gain 4 M€ and draw a card, whether or not you contributed.', (eb) => {
-              eb.empty().asterix().startEffect.megacredits(BALANCE.RIMWARD_BRIDGE_COMPLETE_MC, {digit}).cards(1);
+              eb.bridge().startEffect.megacredits(BALANCE.RIMWARD_BRIDGE_COMPLETE_MC, {digit}).cards(1);
             });
           });
         }),
