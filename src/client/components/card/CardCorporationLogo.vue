@@ -443,8 +443,26 @@
           <div class="kingdom-of-tauraro-title">Kingdom of<br>Tauraro</div>
         </div>
       </template>
+      <template v-else-if="title === CardName.KEYSTONE_CONSORTIUM">
+        <div class="card-keystone-consortium-logo">KEYSTONE<br>CONSORTIUM</div>
+      </template>
       <template v-else-if="title === CardName.KUIPER_COOPERATIVE">
         <div class="card-kuiper-logo">Kuiper<br >Cooperative</div>
+      </template>
+      <template v-else-if="title === CardName.IRIDIUM_AUTHORITY">
+        <div class="card-iridium-authority-logo">IRIDIUM<br>AUTHORITY</div>
+      </template>
+      <template v-else-if="title === CardName.MASSIF_GROUP">
+        <div class="card-massif-group-logo">MASSIF<br>GROUP</div>
+      </template>
+      <template v-else-if="title === CardName.RIMWARD_EXPEDITIONS">
+        <div class="card-rimward-expeditions-logo">RIMWARD<br>EXPEDITIONS</div>
+      </template>
+      <template v-else-if="title === CardName.SIDERITE_HOLDINGS">
+        <div class="card-siderite-holdings-logo">SIDERITE<br>HOLDINGS</div>
+      </template>
+      <template v-else-if="title === CardName.CHARTER_SYNDICATE">
+        <div class="card-charter-syndicate-logo">CHARTER<br>SYNDICATE</div>
       </template>
       <template v-else-if="title === CardName.LAKEFRONT_RESORTS">
         <div class="card-lakefront-logo">LAKEFRONT <br> &nbsp;&nbsp;RESORTS</div>
@@ -667,7 +685,7 @@ const logos: Partial<Record<CardName, 'image' | 'css' | 'bespoke'>> = {
   [CardName.AURORAI]: 'image',
   [CardName.BIO_SOL]: 'image',
   [CardName.CELESTIC]: 'bespoke',
-  [CardName.CHARTER_SYNDICATE]: 'css',
+  [CardName.CHARTER_SYNDICATE]: 'bespoke',
   [CardName.CHEUNG_SHING_MARS]: 'bespoke',
   [CardName.CHIMERA]: 'image',
   [CardName.COLLEGIUM_COPERNICUS]: 'image',
@@ -689,11 +707,11 @@ const logos: Partial<Record<CardName, 'image' | 'css' | 'bespoke'>> = {
   [CardName.INTERPLANETARY_CINEMATICS]: 'bespoke',
   [CardName.INTRAGEN_SANCTUARY_HEADQUARTERS]: 'image',
   [CardName.INVENTRIX]: 'bespoke',
-  [CardName.IRIDIUM_AUTHORITY]: 'css',
+  [CardName.IRIDIUM_AUTHORITY]: 'bespoke',
   [CardName.JENSON_BOYLE_CO]: 'css',
   [CardName.JUNK_VENTURES]: 'css',
   [CardName.KEPLERTEC]: 'bespoke',
-  [CardName.KEYSTONE_CONSORTIUM]: 'css',
+  [CardName.KEYSTONE_CONSORTIUM]: 'bespoke',
   [CardName.KINGDOM_OF_TAURARO]: 'bespoke',
   [CardName.KUIPER_COOPERATIVE]: 'bespoke',
   [CardName.LAKEFRONT_RESORTS]: 'bespoke',
@@ -705,7 +723,7 @@ const logos: Partial<Record<CardName, 'image' | 'css' | 'bespoke'>> = {
   [CardName.MARS_FRONTIER_ALLIANCE]: 'image',
   [CardName.MARS_MATHS]: 'bespoke',
   [CardName.MARTIAN_INSURANCE_GROUP]: 'image',
-  [CardName.MASSIF_GROUP]: 'css',
+  [CardName.MASSIF_GROUP]: 'bespoke',
   [CardName.MIDAS]: 'css',
   [CardName.MIND_SET_MARS]: 'image',
   [CardName.MINING_GUILD]: 'bespoke',
@@ -727,14 +745,14 @@ const logos: Partial<Record<CardName, 'image' | 'css' | 'bespoke'>> = {
   [CardName.PRISTAR]: 'css',
   [CardName.PROJECT_WORKSHOP]: 'bespoke',
   [CardName.RECYCLON]: 'bespoke',
-  [CardName.RIMWARD_EXPEDITIONS]: 'css',
+  [CardName.RIMWARD_EXPEDITIONS]: 'bespoke',
   [CardName.RINGCOM]: 'image',
   [CardName.ROBIN_HAULINGS]: 'image',
   [CardName.ROBINSON_INDUSTRIES]: 'bespoke',
   [CardName.SAGITTA_FRONTIER_SERVICES]: 'bespoke',
   [CardName.SATURN_SYSTEMS]: 'bespoke',
   [CardName.SEPTUM_TRIBUS]: 'bespoke',
-  [CardName.SIDERITE_HOLDINGS]: 'css',
+  [CardName.SIDERITE_HOLDINGS]: 'bespoke',
   [CardName.SOLBANK]: 'bespoke',
   [CardName.SOYLENT_SEEDLING_SYSTEMS]: 'image',
   [CardName.SPIRE]: 'image',
