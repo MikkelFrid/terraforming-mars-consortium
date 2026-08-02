@@ -203,19 +203,19 @@
                             </div>
 
                             <div
-                              v-if="expansions.consortium && consortiumPreviewUrl"
-                              class="consortium-map-preview"
-                              data-test="consortium-map-preview"
+                              v-if="mapPreviewUrl"
+                              class="board-map-preview"
+                              data-test="board-map-preview"
                             >
                               <img
-                                :src="consortiumPreviewUrl"
+                                :src="mapPreviewUrl"
                                 :alt="boardLabel(board) + ' map preview'"
-                                width="891"
-                                height="860"
                               />
-                              <p class="consortium-map-preview-caption">
+                              <p class="board-map-preview-caption">
                                 <strong v-i18n>{{ boardLabel(board) }}</strong>
-                                — <span v-i18n>{{ consortiumPreviewBlurb }}</span>
+                                <template v-if="mapPreviewBlurb">
+                                  — <span v-i18n>{{ mapPreviewBlurb }}</span>
+                                </template>
                               </p>
                             </div>
                         </div>
@@ -602,11 +602,10 @@ import {Color, PLAYER_COLORS} from '@/common/Color';
 import {BoardName} from '@/common/boards/BoardName';
 import {
   CONSORTIUM_BOARDS,
-  consortiumBoardBlurb,
   consortiumBoardLabel,
-  consortiumBoardPreviewUrl,
   isConsortiumBoard,
 } from '@/common/boards/ConsortiumBoards';
+import {boardPreviewBlurb, boardPreviewUrl} from '@/common/boards/BoardPreviews';
 import {RandomBoardOption} from '@/common/boards/RandomBoardOption';
 import {CardName} from '@/common/cards/CardName';
 import CeosFilter from '@/client/components/create/CeosFilter.vue';
@@ -763,11 +762,22 @@ export default defineComponent({
       }
       return standard;
     },
-    consortiumPreviewUrl(): string | undefined {
-      return this.expansions.consortium ? consortiumBoardPreviewUrl(this.board) : undefined;
+    mapPreviewUrl(): string | undefined {
+      // Random board options have no single preview.
+      if (this.board === RandomBoardOption.ALL || this.board === RandomBoardOption.OFFICIAL) {
+        return undefined;
+      }
+      // Native Consortium maps only appear when the expansion is on.
+      if (isConsortiumBoard(this.board) && !this.expansions.consortium) {
+        return undefined;
+      }
+      return boardPreviewUrl(this.board);
     },
-    consortiumPreviewBlurb(): string {
-      return consortiumBoardBlurb(this.board);
+    mapPreviewBlurb(): string {
+      if (this.mapPreviewUrl === undefined) {
+        return '';
+      }
+      return boardPreviewBlurb(this.board, {consortiumExpansion: this.expansions.consortium});
     },
   },
   methods: {
