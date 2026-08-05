@@ -1,6 +1,15 @@
 <template>
     <div class="wf-component wf-component--select-card">
         <div v-if="showtitle === true" class="nofloat wf-component-title">{{ $t(playerinput.title) }}</div>
+        <MobileSelectCard
+          v-if="isMobile"
+          :playerView="playerView"
+          :playerinput="playerinput"
+          :onsave="onsave"
+          :showsave="showsave"
+          @cardschanged="$emit('cardschanged', $event)"
+        />
+        <template v-else>
         <label v-for="card in getOrderedCards()" :key="card.name" :class="getCardBoxClass(card)">
             <template v-if="!card.isDisabled">
               <input v-if="selectOnlyOneCard" type="radio" v-model="cards" :value="card" >
@@ -21,6 +30,7 @@
             <AppButton :disabled="isOptionalToManyCards && cardsSelected() === 0" type="submit" @click="saveData" :title="buttonLabel()" />
             <AppButton :disabled="isOptionalToManyCards && cardsSelected() > 0" v-if="isOptionalToManyCards" @click="saveData" type="submit" :title="$t('Skip this action')" />
         </div>
+        </template>
     </div>
 </template>
 
@@ -35,12 +45,14 @@ import {LogMessageDataType} from '@/common/logs/LogMessageDataType';
 import {CardOrderStorage} from '@/client/utils/CardOrderStorage';
 import {PlayerViewModel} from '@/common/models/PlayerModel';
 import Card from '@/client/components/card/Card.vue';
+import MobileSelectCard from '@/client/components/mobile/MobileSelectCard.vue';
 import {CardModel} from '@/common/models/CardModel';
 import {CardName} from '@/common/cards/CardName';
 import {SelectCardModel} from '@/common/models/PlayerInputModel';
 import {sortActiveCards} from '@/client/utils/ActiveCardsSortingOrder';
 import {SelectCardResponse} from '@/common/inputs/InputResponse';
 import {Warning} from '@/common/cards/Warning';
+import {shouldUseMobileClient} from '@/client/utils/mobileClient';
 
 type Owner = {
   name: string;
@@ -91,6 +103,7 @@ export default defineComponent({
     Card,
     WarningsComponent,
     AppButton,
+    MobileSelectCard,
   },
   watch: {
     cards() {
@@ -205,6 +218,9 @@ export default defineComponent({
     },
   },
   computed: {
+    isMobile(): boolean {
+      return shouldUseMobileClient();
+    },
     selectOnlyOneCard() : boolean {
       return this.playerinput.max === 1 && this.playerinput.min === 1;
     },

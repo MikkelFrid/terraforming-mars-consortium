@@ -3,7 +3,7 @@
     <div class="megastructures">
       <div class="megastructures__title" data-test="megastructures-title" v-i18n>Megastructures</div>
       <p class="megastructures__hint" data-test="megastructures-hint" v-i18n>
-        Hover a Bridge or its locked frontier to link them. Rewards pay out when a track completes.
+        Tap a Bridge to highlight its frontier. Contribute when eligible — rewards pay out when a track completes.
       </p>
       <div class="megastructures__grid" data-test="megastructures-details">
         <MegastructureTrack

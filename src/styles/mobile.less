@@ -1,0 +1,1307 @@
+/* Mobile client shell (P0). Desktop layout is unchanged when .mobile-client is absent. */
+
+html.mobile-client,
+body.mobile-client {
+  /* svh = visible viewport on iOS Chrome (dvh can hide the footer under browser UI) */
+  height: 100%;
+  height: 100svh;
+  overflow: hidden;
+  background: #1a1f24;
+  overscroll-behavior: none;
+}
+
+body.mobile-client .notice {
+  display: none;
+}
+
+body.mobile-client .main-container {
+  margin-left: 0;
+  max-width: none;
+  padding: 0;
+  height: 100%;
+  height: 100svh;
+  overflow: hidden;
+}
+
+body.mobile-client .topmost-player-home,
+body.mobile-client #app {
+  height: 100%;
+  height: 100svh;
+  overflow: hidden;
+}
+
+.mobile-player-home {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  height: 100svh;
+  max-height: 100svh;
+  overflow: hidden;
+  background: #1a1f24;
+  color: #e8eaed;
+  /* Room for fixed bottom nav */
+  padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+}
+
+.mobile-hud {
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 20;
+  background: #12161a;
+  border-bottom: 1px solid #2c343c;
+  padding: calc(8px + env(safe-area-inset-top, 0px)) 10px 8px;
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.mobile-hud__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+}
+
+.mobile-hud__row + .mobile-hud__row {
+  margin-top: 6px;
+}
+
+.mobile-hud__gen,
+.mobile-hud__phase,
+.mobile-hud__tr {
+  font-weight: 600;
+}
+
+.mobile-hud__acting {
+  margin-left: auto;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #2c343c;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 11px;
+}
+
+.mobile-hud__acting--you {
+  background: #c45c26;
+  color: #fff;
+}
+
+.mobile-hud__param {
+  opacity: 0.9;
+}
+
+.mobile-hud__row--resources {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(48px, 1fr));
+  gap: 4px 6px;
+  align-items: center;
+}
+
+.mobile-hud__res {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 36px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.mobile-hud__res .resource_icon {
+  transform: scale(0.75);
+  transform-origin: center left;
+}
+
+.mobile-hud__res--iridium {
+  color: #c9b37e;
+}
+
+.mobile-player-home__main {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: 12px 10px 16px;
+}
+
+.mobile-mode__title {
+  margin: 0 0 10px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.mobile-mode__title + .mobile-mode__title,
+.mobile-card-scroller + .mobile-mode__title {
+  margin-top: 20px;
+}
+
+.mobile-mode__note,
+.mobile-mode__hint {
+  margin: 12px 0 0;
+  font-size: 13px;
+  opacity: 0.75;
+  line-height: 1.4;
+}
+
+.mobile-turn-cards {
+  margin-bottom: 16px;
+  padding: 10px;
+  border-radius: 10px;
+  background: #151a1f;
+  border: 1px solid #2a323a;
+}
+
+.mobile-turn-cards__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.mobile-turn-cards__title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #9aa7b3;
+}
+
+.mobile-turn-cards__all {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid #3a4450;
+  border-radius: 8px;
+  background: #1c242c;
+  color: #f0f3f6;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mobile-turn-cards__hint {
+  margin: 8px 0 0;
+  font-size: 12px;
+  opacity: 0.7;
+  line-height: 1.35;
+}
+
+/* Fixed footer — must stay above iOS/Chrome browser chrome (svh + safe-area) */
+.mobile-bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 2px;
+  min-height: 56px;
+  padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(180deg, #151a1f 0%, #0c1014 100%);
+  border-top: 1px solid #2a323a;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.mobile-bottom-nav__item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 48px;
+  margin: 0;
+  padding: 4px 2px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #8b959f;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.mobile-bottom-nav__item:active {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.mobile-bottom-nav__item--active {
+  color: #f4f7fa;
+  background: rgba(196, 92, 38, 0.16);
+}
+
+.mobile-bottom-nav__item--active .mobile-bottom-nav__icon {
+  color: #e07a3a;
+}
+
+.mobile-bottom-nav__icon {
+  display: flex;
+  width: 22px;
+  height: 22px;
+  color: inherit;
+}
+
+.mobile-bottom-nav__icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.mobile-bottom-nav__label {
+  line-height: 1;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobile-bottom-nav__badge {
+  position: absolute;
+  top: 6px;
+  right: calc(50% - 18px);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #c45c26;
+  box-shadow: 0 0 0 2px #0c1014;
+}
+
+/* Board camera (B1) — pan/pinch viewport; chrome stays outside */
+.board-camera {
+  position: relative;
+  width: 100%;
+  height: min(52dvh, 420px);
+  height: min(52vh, 420px);
+  overflow: hidden;
+  touch-action: none;
+  background: #0a0d10;
+  border-radius: 8px;
+  border: 1px solid #2a323a;
+  overscroll-behavior: none;
+  user-select: none;
+}
+
+.board-camera--panning {
+  cursor: grabbing;
+}
+
+.board-camera__world {
+  position: absolute;
+  top: 0;
+  left: 0;
+  will-change: transform;
+}
+
+.mobile-table-camera {
+  margin-bottom: 10px;
+}
+
+.mobile-table-megastructures {
+  margin-top: 4px;
+}
+
+.mobile-table-ma {
+  margin-top: 12px;
+}
+
+.mobile-table-colonies {
+  margin-top: 12px;
+}
+
+/* Keep colony tiles readable in the Table scroll stack */
+body.mobile-client .mobile-table-colonies .player_home_colony_cont {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+body.mobile-client .mobile-table-colonies .player_home_colony {
+  max-width: 100%;
+}
+
+/* Neutralize desktop Consortium preference scale inside the camera */
+body.mobile-client .board-camera .board-cont.board-consortium {
+  transform: none;
+  margin-bottom: 0;
+  margin-top: 0;
+}
+
+body.mobile-client .board-camera .board-cont {
+  margin-top: 0;
+}
+
+/* B0: larger contribute targets on phone */
+body.mobile-client .megastructure-track__contribute {
+  min-height: 40px;
+  min-width: 108px;
+  padding: 8px 14px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+body.mobile-client .megastructure-track--bridge {
+  cursor: pointer;
+}
+
+/* Card grid — no horizontal carousel; size is user-controlled (S/M/L) */
+.mobile-card-grid-wrap {
+  width: 100%;
+}
+
+.mobile-card-grid__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.mobile-card-grid__toolbar--split {
+  justify-content: space-between;
+}
+
+.mobile-card-grid__toolbar-size {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mobile-card-grid__toolbar-end {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.mobile-card-grid__toolbar-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #8b959f;
+}
+
+.mobile-card-grid__sizes {
+  display: inline-flex;
+  gap: 4px;
+  padding: 2px;
+  border-radius: 8px;
+  background: #0e1216;
+  border: 1px solid #2a323a;
+}
+
+.mobile-card-grid__size {
+  min-width: 36px;
+  min-height: 32px;
+  margin: 0;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #8b959f;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.mobile-card-grid__size--active {
+  background: #2c343c;
+  color: #f0f3f6;
+}
+
+.mobile-empire__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 10px;
+}
+
+.mobile-card-grid {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+  justify-items: center;
+  align-items: start;
+  overflow: visible;
+}
+
+.mobile-card-tile {
+  position: relative;
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  /*
+   * Visible so cost/tag chrome in the scale gutter is not clipped by the
+   * tile's own border-radius. Face body is still clipped on .filterDiv.
+   */
+  overflow: visible;
+  border-radius: 8px;
+  background: transparent;
+  flex-shrink: 0;
+}
+
+.mobile-card-tile:focus-visible {
+  outline: 2px solid #c45c26;
+  outline-offset: 2px;
+}
+
+/* Inset ring sits on the card face — no floating outline gap */
+.mobile-card-tile--selected {
+  box-shadow: inset 0 0 0 3px #c45c26;
+}
+
+.mobile-card-tile--selected::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 3px #c45c26;
+  border-radius: 3px;
+}
+
+.mobile-card-tile__check {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 3;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #c45c26;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 22px;
+  text-align: center;
+  pointer-events: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+}
+
+.mobile-card-tile--disabled:not(.mobile-card-tile--selected) {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Select card(s) to buy / draft — grid + sticky confirm */
+.mobile-select-card {
+  width: 100%;
+}
+
+.mobile-select-card__scroll {
+  /* Spacer handles clearance; keep a small fallback */
+  padding-bottom: 8px;
+}
+
+.mobile-select-card__end-spacer {
+  /*
+   * Clears the fixed buy bar (can wrap to two rows on narrow phones).
+   * Bottom nav clearance is already on .mobile-player-home.
+   */
+  height: 120px;
+  width: 100%;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+.mobile-select-card__bar {
+  --mobile-nav-offset: calc(64px + env(safe-area-inset-bottom, 0px));
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: var(--mobile-nav-offset);
+  z-index: 35;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 10px;
+  padding: 8px 12px;
+  background: rgba(18, 22, 26, 0.96);
+  border-top: 1px solid #2a323a;
+  box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.35);
+}
+
+.mobile-select-card__summary {
+  flex: 1 1 auto;
+  min-width: 96px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #c5ced6;
+}
+
+.mobile-select-card__actions {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  align-items: center;
+  margin-left: auto;
+}
+
+.mobile-select-card__actions .btn {
+  min-height: 40px;
+  margin: 0;
+}
+
+body.mobile-client .wf-component--select-card > .wf-component-title {
+  margin-bottom: 10px;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+/* (240+24)×(360+14) face+chrome, scaled */
+.mobile-card-tile--hand {
+  width: 198px;
+  height: 281px;
+}
+
+.mobile-card-tile--thumb {
+  width: 130px;
+  height: 183px;
+}
+
+.mobile-card-tile--scaled {
+  /* width/height set inline from gridTileSize — identical for every card */
+}
+
+.mobile-card-tile__scale {
+  transform-origin: top left;
+  pointer-events: none; /* clicks hit the button, not card hover chrome */
+  /*
+   * Padding (set inline) is a gutter for desktop negative-margin chrome.
+   * Clip to the padding box so hanging cost/tags stay visible, while face
+   * body overflow below/side is still contained.
+   */
+  overflow: hidden;
+  box-sizing: content-box;
+}
+
+/*
+ * Force a single physical card size in the grid. HTML cards grow with
+ * content; without this, corps dwarf preludes and bottoms look "clipped".
+ * Selector is NOT gated on body.mobile-client — these nodes only exist in
+ * the mobile shell, and cached desktop CSS must not win on specificity.
+ *
+ * overflow:visible — cost/tags use negative margins and must paint into the
+ * scale wrapper's padding gutter. Tall card body is still limited by height.
+ */
+.mobile-card-tile__scale .filterDiv,
+.mobile-card-tile__scale .filterDiv.card-container,
+.mobile-card-tile__scale .card-container {
+  width: 240px !important;
+  height: 360px !important;
+  min-height: 360px !important;
+  max-height: 360px !important;
+  margin: 0 !important;
+  overflow: visible !important;
+  box-sizing: border-box !important;
+  box-shadow: none !important;
+}
+
+.mobile-card-tile--scaled {
+  /* Defend against anything stretching individual tiles */
+  max-width: 100%;
+}
+
+.mobile-card-tile--hand .mobile-card-tile__scale {
+  transform: scale(0.75);
+  width: 240px;
+  height: 360px;
+  padding: 14px 12px 0;
+  box-sizing: content-box;
+}
+
+.mobile-card-tile--thumb .mobile-card-tile__scale {
+  transform: scale(0.49);
+  width: 240px;
+  height: 360px;
+  padding: 14px 12px 0;
+  box-sizing: content-box;
+}
+
+/* Legacy class kept for any leftover markup */
+.mobile-card-scroller {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  overflow: hidden;
+  padding: 0;
+}
+
+/* Focus sheet — inspect ritual (C1) */
+body.mobile-card-focus-open {
+  overflow: hidden;
+}
+
+.mobile-card-focus {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.mobile-card-focus__backdrop {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: rgba(0, 0, 0, 0.72);
+  cursor: pointer;
+}
+
+.mobile-card-focus__sheet {
+  position: relative;
+  z-index: 1;
+  max-height: min(92dvh, 92vh);
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px 12px calc(16px + env(safe-area-inset-bottom, 0px));
+  background: #12161a;
+  border-radius: 12px 12px 0 0;
+  border-top: 1px solid #3a4450;
+}
+
+.mobile-card-focus__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+  background: #12161a;
+  padding-bottom: 4px;
+}
+
+.mobile-card-focus__title {
+  flex: 1;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.mobile-card-focus__close {
+  flex: 0 0 auto;
+  min-width: 72px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 6px;
+  background: #2c343c;
+  color: #f0f3f6;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mobile-card-focus__tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+  background: #12161a;
+  padding-bottom: 4px;
+}
+
+.mobile-card-focus__tab {
+  flex: 1;
+  min-height: 40px;
+  border: 1px solid #3a4450;
+  border-radius: 6px;
+  background: #1a2026;
+  color: #c5ced6;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mobile-card-focus__tab--active {
+  background: #c45c26;
+  border-color: #c45c26;
+  color: #fff;
+}
+
+.mobile-card-focus__body {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0 8px;
+  overflow: visible;
+}
+
+.mobile-card-focus__body--original {
+  justify-content: center;
+}
+
+.mobile-card-focus__stage-wrap {
+  display: flex;
+  justify-content: center;
+  /* visible: tag icons / corp ribbon must not clip at the top */
+  overflow: visible;
+  width: 100%;
+  padding-top: 4px;
+}
+
+.mobile-card-focus__stage {
+  /* width/transform set inline from focusCardScale */
+  flex: 0 0 auto;
+  overflow: visible;
+}
+
+.mobile-card-focus__stage .filterDiv,
+.mobile-card-focus__stage .card-container {
+  margin: 0 !important;
+}
+
+.mobile-card-focus__hint {
+  margin: 8px 0 0;
+  text-align: center;
+  font-size: 12px;
+  opacity: 0.65;
+}
+
+/* Structured rules panel (C2) — decision object, not scaled art */
+.mobile-card-rules {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  color: #e8eef3;
+}
+
+.mobile-card-rules__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.mobile-card-rules__identity {
+  flex: 1;
+  min-width: 0;
+}
+
+.mobile-card-rules__type {
+  margin: 0 0 2px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #9aa7b3;
+}
+
+.mobile-card-rules__title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.mobile-card-rules__cost {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 56px;
+  min-height: 56px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: #1e7a4a;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.15);
+}
+
+.mobile-card-rules__cost-value {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.mobile-card-rules__cost-unit {
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.mobile-card-rules__cost-was {
+  margin-top: 2px;
+  font-size: 11px;
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.mobile-card-rules__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.mobile-card-rules__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.mobile-card-rules__tag.card-tag {
+  position: static;
+  width: 36px;
+  height: 36px;
+  margin: 0;
+  border-radius: 50%;
+  background-color: #fff;
+  background-size: 46px;
+  background-position: -5px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+.mobile-card-rules__vp {
+  flex: 0 0 auto;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: #3a2f1a;
+  border: 1px solid #c9a227;
+  font-size: 14px;
+  font-weight: 700;
+  color: #f0d878;
+}
+
+.mobile-card-rules__section,
+.mobile-card-rules__req,
+.mobile-card-rules__description {
+  margin-bottom: 14px;
+  padding: 12px;
+  border-radius: 8px;
+  background: #1a2026;
+  border: 1px solid #2c343c;
+}
+
+.mobile-card-rules__section-title {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #9aa7b3;
+}
+
+.mobile-card-rules__req-list {
+  margin: 0;
+  padding-left: 1.2em;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.mobile-card-rules__icons {
+  /* Enlarge icon DSL for phone reading; keep production-box / effect CSS intact.
+   * Class `card-container` is required — cards_v2 nests icon CSS under it. */
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 4px 0;
+  position: relative;
+  color: #e8eef3;
+}
+
+/* Hide duplicate EFFECT/ACTION chrome labels — section title already names them */
+.mobile-card-rules__icons .card-corporation-label {
+  display: none;
+}
+
+/* Let icon trees expand beyond the 220×226 card-content box if nested */
+.mobile-card-rules__icons .card-content {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  overflow: visible;
+  color: inherit;
+  padding: 0;
+}
+
+.mobile-card-rules__description-body {
+  font-size: 17px;
+  line-height: 1.45;
+  color: #d7e0e8;
+}
+
+.mobile-card-rules__empty {
+  margin: 8px 0 0;
+  font-size: 14px;
+  opacity: 0.75;
+  line-height: 1.4;
+}
+
+/* Legacy scroller item (unused after C1 tiles) */
+.mobile-card-scroller__item {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
+
+.mobile-rivals {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mobile-player-sheet {
+  padding: 12px;
+  border-radius: 8px;
+  background: #1a2026;
+  border: 1px solid #2a323a;
+  border-left-width: 4px;
+  border-left-color: #666;
+}
+
+.mobile-player-sheet--self {
+  border-color: #3a4450;
+  box-shadow: inset 0 0 0 1px rgba(196, 92, 38, 0.45);
+}
+
+.mobile-player-sheet--active {
+  background: #1e262e;
+}
+
+.mobile-player-sheet__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.mobile-player-sheet__identity {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
+
+.mobile-player-sheet__pip {
+  flex: 0 0 auto;
+  width: 12px;
+  height: 12px;
+  margin-top: 4px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.mobile-player-sheet__names {
+  min-width: 0;
+}
+
+.mobile-player-sheet__name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.mobile-player-sheet__you {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #e07a3a;
+}
+
+.mobile-player-sheet__corp {
+  margin-top: 2px;
+  font-size: 13px;
+  color: #9aa5b1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobile-player-sheet__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.mobile-player-sheet__badge {
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: #2c343c;
+  color: #c5ced6;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.mobile-player-sheet__badge--active {
+  background: rgba(196, 92, 38, 0.22);
+  color: #f0b07a;
+}
+
+.mobile-player-sheet__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #c5ced6;
+}
+
+.mobile-player-sheet__stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 28px;
+}
+
+.mobile-player-sheet__stat--played {
+  margin: 0;
+  padding: 2px 8px;
+  border: 1px solid #3a4450;
+  border-radius: 6px;
+  background: #243038;
+  color: #e8eef4;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-player-sheet__stat--played:focus-visible {
+  outline: 2px solid #c45c26;
+  outline-offset: 2px;
+}
+
+.mobile-player-sheet__icon {
+  flex: 0 0 auto;
+  display: inline-block;
+  width: 22px;
+  height: 20px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.mobile-player-sheet__icon--tr {
+  width: 26px;
+  height: 20px;
+  background-image: url(./assets/resources/tr.png);
+}
+
+.mobile-player-sheet__icon--vp {
+  width: 28px;
+  height: 20px;
+  border-radius: 3px;
+  background: linear-gradient(#cc8b00, #805700, #805700);
+  color: #000;
+  font-family: Prototype, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 20px;
+  text-align: center;
+  text-shadow: 0 0 4px darkorange;
+}
+
+.mobile-player-sheet__stat-value {
+  font-variant-numeric: tabular-nums;
+}
+
+.mobile-player-sheet__resources {
+  overflow: visible;
+  width: 100%;
+}
+
+/*
+ * Fit all stock/production tiles (6 basics + iridium) in one row.
+ * Desktop PlayerResource chrome is wide; compact it for the phone sheet.
+ */
+body.mobile-client .mobile-player-sheet__resources .resource_items_cont {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 3px;
+  width: 100%;
+  min-width: 0;
+  filter: none;
+}
+
+body.mobile-client .mobile-player-sheet__resources .resource_item,
+body.mobile-client .mobile-player-sheet__resources .resource_item--iridium {
+  position: relative;
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 1px;
+  min-width: 0;
+  margin: 0 !important;
+  padding: 4px 1px 3px !important;
+  transform: none;
+}
+
+body.mobile-client .mobile-player-sheet__resources .resource_item--energy:after {
+  display: none !important;
+}
+
+body.mobile-client .mobile-player-sheet__resources .resource_item_stock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+body.mobile-client .mobile-player-sheet__resources .resource_icon {
+  width: 20px;
+  height: 20px;
+}
+
+body.mobile-client .mobile-player-sheet__resources .resource_item_stock_count {
+  font-size: 13px;
+  line-height: 1.1;
+}
+
+body.mobile-client .mobile-player-sheet__resources .resource_item_prod {
+  min-width: 0;
+  padding: 0;
+  font-size: 10px;
+  line-height: 1.1;
+}
+
+body.mobile-client .mobile-player-sheet__resources .resource_icon--megacredit-value {
+  width: 14px;
+  height: 14px;
+  background-size: 14px 14px;
+  font-size: 10px;
+  line-height: 14px;
+}
+
+/* Rival played-cards sheet (OtherPlayer equivalent) */
+.mobile-played-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.mobile-played-sheet__backdrop {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: rgba(0, 0, 0, 0.72);
+  cursor: pointer;
+}
+
+.mobile-played-sheet__panel {
+  position: relative;
+  z-index: 1;
+  max-height: min(88dvh, 88vh);
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px 12px calc(16px + env(safe-area-inset-bottom, 0px));
+  background: #12161a;
+  border-radius: 12px 12px 0 0;
+  border-top: 1px solid #3a4450;
+}
+
+.mobile-played-sheet__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.mobile-played-sheet__title {
+  flex: 1;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #e8eef4;
+}
+
+.mobile-played-sheet__close {
+  flex: 0 0 auto;
+  min-width: 72px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 6px;
+  background: #2c343c;
+  color: #f0f3f6;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mobile-more-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.mobile-more-actions__label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.mobile-more-actions__label select {
+  min-height: 44px;
+  font-size: 16px;
+}
+
+.mobile-more-actions .btn {
+  min-height: 48px;
+}
+
+/* Player color accents on rival rows / hud — reuse common color vars where present */
+.mobile-player-sheet--red { border-left-color: #c62828; color: #ef9a9a; }
+.mobile-player-sheet--blue { border-left-color: #1565c0; color: #90caf9; }
+.mobile-player-sheet--green { border-left-color: #2e7d32; color: #a5d6a7; }
+.mobile-player-sheet--yellow { border-left-color: #f9a825; color: #ffe082; }
+.mobile-player-sheet--black { border-left-color: #9e9e9e; color: #e0e0e0; }
+.mobile-player-sheet--purple { border-left-color: #6a1b9a; color: #ce93d8; }
+.mobile-player-sheet--orange { border-left-color: #ef6c00; color: #ffcc80; }
+.mobile-player-sheet--pink { border-left-color: #ad1457; color: #f48fb1; }
+
+.mobile-player-sheet__name,
+.mobile-player-sheet__meta,
+.mobile-player-sheet__corp {
+  color: #e8eef4;
+}
+
+.mobile-player-sheet__pip {
+  color: inherit;
+}
+
+.mobile-player-sheet--red .mobile-player-sheet__pip { background: #c62828; }
+.mobile-player-sheet--blue .mobile-player-sheet__pip { background: #1565c0; }
+.mobile-player-sheet--green .mobile-player-sheet__pip { background: #2e7d32; }
+.mobile-player-sheet--yellow .mobile-player-sheet__pip { background: #f9a825; }
+.mobile-player-sheet--black .mobile-player-sheet__pip { background: #9e9e9e; }
+.mobile-player-sheet--purple .mobile-player-sheet__pip { background: #6a1b9a; }
+.mobile-player-sheet--orange .mobile-player-sheet__pip { background: #ef6c00; }
+.mobile-player-sheet--pink .mobile-player-sheet__pip { background: #ad1457; }

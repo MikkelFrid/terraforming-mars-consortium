@@ -21,6 +21,11 @@
         v-else-if="screen === 'game-home' && game !== undefined"
         :game="game"
       />
+      <MobilePlayerHome
+        v-else-if="screen === 'player-home' && playerView !== undefined && useMobileClient"
+        :player-view="playerView"
+        :key="'mobile-' + playerkey"
+      />
       <PlayerHome
         v-else-if="screen === 'player-home' && playerView !== undefined"
         :player-view="playerView"
@@ -64,6 +69,7 @@ const Help = defineAsyncComponent(() => import(/* webpackChunkName: "help" */ '@
 const LoginHome = defineAsyncComponent(() => import(/* webpackChunkName: "login" */ '@/client/components/auth/LoginHome.vue'));
 const LoadGameForm = defineAsyncComponent(() => import(/* webpackChunkName: "load-game" */ '@/client/components/LoadGameForm.vue'));
 const PlayerHome = defineAsyncComponent(() => import(/* webpackChunkName: "player-home" */ '@/client/components/PlayerHome.vue'));
+const MobilePlayerHome = defineAsyncComponent(() => import(/* webpackChunkName: "mobile-player-home" */ '@/client/components/mobile/MobilePlayerHome.vue'));
 const SpectatorHome = defineAsyncComponent(() => import(/* webpackChunkName: "spectator-home" */ '@/client/components/SpectatorHome.vue'));
 const StartScreen = defineAsyncComponent(() => import(/* webpackChunkName: "start-screen" */ '@/client/components/StartScreen.vue'));
 import {$t, setTranslationContext} from '@/client/directives/i18n';
@@ -76,6 +82,7 @@ import {hasShowModal, showModal, windowHasHTMLDialogElement} from './HTMLDialogE
 
 import dialogPolyfill from 'dialog-polyfill';
 import {setDocumentTitle} from '../utils/documentTitle';
+import {shouldUseMobileClient} from '@/client/utils/mobileClient';
 
 type Screen = 'admin' |
             'create-game-form' |
@@ -147,6 +154,7 @@ export default defineComponent({
     LoadGameForm,
     GameHome,
     PlayerHome,
+    MobilePlayerHome,
     SpectatorHome,
     GameEnd,
     GamesOverview,
@@ -154,6 +162,11 @@ export default defineComponent({
     Help,
     AdminHome,
     LoginHome,
+  },
+  computed: {
+    useMobileClient(): boolean {
+      return shouldUseMobileClient();
+    },
   },
   methods: {
     showAlert(title: string, message: string, cb: () => void = () => {}): void {

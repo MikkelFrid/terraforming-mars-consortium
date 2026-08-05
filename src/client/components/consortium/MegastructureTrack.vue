@@ -13,6 +13,7 @@
     @mouseleave="onHover(false)"
     @focusin="onHover(true)"
     @focusout="onHover(false)"
+    @click="onActivate"
   >
     <div class="megastructure-track__emblem" :class="'megastructure-emblem--' + structure.id" :title="structure.name"></div>
     <div class="megastructure-track__body">
@@ -104,7 +105,7 @@
             type="button"
             class="btn btn-sm megastructure-track__contribute"
             data-test="contribute-button"
-            @click="$emit('contribute', structure.id)"
+            @click.stop="$emit('contribute', structure.id)"
             v-i18n
           >Contribute</button>
         </template>
@@ -164,6 +165,18 @@ export default defineComponent({
         return;
       }
       this.$emit('highlight-sector', enter ? this.structure.sector : undefined);
+    },
+    /** Touch-friendly: tap a Bridge track to toggle frontier highlight (skip fine pointers — they use hover). */
+    onActivate() {
+      if (this.structure.kind !== 'bridge' || this.structure.sector === undefined) {
+        return;
+      }
+      if (typeof window !== 'undefined' &&
+        window.matchMedia('(pointer: fine)').matches &&
+        !window.matchMedia('(pointer: coarse)').matches) {
+        return;
+      }
+      this.$emit('highlight-sector', this.highlighted ? undefined : this.structure.sector);
     },
     showsTextOnIcon(kind: MegastructureRewardIconKind): boolean {
       return kind === 'megacredits' || kind === 'vp';

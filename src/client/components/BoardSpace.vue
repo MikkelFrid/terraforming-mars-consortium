@@ -5,6 +5,7 @@
     :data_space_id="space.id"
     @mouseenter="onBridgeHover(true)"
     @mouseleave="onBridgeHover(false)"
+    @click="onBridgeTap"
   >
     <BoardSpaceTile
       :space="space"
@@ -95,6 +96,20 @@ export default defineComponent({
         return;
       }
       this.$emit('highlight-sector', enter ? sector : undefined);
+    },
+    /** Touch: tap a bridged frontier space to toggle sector highlight (skip fine pointers). */
+    onBridgeTap() {
+      const sector = this.space?.bridge;
+      if (sector === undefined) {
+        return;
+      }
+      if (typeof window !== 'undefined' &&
+        window.matchMedia('(pointer: fine)').matches &&
+        !window.matchMedia('(pointer: coarse)').matches) {
+        return;
+      }
+      const clearing = this.highlightBridgeSector === sector;
+      this.$emit('highlight-sector', clearing ? undefined : sector);
     },
   },
   computed: {
