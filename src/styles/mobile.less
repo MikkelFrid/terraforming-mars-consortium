@@ -306,6 +306,27 @@ body.mobile-client #app {
   margin-top: 4px;
 }
 
+.mobile-table-ma {
+  margin-top: 12px;
+}
+
+.mobile-table-colonies {
+  margin-top: 12px;
+}
+
+/* Keep colony tiles readable in the Table scroll stack */
+body.mobile-client .mobile-table-colonies .player_home_colony_cont {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+body.mobile-client .mobile-table-colonies .player_home_colony {
+  max-width: 100%;
+}
+
 /* Neutralize desktop Consortium preference scale inside the camera */
 body.mobile-client .board-camera .board-cont.board-consortium {
   transform: none;

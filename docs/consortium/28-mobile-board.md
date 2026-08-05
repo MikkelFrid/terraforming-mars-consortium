@@ -125,6 +125,7 @@ Until this exists, Turn cockpit alone cannot feel finished.
 |-------|------|-----|
 | **B0** | Delete hover copy; tap megastructure contribute from Table | **Done** — tap Bridge highlight + larger Contribute |
 | **B1★** | `BoardCamera` pan + pinch + clamp | **Done** — Table uses camera; megastructures sit below |
+| **B1.1** | Milestones, awards, colonies under Table | **Done** — scroll stack below camera (parity with desktop board extras) |
 | **B2★** | Place mode + legal hex emphasis + confirm | Makes Turn placement mobile |
 | **B3** | Hex inspect sheet (terrain, bonuses, owner) | Parity with card focus |
 | **B4** | Overview / sector jump for Consortium width | Orientation |

@@ -32,8 +32,47 @@
       @highlight-sector="onHighlightSector"
     />
 
+    <div
+      v-if="showMilestonesAndAwards"
+      class="mobile-table-ma player_home_block--milestones-and-awards"
+      data-test="mobile-table-ma"
+    >
+      <Milestones :milestones="game.milestones"/>
+      <Awards :awards="game.awards"/>
+    </div>
+
+    <div
+      v-if="game.colonies.length > 0"
+      class="mobile-table-colonies player_home_block"
+      data-test="mobile-table-colonies"
+    >
+      <h3 class="mobile-mode__title" v-i18n>Colonies</h3>
+      <div class="colonies-fleets-cont">
+        <div
+          class="colonies-player-fleets"
+          v-for="colonyPlayer in playerView.players"
+          :key="colonyPlayer.color"
+        >
+          <div
+            v-for="idx in fleetsCountRange(colonyPlayer)"
+            :key="idx"
+            :class="'colonies-fleet colonies-fleet-' + colonyPlayer.color"
+          ></div>
+        </div>
+      </div>
+      <div class="player_home_colony_cont">
+        <div
+          class="player_home_colony"
+          v-for="colony in game.colonies"
+          :key="colony.name"
+        >
+          <Colony :colony="colony" :active="colony.isActive"/>
+        </div>
+      </div>
+    </div>
+
     <p class="mobile-mode__hint" v-i18n>
-      Drag to pan, pinch to zoom. Tap a Bridge to highlight its frontier. Use Turn for actions.
+      Drag to pan, pinch to zoom. Tap a Bridge to highlight its frontier. Scroll for milestones, awards, and colonies. Use Turn for actions.
     </p>
   </section>
 </template>
@@ -43,7 +82,10 @@ import {defineComponent, PropType} from 'vue';
 import Board from '@/client/components/Board.vue';
 import BoardCamera from '@/client/components/mobile/BoardCamera.vue';
 import MegastructuresPanel from '@/client/components/consortium/MegastructuresPanel.vue';
-import {PlayerViewModel} from '@/common/models/PlayerModel';
+import Milestones from '@/client/components/Milestones.vue';
+import Awards from '@/client/components/Awards.vue';
+import Colony from '@/client/components/colonies/Colony.vue';
+import {PlayerViewModel, PublicPlayerModel} from '@/common/models/PlayerModel';
 import {GameModel} from '@/common/models/GameModel';
 import {TileView} from '@/client/components/board/TileView';
 
@@ -56,7 +98,14 @@ const CONSORTIUM_BOARD_HEIGHT = 860;
 
 export default defineComponent({
   name: 'MobileTableMode',
-  components: {Board, BoardCamera, MegastructuresPanel},
+  components: {
+    Board,
+    BoardCamera,
+    MegastructuresPanel,
+    Milestones,
+    Awards,
+    Colony,
+  },
   props: {
     playerView: {
       type: Object as () => PlayerViewModel,
@@ -95,10 +144,20 @@ export default defineComponent({
     boardContentHeight(): number {
       return this.isConsortium ? CONSORTIUM_BOARD_HEIGHT : BOARD_CONT_HEIGHT;
     },
+    showMilestonesAndAwards(): boolean {
+      return this.playerView.players.length > 1;
+    },
   },
   methods: {
     onHighlightSector(sector: number | undefined) {
       this.highlightSector = sector;
+    },
+    fleetsCountRange(player: PublicPlayerModel): Array<number> {
+      const fleetsRange: Array<number> = [];
+      for (let i = 0; i < player.fleetSize - player.tradesThisGeneration; i++) {
+        fleetsRange.push(i);
+      }
+      return fleetsRange;
     },
   },
 });
