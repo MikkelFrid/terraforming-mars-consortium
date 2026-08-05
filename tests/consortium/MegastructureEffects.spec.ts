@@ -168,8 +168,8 @@ describe('Consortium megastructure effects', () => {
     expect(p1.production.heat).eq(BALANCE.MOHOLE_GLOBAL_HEAT_PRODUCTION);
     expect(p2.production.heat).eq(BALANCE.MOHOLE_GLOBAL_HEAT_PRODUCTION);
     expect(p3.production.heat).eq(BALANCE.MOHOLE_GLOBAL_HEAT_PRODUCTION);
-    // Immediate grants 3+2+1; keystone spend returns min iridium to bank.
-    expect(game.iridiumBank).eq(20 - 6 + BALANCE.GRAND_KEYSTONE_MIN_IRIDIUM);
+    // Immediate grants 6+4+2; keystone spend returns min iridium to bank.
+    expect(game.iridiumBank).eq(20 - 12 + BALANCE.GRAND_KEYSTONE_MIN_IRIDIUM);
   });
 
   it('Solar Mirror raises temperature and grants heat production to contributors', () => {

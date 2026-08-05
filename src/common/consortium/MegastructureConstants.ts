@@ -35,13 +35,13 @@ export const MEGASTRUCTURE_BALANCE = {
 
   // --- Victory points (base, phase 6a) -------------------------------------
   /** VP awarded per segment a player paid for on a completed structure. Balance knob. */
-  VP_PER_SEGMENT: 1,
+  VP_PER_SEGMENT: 2,
   /** Extra VP for the player who placed the keystone. Balance knob. */
-  VP_KEYSTONE_BONUS: 2,
+  VP_KEYSTONE_BONUS: 3,
 
   // --- Completion effects (phase 6c, first-pass playtest) ------------------
   /** Bridge contributor: +N M€ production per segment. Balance knob. */
-  BRIDGE_MC_PRODUCTION_PER_SEGMENT: 1,
+  BRIDGE_MC_PRODUCTION_PER_SEGMENT: 2,
 
   /** Space Elevator global: M€ discount on space-tag cards for all players. Balance knob. */
   SPACE_ELEVATOR_SPACE_TAG_DISCOUNT: 2,
@@ -56,7 +56,7 @@ export const MEGASTRUCTURE_BALANCE = {
   /** Mohole global: heat production for all players. Balance knob. */
   MOHOLE_GLOBAL_HEAT_PRODUCTION: 1,
   /** Mohole contributor: immediate iridium per segment owned. Balance knob. */
-  MOHOLE_IRIDIUM_PER_SEGMENT: 1,
+  MOHOLE_IRIDIUM_PER_SEGMENT: 2,
   /** Mohole contributor: iridium granted at generation start (capped at 1). Balance knob. */
   MOHOLE_GENERATION_IRIDIUM: 1,
 
@@ -68,7 +68,7 @@ export const MEGASTRUCTURE_BALANCE = {
   /** Arcology global: M€ production for all players. Balance knob. */
   ARCOLOGY_GLOBAL_MC_PRODUCTION: 1,
   /** Arcology contributor: extra VP per segment on top of VP_PER_SEGMENT. Balance knob. */
-  ARCOLOGY_EXTRA_VP_PER_SEGMENT: 1,
+  ARCOLOGY_EXTRA_VP_PER_SEGMENT: 2,
 
   // --- Structure-card segment discounts (stack) -----------------------------
   /** Scaffold Yard: next segment this generation costs this much less. Balance knob. */
@@ -89,9 +89,9 @@ export const MEGASTRUCTURE_BALANCE = {
 
   // --- Frontier cards ------------------------------------------------------
   /** Sector Claim: M€ rebate when placing a tile in a frontier zone. Balance knob. */
-  SECTOR_CLAIM_REBATE: 4,
+  SECTOR_CLAIM_REBATE: 5,
   /** Rimward Expeditions: M€ rebate when placing a tile in a frontier zone. Balance knob. */
-  RIMWARD_FRONTIER_REBATE: 3,
+  RIMWARD_FRONTIER_REBATE: 4,
   /** Rimward Expeditions: M€ on any bridge completion. Balance knob. */
   RIMWARD_BRIDGE_COMPLETE_MC: 4,
   /** Massif Group: discount on cards that require owning a highland tile. Balance knob. */
@@ -101,7 +101,7 @@ export const MEGASTRUCTURE_BALANCE = {
   /** Scarp Foundry: steel M€ value when paying for megastructure segments. Balance knob. */
   SCARP_FOUNDRY_STEEL_VALUE: 3,
   /** Iridium Reserve: iridium M€ value when paying (vs default IRIDIUM_VALUE). Balance knob. */
-  IRIDIUM_RESERVE_VALUE: 5,
+  IRIDIUM_RESERVE_VALUE: 6,
   /** Mineral Rights: extra M€ per iridium gained from a crater field. Balance knob. */
   MINERAL_RIGHTS_MC_PER_IRIDIUM: 1,
   /** Impact Glass Works: max iridium from counting crater tiles on Mars. Balance knob. */

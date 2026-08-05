@@ -21,7 +21,7 @@ describe('MineralRights', () => {
       s.tile === undefined &&
       s.locked !== true)!;
     game.addTile(player, crater, {tileType: TileType.CITY});
-    expect(player.iridium).eq(1);
-    expect(player.megaCredits).eq(1);
+    expect(player.iridium).eq(2);
+    expect(player.megaCredits).eq(2);
   });
 });

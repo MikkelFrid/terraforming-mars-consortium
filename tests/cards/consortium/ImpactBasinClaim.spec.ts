@@ -26,7 +26,7 @@ describe('ImpactBasinClaim', () => {
     selectSpace.cb(space);
 
     expect(space.tile?.tileType).eq(TileType.IMPACT_BASIN_CLAIM);
-    // Card grants 2; crater placement also grants 1 when bank has any.
-    expect(player.iridium).eq(3);
+    // Card grants 2; crater placement also grants 2 when bank has any.
+    expect(player.iridium).eq(4);
   });
 });

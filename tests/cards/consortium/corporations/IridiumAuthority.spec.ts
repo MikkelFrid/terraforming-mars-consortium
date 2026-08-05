@@ -28,7 +28,7 @@ describe('IridiumAuthority', () => {
       s.tile === undefined &&
       s.locked !== true)!;
     game.addTile(opponent, crater, {tileType: TileType.CITY});
-    expect(opponent.iridium).eq(1);
+    expect(opponent.iridium).eq(2);
     expect(player.megaCredits).eq(1);
   });
 });
