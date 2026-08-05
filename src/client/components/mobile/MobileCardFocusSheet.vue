@@ -110,9 +110,9 @@ export default defineComponent({
       return meta?.name ?? String(this.card.name);
     },
     stageWrapStyle(): Record<string, string> {
-      // Contain scaled card layout space so the sheet does not overscroll.
+      // Contain scaled card layout space; +12px headroom so corp ribbons/tags do not clip.
       return {
-        height: `${Math.ceil(CARD_DESIGN_HEIGHT_PX * this.scale)}px`,
+        height: `${Math.ceil(CARD_DESIGN_HEIGHT_PX * this.scale) + 12}px`,
       };
     },
     stageStyle(): Record<string, string> {

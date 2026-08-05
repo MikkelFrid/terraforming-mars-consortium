@@ -3,19 +3,21 @@
     <div class="mobile-turn-cards" data-test="mobile-turn-cards">
       <div class="mobile-turn-cards__header">
         <h3 class="mobile-turn-cards__title" v-i18n>Your cards</h3>
-        <button
-          type="button"
-          class="mobile-turn-cards__all"
-          data-test="mobile-turn-open-empire"
-          @click="$emit('open-empire')"
-          v-i18n
-        >All cards</button>
       </div>
       <MobileCardGrid
         :cards="previewCards"
         :cubeColor="thisPlayer.color"
         @open="openFocus"
       >
+        <template #toolbar-end>
+          <button
+            type="button"
+            class="mobile-turn-cards__all"
+            data-test="mobile-turn-open-empire"
+            @click="$emit('open-empire')"
+            v-i18n
+          >All cards</button>
+        </template>
         <template #empty>
           <span v-i18n>No cards yet</span>
         </template>

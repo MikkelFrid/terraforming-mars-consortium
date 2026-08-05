@@ -1,18 +1,16 @@
 <template>
   <div class="mobile-card-grid-wrap">
-    <div class="mobile-card-grid__toolbar" v-if="showSizeControl">
-      <span class="mobile-card-grid__toolbar-label" v-i18n>Size</span>
-      <div class="mobile-card-grid__sizes" role="group" aria-label="Card size">
-        <button
-          v-for="opt in sizeOptions"
-          :key="opt"
-          type="button"
-          class="mobile-card-grid__size"
-          :class="{'mobile-card-grid__size--active': gridSize === opt}"
-          :aria-pressed="gridSize === opt"
-          :data-test="'mobile-card-size-' + opt"
-          @click="setGridSize(opt)"
-        >{{ opt.toUpperCase() }}</button>
+    <div
+      class="mobile-card-grid__toolbar"
+      v-if="showSizeControl || $slots['toolbar-end']"
+      :class="{'mobile-card-grid__toolbar--split': showSizeControl && $slots['toolbar-end']}"
+    >
+      <MobileCardSizeControl
+        v-if="showSizeControl"
+        v-model="gridSize"
+      />
+      <div v-if="$slots['toolbar-end']" class="mobile-card-grid__toolbar-end">
+        <slot name="toolbar-end"></slot>
       </div>
     </div>
 
@@ -46,6 +44,7 @@
 <script lang="ts">
 import {defineComponent, PropType} from 'vue';
 import MobileCardTile from '@/client/components/mobile/MobileCardTile.vue';
+import MobileCardSizeControl from '@/client/components/mobile/MobileCardSizeControl.vue';
 import {CardModel} from '@/common/models/CardModel';
 import {CardName} from '@/common/cards/CardName';
 import {Color} from '@/common/Color';
@@ -57,11 +56,9 @@ import {
   saveMobileCardGridSize,
 } from '@/client/components/mobile/mobileCardLayout';
 
-const SIZE_OPTIONS: ReadonlyArray<MobileCardGridSize> = ['s', 'm', 'l'];
-
 export default defineComponent({
   name: 'MobileCardGrid',
-  components: {MobileCardTile},
+  components: {MobileCardTile, MobileCardSizeControl},
   props: {
     cards: {
       type: Array as () => Array<CardModel>,
@@ -96,8 +93,13 @@ export default defineComponent({
       gridSize: loadMobileCardGridSize() as MobileCardGridSize,
       gridWidth: 360,
       resizeObserver: null as ResizeObserver | null,
-      sizeOptions: SIZE_OPTIONS,
     };
+  },
+  watch: {
+    gridSize(next: MobileCardGridSize) {
+      saveMobileCardGridSize(next);
+      this.$nextTick(() => this.measure());
+    },
   },
   computed: {
     columns(): number {
@@ -116,11 +118,6 @@ export default defineComponent({
     },
   },
   methods: {
-    setGridSize(size: MobileCardGridSize) {
-      this.gridSize = size;
-      saveMobileCardGridSize(size);
-      this.$nextTick(() => this.measure());
-    },
     measure() {
       const el = this.$refs.grid as HTMLElement | undefined;
       if (el === undefined) {

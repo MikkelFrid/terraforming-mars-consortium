@@ -359,9 +359,26 @@ body.mobile-client .megastructure-track--bridge {
 .mobile-card-grid__toolbar {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 8px;
   margin-bottom: 8px;
+}
+
+.mobile-card-grid__toolbar--split {
+  justify-content: space-between;
+}
+
+.mobile-card-grid__toolbar-size {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mobile-card-grid__toolbar-end {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
 }
 
 .mobile-card-grid__toolbar-label {
@@ -410,6 +427,7 @@ body.mobile-client .megastructure-track--bridge {
 }
 
 .mobile-card-tile {
+  position: relative;
   display: block;
   margin: 0;
   padding: 0;
@@ -420,6 +438,7 @@ body.mobile-client .megastructure-track--bridge {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   overflow: hidden;
+  border-radius: 3px;
   /* Contain transform scale so parents do not grow empty scroll space */
   contain: layout style;
 }
@@ -429,17 +448,26 @@ body.mobile-client .megastructure-track--bridge {
   outline-offset: 2px;
 }
 
+/* Inset ring sits on the card face — no floating outline gap */
 .mobile-card-tile--selected {
-  position: relative;
-  box-shadow: 0 0 0 2px #c45c26;
-  border-radius: 4px;
+  box-shadow: inset 0 0 0 3px #c45c26;
+}
+
+.mobile-card-tile--selected::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 3px #c45c26;
+  border-radius: 3px;
 }
 
 .mobile-card-tile__check {
   position: absolute;
-  top: 4px;
-  right: 4px;
-  z-index: 2;
+  top: 6px;
+  right: 6px;
+  z-index: 3;
   width: 22px;
   height: 22px;
   border-radius: 50%;
@@ -450,10 +478,11 @@ body.mobile-client .megastructure-track--bridge {
   line-height: 22px;
   text-align: center;
   pointer-events: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
 }
 
-.mobile-card-tile--disabled {
-  opacity: 0.45;
+.mobile-card-tile--disabled:not(.mobile-card-tile--selected) {
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
@@ -463,25 +492,43 @@ body.mobile-client .megastructure-track--bridge {
 }
 
 .mobile-select-card__scroll {
-  padding-bottom: 88px;
+  /* Spacer handles clearance; keep a small fallback */
+  padding-bottom: 8px;
+}
+
+.mobile-select-card__end-spacer {
+  /*
+   * Clears the fixed buy bar (one or two rows on narrow phones).
+   * Bottom nav clearance is already on .mobile-player-home.
+   */
+  height: 96px;
+  width: 100%;
+  flex-shrink: 0;
+  pointer-events: none;
 }
 
 .mobile-select-card__bar {
+  --mobile-nav-offset: calc(64px + env(safe-area-inset-bottom, 0px));
   position: fixed;
   left: 0;
   right: 0;
-  bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  bottom: var(--mobile-nav-offset);
   z-index: 35;
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 10px 12px;
-  background: linear-gradient(180deg, rgba(18, 22, 26, 0.92) 0%, #12161a 40%);
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 10px;
+  padding: 8px 12px;
+  background: rgba(18, 22, 26, 0.96);
   border-top: 1px solid #2a323a;
   box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.35);
 }
 
 .mobile-select-card__summary {
+  flex: 1 1 auto;
+  min-width: 96px;
   font-size: 13px;
   font-weight: 600;
   color: #c5ced6;
@@ -489,13 +536,15 @@ body.mobile-client .megastructure-track--bridge {
 
 .mobile-select-card__actions {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 8px;
   align-items: center;
+  margin-left: auto;
 }
 
 .mobile-select-card__actions .btn {
   min-height: 40px;
+  margin: 0;
 }
 
 body.mobile-client .wf-component--select-card > .wf-component-title {
@@ -589,11 +638,8 @@ body.mobile-card-focus-open {
   align-items: center;
   gap: 12px;
   margin-bottom: 8px;
-  position: sticky;
-  top: 0;
-  z-index: 2;
   background: #12161a;
-  padding-bottom: 8px;
+  padding-bottom: 4px;
 }
 
 .mobile-card-focus__title {
@@ -622,11 +668,8 @@ body.mobile-card-focus-open {
   display: flex;
   gap: 4px;
   margin-bottom: 12px;
-  position: sticky;
-  top: 52px;
-  z-index: 2;
   background: #12161a;
-  padding-bottom: 8px;
+  padding-bottom: 4px;
 }
 
 .mobile-card-focus__tab {
@@ -642,16 +685,16 @@ body.mobile-card-focus-open {
 }
 
 .mobile-card-focus__tab--active {
-  background: #2c343c;
+  background: #c45c26;
   border-color: #c45c26;
-  color: #f0f3f6;
+  color: #fff;
 }
 
 .mobile-card-focus__body {
   display: flex;
   justify-content: center;
-  padding: 4px 0 8px;
-  overflow-x: hidden;
+  padding: 8px 0 8px;
+  overflow: visible;
 }
 
 .mobile-card-focus__body--original {
@@ -661,13 +704,16 @@ body.mobile-card-focus-open {
 .mobile-card-focus__stage-wrap {
   display: flex;
   justify-content: center;
-  overflow: hidden;
+  /* visible: tag icons / corp ribbon must not clip at the top */
+  overflow: visible;
   width: 100%;
+  padding-top: 4px;
 }
 
 .mobile-card-focus__stage {
   /* width/transform set inline from focusCardScale */
   flex: 0 0 auto;
+  overflow: visible;
 }
 
 .mobile-card-focus__stage .filterDiv,

@@ -46,10 +46,14 @@ describe('MobileSelectCard', () => {
     });
 
     expect(wrapper.find('[data-test="mobile-select-card"]').exists()).eq(true);
+    expect(wrapper.find('[data-test="mobile-select-card-bar"]').exists()).eq(true);
+    expect(wrapper.find('.mobile-select-card__end-spacer').exists()).eq(true);
+    expect(wrapper.find('.mobile-card-grid__toolbar--split').exists()).eq(false);
     const tiles = wrapper.findAll('.mobile-card-tile');
     expect(tiles.length).eq(2);
     await tiles[0].trigger('click');
     expect(wrapper.emitted('cardschanged')?.[0]).deep.eq([[CardName.ALGAE]]);
+    expect(tiles[0].classes()).to.include('mobile-card-tile--selected');
     await tiles[1].trigger('click');
     expect(wrapper.emitted('cardschanged')?.at(-1)).deep.eq([[CardName.ALGAE, CardName.MOHOLE]]);
 

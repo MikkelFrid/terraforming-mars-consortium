@@ -9,9 +9,11 @@
         @toggle="toggleCard"
       />
       <WarningsComponent :warnings="warnings"/>
+      <!-- Clears the fixed buy bar + bottom nav on iPhone -->
+      <div class="mobile-select-card__end-spacer" aria-hidden="true"></div>
     </div>
 
-    <div v-if="showsave" class="mobile-select-card__bar">
+    <div v-if="showsave" class="mobile-select-card__bar" data-test="mobile-select-card-bar">
       <div class="mobile-select-card__summary">
         <span v-if="selectedCount === 0" v-i18n>Tap cards to select</span>
         <span v-else-if="selectOnlyOneCard" v-i18n>1 selected</span>
@@ -21,12 +23,14 @@
         <AppButton
           v-if="showSelectAll"
           type="submit"
+          size="small"
           :title="allSelected ? $t('Deselect All') : $t('Select All')"
           @click="toggleSelectAll"
         />
         <AppButton
           class="mobile-select-card__primary"
           type="submit"
+          size="small"
           :disabled="isOptionalToManyCards && selectedCount === 0"
           :title="buttonLabel"
           @click="saveData"
@@ -34,6 +38,7 @@
         <AppButton
           v-if="isOptionalToManyCards"
           type="submit"
+          size="small"
           :disabled="selectedCount > 0"
           :title="$t('Skip this action')"
           @click="saveData"

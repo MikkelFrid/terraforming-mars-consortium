@@ -84,6 +84,11 @@ describe('MobileTurnMode', () => {
     expect(wrapper.find('[data-test="mobile-turn-cards"]').exists()).eq(true);
     expect(wrapper.find('[data-test="mobile-card-grid"]').exists()).eq(true);
     expect(wrapper.text()).to.include('Hand is empty');
+    // Size control sits left of All cards in the grid toolbar
+    const toolbar = wrapper.find('.mobile-card-grid__toolbar');
+    expect(toolbar.exists()).eq(true);
+    expect(toolbar.find('[data-test="mobile-card-size-control"]').exists()).eq(true);
+    expect(toolbar.find('[data-test="mobile-turn-open-empire"]').exists()).eq(true);
     await wrapper.find('[data-test="mobile-turn-open-empire"]').trigger('click');
     expect(wrapper.emitted('open-empire')).to.have.length(1);
   });
