@@ -32,10 +32,30 @@
     </header>
 
     <div class="mobile-player-sheet__meta">
-      <span class="mobile-player-sheet__stat"><abbr title="Terraform Rating">TR</abbr> {{ player.terraformRating }}</span>
-      <span v-if="showVp" class="mobile-player-sheet__stat"><abbr title="Victory Points">VP</abbr> {{ player.victoryPointsBreakdown.total }}</span>
-      <span class="mobile-player-sheet__stat"><span v-i18n>Cards</span> {{ player.cardsInHandNbr }}</span>
-      <span class="mobile-player-sheet__stat"><span v-i18n>Played</span> {{ player.tableau.length }}</span>
+      <span class="mobile-player-sheet__stat mobile-player-sheet__stat--tr" title="Terraform Rating">
+        <span class="mobile-player-sheet__icon mobile-player-sheet__icon--tr" aria-hidden="true"></span>
+        <span class="mobile-player-sheet__stat-value">{{ player.terraformRating }}</span>
+      </span>
+      <span
+        v-if="showVp"
+        class="mobile-player-sheet__stat mobile-player-sheet__stat--vp"
+        title="Victory Points"
+      >
+        <span class="mobile-player-sheet__icon mobile-player-sheet__icon--vp" aria-hidden="true">VP</span>
+        <span class="mobile-player-sheet__stat-value">{{ player.victoryPointsBreakdown.total }}</span>
+      </span>
+      <span class="mobile-player-sheet__stat">
+        <span v-i18n>Cards</span> {{ player.cardsInHandNbr }}
+      </span>
+      <button
+        type="button"
+        class="mobile-player-sheet__stat mobile-player-sheet__stat--played"
+        data-test="mobile-player-played"
+        :title="playedTitle"
+        @click="$emit('view-played', player)"
+      >
+        <span v-i18n>Played</span> {{ player.tableau.length }}
+      </button>
       <span v-if="player.citiesCount > 0" class="mobile-player-sheet__stat"><span v-i18n>Cities</span> {{ player.citiesCount }}</span>
       <span v-if="showColonies && player.coloniesCount > 0" class="mobile-player-sheet__stat"><span v-i18n>Colonies</span> {{ player.coloniesCount }}</span>
     </div>
@@ -70,6 +90,7 @@ export default defineComponent({
       default: false,
     },
   },
+  emits: ['view-played'],
   computed: {
     isSelf(): boolean {
       return this.player.color === this.playerView.thisPlayer?.color;
@@ -91,6 +112,9 @@ export default defineComponent({
     },
     showColonies(): boolean {
       return this.playerView.game.gameOptions.expansions.colonies === true;
+    },
+    playedTitle(): string {
+      return this.isSelf ? 'Open your played cards' : `View ${this.player.name}'s played cards`;
     },
   },
 });

@@ -29,7 +29,11 @@
           @contribute="contributeMegastructure"
         />
         <MobileEmpireMode v-else-if="mode === 'empire'" :playerView="playerView"/>
-        <MobileRivalsMode v-else-if="mode === 'rivals'" :playerView="playerView"/>
+        <MobileRivalsMode
+          v-else-if="mode === 'rivals'"
+          :playerView="playerView"
+          @open-empire="setMode('empire')"
+        />
         <MobileMoreMode v-else-if="mode === 'more'" :playerView="playerView"/>
       </template>
     </main>

@@ -8,24 +8,40 @@
         :player="p"
         :playerView="playerView"
         :firstForGen="isFirstForGen(p)"
+        @view-played="onViewPlayed"
       />
     </div>
+
+    <Teleport to="body">
+      <MobilePlayedCardsSheet
+        v-if="viewingPlayer !== undefined"
+        :player="viewingPlayer"
+        @close="viewingPlayer = undefined"
+      />
+    </Teleport>
   </section>
 </template>
 
 <script lang="ts">
 import {defineComponent} from 'vue';
 import MobilePlayerSheet from '@/client/components/mobile/MobilePlayerSheet.vue';
+import MobilePlayedCardsSheet from '@/client/components/mobile/MobilePlayedCardsSheet.vue';
 import {PlayerViewModel, PublicPlayerModel} from '@/common/models/PlayerModel';
 
 export default defineComponent({
   name: 'MobileRivalsMode',
-  components: {MobilePlayerSheet},
+  components: {MobilePlayerSheet, MobilePlayedCardsSheet},
   props: {
     playerView: {
       type: Object as () => PlayerViewModel,
       required: true,
     },
+  },
+  emits: ['open-empire'],
+  data() {
+    return {
+      viewingPlayer: undefined as PublicPlayerModel | undefined,
+    };
   },
   computed: {
     /**
@@ -46,6 +62,14 @@ export default defineComponent({
     isFirstForGen(player: PublicPlayerModel): boolean {
       return this.playerView.players.length > 1 &&
         this.playerView.players[0]?.color === player.color;
+    },
+    onViewPlayed(player: PublicPlayerModel) {
+      // Your own tableau lives under Empire (hand + played).
+      if (player.color === this.playerView.thisPlayer?.color) {
+        this.$emit('open-empire');
+        return;
+      }
+      this.viewingPlayer = player;
     },
   },
 });

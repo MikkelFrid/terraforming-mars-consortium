@@ -1055,39 +1055,203 @@ body.mobile-card-focus-open {
 .mobile-player-sheet__meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 12px;
+  align-items: center;
+  gap: 6px 10px;
   margin-bottom: 10px;
   font-size: 13px;
   font-weight: 600;
   color: #c5ced6;
 }
 
-.mobile-player-sheet__stat abbr {
-  text-decoration: none;
+.mobile-player-sheet__stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 28px;
+}
+
+.mobile-player-sheet__stat--played {
+  margin: 0;
+  padding: 2px 8px;
+  border: 1px solid #3a4450;
+  border-radius: 6px;
+  background: #243038;
+  color: #e8eef4;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-player-sheet__stat--played:focus-visible {
+  outline: 2px solid #c45c26;
+  outline-offset: 2px;
+}
+
+.mobile-player-sheet__icon {
+  flex: 0 0 auto;
+  display: inline-block;
+  width: 22px;
+  height: 20px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.mobile-player-sheet__icon--tr {
+  width: 26px;
+  height: 20px;
+  background-image: url(./assets/resources/tr.png);
+}
+
+.mobile-player-sheet__icon--vp {
+  width: 28px;
+  height: 20px;
+  border-radius: 3px;
+  background: linear-gradient(#cc8b00, #805700, #805700);
+  color: #000;
+  font-family: Prototype, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 20px;
+  text-align: center;
+  text-shadow: 0 0 4px darkorange;
+}
+
+.mobile-player-sheet__stat-value {
+  font-variant-numeric: tabular-nums;
 }
 
 .mobile-player-sheet__resources {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  margin: 0 -4px;
-  padding: 0 4px;
+  overflow: visible;
+  width: 100%;
 }
 
-/* Scale desktop PlayerResources into a phone strip */
+/*
+ * Fit all stock/production tiles (6 basics + iridium) in one row.
+ * Desktop PlayerResource chrome is wide; compact it for the phone sheet.
+ */
 body.mobile-client .mobile-player-sheet__resources .resource_items_cont {
   display: flex;
   flex-wrap: nowrap;
-  gap: 4px;
-  justify-content: flex-start;
-  width: max-content;
-  min-width: 100%;
+  align-items: stretch;
+  gap: 3px;
+  width: 100%;
+  min-width: 0;
+  filter: none;
 }
 
-body.mobile-client .mobile-player-sheet__resources .resource_item {
+body.mobile-client .mobile-player-sheet__resources .resource_item,
+body.mobile-client .mobile-player-sheet__resources .resource_item--iridium {
+  position: relative;
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 1px;
+  min-width: 0;
+  margin: 0 !important;
+  padding: 4px 1px 3px !important;
+  transform: none;
+}
+
+body.mobile-client .mobile-player-sheet__resources .resource_item--energy:after {
+  display: none !important;
+}
+
+body.mobile-client .mobile-player-sheet__resources .resource_item_stock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+body.mobile-client .mobile-player-sheet__resources .resource_icon {
+  width: 20px;
+  height: 20px;
+}
+
+body.mobile-client .mobile-player-sheet__resources .resource_item_stock_count {
+  font-size: 13px;
+  line-height: 1.1;
+}
+
+body.mobile-client .mobile-player-sheet__resources .resource_item_prod {
+  min-width: 0;
+  padding: 0;
+  font-size: 10px;
+  line-height: 1.1;
+}
+
+body.mobile-client .mobile-player-sheet__resources .resource_icon--megacredit-value {
+  width: 14px;
+  height: 14px;
+  background-size: 14px 14px;
+  font-size: 10px;
+  line-height: 14px;
+}
+
+/* Rival played-cards sheet (OtherPlayer equivalent) */
+.mobile-played-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.mobile-played-sheet__backdrop {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: rgba(0, 0, 0, 0.72);
+  cursor: pointer;
+}
+
+.mobile-played-sheet__panel {
+  position: relative;
+  z-index: 1;
+  max-height: min(88dvh, 88vh);
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px 12px calc(16px + env(safe-area-inset-bottom, 0px));
+  background: #12161a;
+  border-radius: 12px 12px 0 0;
+  border-top: 1px solid #3a4450;
+}
+
+.mobile-played-sheet__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.mobile-played-sheet__title {
+  flex: 1;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #e8eef4;
+}
+
+.mobile-played-sheet__close {
   flex: 0 0 auto;
-  min-width: 42px;
-  transform: scale(0.92);
-  transform-origin: top left;
+  min-width: 72px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 6px;
+  background: #2c343c;
+  color: #f0f3f6;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .mobile-more-actions {
