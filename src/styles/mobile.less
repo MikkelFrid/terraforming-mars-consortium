@@ -603,10 +603,10 @@ body.mobile-client .wf-component--select-card > .wf-component-title {
 /*
  * Desktop cost/tags hang outside the face (negative margins) so they sit over
  * the rounded corners. Our fixed tile uses overflow:hidden, which clipped them.
- * Keep chrome inside the face with a small inset past the border-radius.
+ * Keep chrome inside the face with inset past the border-radius (~20px).
  */
 .mobile-card-tile__scale .card-content-wrapper {
-  padding: 8px 8px 0 !important;
+  padding: 12px 12px 0 !important;
   box-sizing: border-box !important;
 }
 
@@ -621,6 +621,13 @@ body.mobile-client .wf-component--select-card > .wf-component-title {
 
 .mobile-card-tile__scale .card-cost-and-tags .card-old-cost {
   left: 0 !important;
+}
+
+/* Cost badge uses a full-bleed megacredit background; keep its box fully on-face. */
+.mobile-card-tile__scale .card-cost-and-tags .card-cost,
+.mobile-card-tile__scale .card-cost-and-tags .card-old-cost {
+  position: relative;
+  z-index: 2;
 }
 
 .mobile-card-tile--scaled {
