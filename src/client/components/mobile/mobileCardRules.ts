@@ -192,19 +192,19 @@ export function buildRulesSections(clientCard: ClientCard): Array<MobileRulesSec
         sections.push({
           kind: 'effect',
           title: 'Effect',
-          renderData: asRoot(item.rows),
+          renderData: asRoot([[item]]),
         });
       } else if (isICardRenderCorpBoxAction(item)) {
         sections.push({
           kind: 'action',
           title: 'Action',
-          renderData: asRoot(item.rows),
+          renderData: asRoot([[item]]),
         });
       } else if (isICardRenderCorpBoxEffectAction(item)) {
         sections.push({
           kind: 'mixed',
           title: 'Effect / Action',
-          renderData: asRoot(item.rows),
+          renderData: asRoot([[item]]),
         });
       } else if (isICardRenderEffect(item)) {
         // Keep the effect wrapper for arrow/cause→effect layout CSS.
