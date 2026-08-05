@@ -20,6 +20,8 @@ describe('mobileCardRules', () => {
     const algae = getCardOrThrow(CardName.ALGAE);
     const sections = buildRulesSections(algae);
     expect(sections.map((s) => s.kind)).deep.eq(['on_play', 'production']);
+    const production = sections.find((s) => s.kind === 'production');
+    expect(production?.renderData.rows[0][0]).to.have.property('is', 'production-box');
     const model = buildMobileCardRulesModel(algae);
     expect(model.typeLabel).eq('Automated');
     expect(model.cost).eq(10);

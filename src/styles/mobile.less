@@ -509,15 +509,24 @@ body.mobile-card-focus-open {
 }
 
 .mobile-card-rules__icons {
-  /* Enlarge icon DSL for phone reading; keep layout from card CSS */
+  /* Enlarge icon DSL for phone reading; keep production-box / effect CSS intact */
   font-size: 16px;
-  transform: scale(1.15);
-  transform-origin: top left;
-  width: 87%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .mobile-card-rules__icons .card-rows {
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mobile-card-rules__icons .card-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
 }
 
 .mobile-card-rules__description-body {

@@ -182,10 +182,11 @@ export function buildRulesSections(clientCard: ClientCard): Array<MobileRulesSec
     const remaining: Array<ItemType> = [];
     for (const item of row) {
       if (isICardRenderProductionBox(item)) {
+        // Keep the production-box wrapper — CSS styles icons only inside it.
         sections.push({
           kind: 'production',
           title: 'Production',
-          renderData: asRoot(item.rows),
+          renderData: asRoot([[item]]),
         });
       } else if (isICardRenderCorpBoxEffect(item)) {
         sections.push({
@@ -206,13 +207,13 @@ export function buildRulesSections(clientCard: ClientCard): Array<MobileRulesSec
           renderData: asRoot(item.rows),
         });
       } else if (isICardRenderEffect(item)) {
-        // Effect boxes are often the sole item in a row; use the effect's own rows.
+        // Keep the effect wrapper for arrow/cause→effect layout CSS.
         const hasArrow = item.rows.some((r) =>
           r.some((cell) => isICardRenderSymbol(cell) && cell.type === CardRenderSymbolType.ARROW));
         sections.push({
           kind: hasArrow ? 'action' : 'effect',
           title: hasArrow ? 'Action' : 'Effect',
-          renderData: asRoot(item.rows),
+          renderData: asRoot([[item]]),
         });
       } else {
         remaining.push(item);
