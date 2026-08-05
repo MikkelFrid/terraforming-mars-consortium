@@ -104,6 +104,22 @@
         </label>
       </div>
       <div class="preferences_panel_item">
+        <label>
+          <span v-i18n>Mobile client</span>
+          <select
+            v-model="prefs.mobile_client"
+            @change="updatePreferences"
+            data-test="mobile_client"
+            style="margin-left: 8px; min-height: 32px;"
+          >
+            <option value="auto" v-i18n>Auto</option>
+            <option value="on" v-i18n>On</option>
+            <option value="off" v-i18n>Off</option>
+          </select>
+          <span class="tooltip tooltip-left" :data-tooltip="$t('Auto uses screen size and touch. On forces the mobile shell. Off keeps the desktop layout. URL ?mobile=1 or ?mobile=0 overrides.')">&#9432;</span>
+        </label>
+      </div>
+      <div class="preferences_panel_item">
         <label class="form-switch">
           <input type="checkbox" @change="updatePreferences" v-model="prefs.debug_view" data-test="debug_view">
           <i class="form-icon"></i>
@@ -176,7 +192,7 @@ export default defineComponent({
       }
 
       for (const k of Object.keys(this.prefs) as Array<Preference>) {
-        if (k === 'lang' || k === 'consortium_board_scale') {
+        if (k === 'lang' || k === 'consortium_board_scale' || k === 'mobile_client') {
           continue;
         }
         this.setBoolPreferencesCSS(target, this.prefs[k], k);

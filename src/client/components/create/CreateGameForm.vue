@@ -188,7 +188,9 @@
                             <div v-if="expansions.consortium" class="create-game-subsection-label" v-i18n>Consortium maps</div>
 
                             <div v-for="boardName in boards" :key="boardName">
+                              <div v-if="expansions.consortium && boardName==='tharsis'" class="create-game-subsection-label" v-i18n>All maps (terrain overlay)</div>
                               <div v-if="!expansions.consortium && boardName==='utopia planitia'" class="create-game-subsection-label" v-i18n>Fan-made</div>
+                              <div v-if="expansions.consortium && boardName==='utopia planitia'" class="create-game-subsection-label" v-i18n>Fan-made</div>
                               <!-- Board radios must not reuse expansion checkbox ids (e.g. consortium-checkbox). -->
                               <input type="radio" :value="boardName" name="board" v-model="board" :id="boardRadioId(boardName)">
                               <label :for="boardRadioId(boardName)" class="expansion-button">
@@ -201,19 +203,19 @@
                             </div>
 
                             <div
-                              v-if="expansions.consortium && consortiumPreviewUrl"
-                              class="consortium-map-preview"
-                              data-test="consortium-map-preview"
+                              v-if="mapPreviewUrl"
+                              class="board-map-preview"
+                              data-test="board-map-preview"
                             >
                               <img
-                                :src="consortiumPreviewUrl"
+                                :src="mapPreviewUrl"
                                 :alt="boardLabel(board) + ' map preview'"
-                                width="891"
-                                height="860"
                               />
-                              <p class="consortium-map-preview-caption">
+                              <p class="board-map-preview-caption">
                                 <strong v-i18n>{{ boardLabel(board) }}</strong>
-                                — <span v-i18n>{{ consortiumPreviewBlurb }}</span>
+                                <template v-if="mapPreviewBlurb">
+                                  — <span v-i18n>{{ mapPreviewBlurb }}</span>
+                                </template>
                               </p>
                             </div>
                         </div>
@@ -458,6 +460,13 @@
                               </label>
                             </template>
 
+                            <template v-if="expansions.consortium && randomMA === RandomMAOptionType.NONE">
+                              <input type="checkbox" v-model="padConsortiumMA" id="padConsortiumMA-checkbox">
+                              <label for="padConsortiumMA-checkbox">
+                                  <span v-i18n>Pad Consortium MAs with official boards</span>
+                              </label>
+                            </template>
+
                             <input type="checkbox" name="showOtherPlayersVP" v-model="showOtherPlayersVP" id="realTimeVP-checkbox">
                             <label for="realTimeVP-checkbox">
                                 <span v-i18n>Show real-time VP</span>&nbsp;<a :href="wikiUrls.showRealtimeVP" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
@@ -600,11 +609,10 @@ import {Color, PLAYER_COLORS} from '@/common/Color';
 import {BoardName} from '@/common/boards/BoardName';
 import {
   CONSORTIUM_BOARDS,
-  consortiumBoardBlurb,
   consortiumBoardLabel,
-  consortiumBoardPreviewUrl,
   isConsortiumBoard,
 } from '@/common/boards/ConsortiumBoards';
+import {boardPreviewBlurb, boardPreviewUrl} from '@/common/boards/BoardPreviews';
 import {RandomBoardOption} from '@/common/boards/RandomBoardOption';
 import {CardName} from '@/common/cards/CardName';
 import CeosFilter from '@/client/components/create/CeosFilter.vue';
@@ -704,12 +712,9 @@ export default defineComponent({
       }
     },
     'expansions.consortium': function(value: boolean) {
-      // Terrain, frontier unlock and Consortium MAs require a Consortium map.
-      if (value === true) {
-        if (!isConsortiumBoard(this.board)) {
-          this.board = BoardName.CONSORTIUM;
-        }
-      } else if (isConsortiumBoard(this.board)) {
+      // Enabling Consortium keeps the current board (overlay on standard maps).
+      // Disabling while a native Consortium map is selected falls back to Tharsis.
+      if (value === false && isConsortiumBoard(this.board)) {
         this.board = BoardName.THARSIS;
       }
     },
@@ -743,11 +748,7 @@ export default defineComponent({
       return PLAYER_COLORS;
     },
     boards() {
-      // Consortium expansion is map-locked to the three Consortium variants.
-      if (this.expansions.consortium) {
-        return [...CONSORTIUM_BOARDS];
-      }
-      return [
+      const standard = [
         BoardName.THARSIS,
         BoardName.HELLAS,
         BoardName.ELYSIUM,
@@ -762,12 +763,28 @@ export default defineComponent({
         BoardName.HOLLANDIA,
         RandomBoardOption.ALL,
       ];
+      // Native Consortium maps first; every other map gets a terrain overlay.
+      if (this.expansions.consortium) {
+        return [...CONSORTIUM_BOARDS, ...standard];
+      }
+      return standard;
     },
-    consortiumPreviewUrl(): string | undefined {
-      return this.expansions.consortium ? consortiumBoardPreviewUrl(this.board) : undefined;
+    mapPreviewUrl(): string | undefined {
+      // Random board options have no single preview.
+      if (this.board === RandomBoardOption.ALL || this.board === RandomBoardOption.OFFICIAL) {
+        return undefined;
+      }
+      // Native Consortium maps only appear when the expansion is on.
+      if (isConsortiumBoard(this.board) && !this.expansions.consortium) {
+        return undefined;
+      }
+      return boardPreviewUrl(this.board);
     },
-    consortiumPreviewBlurb(): string {
-      return consortiumBoardBlurb(this.board);
+    mapPreviewBlurb(): string {
+      if (this.mapPreviewUrl === undefined) {
+        return '';
+      }
+      return boardPreviewBlurb(this.board, {consortiumExpansion: this.expansions.consortium});
     },
   },
   methods: {
@@ -803,8 +820,10 @@ export default defineComponent({
       this.uploading = true;
       try {
         processor.applyJSON(json);
-        if (component.expansions.consortium && !isConsortiumBoard(component.board)) {
-          component.board = BoardName.CONSORTIUM;
+        // Consortium + non-Consortium board is valid (terrain overlay).
+        // Only clamp native Consortium maps when the expansion is off.
+        if (!component.expansions.consortium && isConsortiumBoard(component.board)) {
+          component.board = BoardName.THARSIS;
         }
       } catch (e) {
         this.uploading = false;
@@ -822,8 +841,8 @@ export default defineComponent({
             component.seed = Math.random();
           }
           component.solarPhaseOption = Boolean(processor.solarPhaseOption);
-          if (component.expansions.consortium && !isConsortiumBoard(component.board)) {
-            component.board = BoardName.CONSORTIUM;
+          if (!component.expansions.consortium && isConsortiumBoard(component.board)) {
+            component.board = BoardName.THARSIS;
           }
         } finally {
           this.uploading = false;
@@ -1101,8 +1120,8 @@ export default defineComponent({
       const customPreludes = this.customPreludes;
       const bannedCards = this.bannedCards;
       const includedCards = this.includedCards;
-      if (this.expansions.consortium && !isConsortiumBoard(this.board)) {
-        this.board = BoardName.CONSORTIUM;
+      if (!this.expansions.consortium && isConsortiumBoard(this.board)) {
+        this.board = BoardName.THARSIS;
       }
       const board = this.board;
       const seed = this.seed;
@@ -1317,6 +1336,8 @@ export default defineComponent({
         removeNegativeGlobalEventsOption,
         includeFanMA,
         modularMA: this.modularMA,
+        padConsortiumMA: this.expansions.consortium && this.randomMA === RandomMAOptionType.NONE ?
+          this.padConsortiumMA : false,
         startingCorporations,
         soloTR,
         clonedGamedId,

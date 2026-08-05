@@ -54,6 +54,8 @@ export type GameOptions = {
   randomMA: RandomMAOptionType;
   includeFanMA: boolean;
   modularMA: boolean;
+  /** When fixed MAs are used, pad Consortium's 3 board MAs to 5 from Tharsis/Hellas/Elysium. */
+  padConsortiumMA: boolean;
   /** Solo victory by getting TR 63 by game end */
   soloTR: boolean;
   customCorporationsList: ReadonlyArray<CardName>;
@@ -118,6 +120,7 @@ export const DEFAULT_GAME_OPTIONS: GameOptions = {
   includeFanMA: false,
   initialDraftVariant: false,
   modularMA: false,
+  padConsortiumMA: false,
   moonExpansion: false,
   moonStandardProjectVariant: false,
   moonStandardProjectVariant1: false,

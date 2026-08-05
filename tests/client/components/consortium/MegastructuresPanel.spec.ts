@@ -114,6 +114,8 @@ describe('MegastructuresPanel', () => {
     expect(wrapper.find('[data-test="megastructures-details"]').isVisible()).is.true;
     expect(wrapper.findAll('[data-test^="megastructure-"]')).to.have.length(5);
     expect(wrapper.find('[data-test="toggle-megastructures"]').exists()).is.false;
+    expect(wrapper.find('[data-test="megastructures-hint"]').text()).to.include('Tap a Bridge');
+    expect(wrapper.find('[data-test="megastructures-hint"]').text()).to.not.include('Hover');
   });
 
   it('shows outcome chips with resource icons on every track', () => {

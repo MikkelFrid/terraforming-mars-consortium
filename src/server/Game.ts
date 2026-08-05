@@ -1459,10 +1459,10 @@ export class Game implements IGame, Logger {
       this.grantSpaceBonuses(player, space);
     }
 
-    // Consortium crater field: one-time placement reward (1 iridium from the bank).
+    // Consortium crater field: one-time placement reward from the bank.
     if (space.spaceType === SpaceType.CRATER_FIELD && space.craterBonusClaimed !== true) {
       space.craterBonusClaimed = true;
-      const granted = Iridium.grant(player, 1);
+      const granted = Iridium.grant(player, constants.CRATER_FIELD_IRIDIUM_GRANT);
       if (granted > 0) {
         for (const card of player.tableau) {
           card.onCraterIridiumGained?.(player, granted);
@@ -1752,6 +1752,7 @@ export class Game implements IGame, Logger {
     gameOptions.boardName = normalizeBoardName(gameOptions.boardName);
     // Backward compatibility: games saved before Consortium was added.
     gameOptions.consortiumExpansion = gameOptions.consortiumExpansion ?? false;
+    gameOptions.padConsortiumMA = gameOptions.padConsortiumMA ?? false;
     if (gameOptions.expansions !== undefined) {
       gameOptions.expansions.consortium = gameOptions.expansions.consortium ?? gameOptions.consortiumExpansion;
     }

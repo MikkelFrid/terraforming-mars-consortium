@@ -698,6 +698,7 @@ const stored = {
     'escapeVelocityBonusSeconds': 2,
     'fastModeOption': false,
     'includeFanMA': false,
+    'padConsortiumMA': false,
     'initialDraftVariant': false,
     'moonExpansion': false,
     'moonStandardProjectVariant': false,

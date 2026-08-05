@@ -40,6 +40,7 @@
               <div v-if="gameOptions.randomMA === RandomMAOptionType.LIMITED" class="game-config generic" v-i18n>Randomized with limited synergy</div>
               <div v-if="gameOptions.randomMA === RandomMAOptionType.UNLIMITED" class="game-config generic" v-i18n>Full randomized</div>
               <div v-if="gameOptions.randomMA !== RandomMAOptionType.NONE && gameOptions.includeFanMA" class="game-config generic" v-i18n>Include fan Milestones/Awards</div>
+              <div v-if="gameOptions.padConsortiumMA" class="game-config generic" v-i18n>Pad Consortium MAs with official boards</div>
             </li>
 
             <li v-if="playerNumber > 1">

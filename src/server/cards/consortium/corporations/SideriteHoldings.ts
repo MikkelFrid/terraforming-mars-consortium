@@ -25,7 +25,7 @@ export class SideriteHoldings extends CorporationCard implements ICorporationCar
           b.megacredits(38).nbsp.iridium(4, {digit});
           b.corpBox('effect', (ce) => {
             ce.effect('You may spend iridium on any card, not only cards with a Structure or Prospecting tag.', (eb) => {
-              eb.empty().startEffect.iridium(1).asterix();
+              eb.cards(1).asterix().startEffect.iridium(1);
             });
           });
         }),

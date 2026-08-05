@@ -1,5 +1,6 @@
 import {awardManifest} from '../awards/Awards';
 import {BoardName} from '../../common/boards/BoardName';
+import {isConsortiumBoard} from '../../common/boards/ConsortiumBoards';
 import {GameOptions} from '../game/GameOptions';
 import {milestoneManifest} from '../milestones/Milestones';
 import {RandomMAOptionType} from '../../common/ma/RandomMAOptionType';
@@ -11,9 +12,54 @@ import {synergies} from './MilestoneAwardSynergies';
 import {isCompatible, MAManifest} from './MAManifest';
 import {intersection} from '../../common/utils/utils';
 
+const OFFICIAL_BOARDS: ReadonlyArray<BoardName> = [
+  BoardName.THARSIS,
+  BoardName.HELLAS,
+  BoardName.ELYSIUM,
+];
+
+const BOARD_MA_COUNT = 5;
+
 type DrawnMilestonesAndAwards = {
   milestones: Array<MilestoneName>,
   awards: Array<AwardName>
+}
+
+/** Official / fan boards expose 5+5; Consortium registers 3+3 themed + modular pad. */
+const BOARD_MA_TARGET = 5;
+
+/**
+ * Pad a short board MA set up to |target| using the Official Random α (modular)
+ * pool gated by the expansions in play. No synergy check — board NONE never
+ * validates synergy (Tharsis itself would fail LIMITED).
+ */
+function fillBoardMasFromModular(
+  drawn: DrawnMilestonesAndAwards,
+  gameOptions: GameOptions,
+  target: number,
+): void {
+  const needM = target - drawn.milestones.length;
+  const needA = target - drawn.awards.length;
+  if (needM <= 0 && needA <= 0) {
+    return;
+  }
+
+  const [milestoneCandidates, awardCandidates] = getCandidates({
+    ...gameOptions,
+    modularMA: true,
+  });
+  const usedMilestones = new Set(drawn.milestones);
+  const usedAwards = new Set(drawn.awards);
+  const mPool = milestoneCandidates.filter((name) => !usedMilestones.has(name));
+  const aPool = awardCandidates.filter((name) => !usedAwards.has(name));
+  inplaceShuffle(mPool, UnseededRandom.INSTANCE);
+  inplaceShuffle(aPool, UnseededRandom.INSTANCE);
+  if (needM > 0) {
+    drawn.milestones.push(...mPool.slice(0, needM));
+  }
+  if (needA > 0) {
+    drawn.awards.push(...aPool.slice(0, needA));
+  }
 }
 
 // Compute max synergy of a given set of milestones and awards. Exported for testing.
@@ -67,25 +113,38 @@ export function chooseMilestonesAndAwards(gameOptions: GameOptions): DrawnMilest
 
   switch (gameOptions.randomMA) {
   case RandomMAOptionType.NONE:
-    const boardName = gameOptions.boardName;
-    switch (gameOptions.boardName) {
-    case BoardName.THARSIS:
-    case BoardName.HELLAS:
-    case BoardName.ELYSIUM:
-    case BoardName.UTOPIA_PLANITIA:
-    case BoardName.ARABIA_TERRA:
-    case BoardName.AMAZONIS:
-    case BoardName.TERRA_CIMMERIA:
-    case BoardName.TERRA_CIMMERIA_NOVA:
-    case BoardName.VASTITAS_BOREALIS:
-    case BoardName.VASTITAS_BOREALIS_NOVA:
-    case BoardName.CONSORTIUM:
-    case BoardName.CONSORTIUM_RIFT:
-    case BoardName.CONSORTIUM_ARCHIPELAGO:
-      push(milestoneManifest.boards[boardName], awardManifest.boards[gameOptions.boardName]);
-      break;
-    default:
-      return getRandomMilestonesAndAwards(gameOptions, requiredQty, LIMITED_SYNERGY);
+    // Consortium games always use the themed 3+3 set (native maps and overlay),
+    // then pad to 5+5 from the modular pool so boards match official density.
+    if (gameOptions.consortiumExpansion) {
+      push(
+        milestoneManifest.boards[BoardName.CONSORTIUM],
+        awardManifest.boards[BoardName.CONSORTIUM],
+      );
+      fillBoardMasFromModular(drawnMilestonesAndAwards, gameOptions, BOARD_MA_TARGET);
+    } else {
+      const boardName = gameOptions.boardName;
+      switch (gameOptions.boardName) {
+      case BoardName.THARSIS:
+      case BoardName.HELLAS:
+      case BoardName.ELYSIUM:
+      case BoardName.UTOPIA_PLANITIA:
+      case BoardName.ARABIA_TERRA:
+      case BoardName.AMAZONIS:
+      case BoardName.TERRA_CIMMERIA:
+      case BoardName.TERRA_CIMMERIA_NOVA:
+      case BoardName.VASTITAS_BOREALIS:
+      case BoardName.VASTITAS_BOREALIS_NOVA:
+      case BoardName.CONSORTIUM:
+      case BoardName.CONSORTIUM_RIFT:
+      case BoardName.CONSORTIUM_ARCHIPELAGO:
+        push(milestoneManifest.boards[boardName], awardManifest.boards[gameOptions.boardName]);
+        break;
+      default:
+        return getRandomMilestonesAndAwards(gameOptions, requiredQty, LIMITED_SYNERGY);
+      }
+    }
+    if (gameOptions.padConsortiumMA && isConsortiumBoard(boardName)) {
+      padConsortiumWithOfficialMas(drawnMilestonesAndAwards);
     }
     if (gameOptions.venusNextExtension) {
       push(milestoneManifest.expansions['venus'], awardManifest.expansions['venus']);
@@ -117,12 +176,38 @@ export function chooseMilestonesAndAwards(gameOptions: GameOptions): DrawnMilest
 }
 
 /**
- * Return the list of possible milestones and awards for a given game. Only meant to work with random selection.
- *
- * Isn't meant to work with RandomMAOptionType.NONE
- *
- * exported for tests
+ * Fill Consortium's board-defined MAs up to five by drawing from Tharsis, Hellas, and Elysium.
+ * Synergy is not enforced against Consortium pairs (those score above LIMITED_SYNERGY).
+ * Exported for tests.
  */
+export function padConsortiumWithOfficialMas(drawn: DrawnMilestonesAndAwards): void {
+  const needMilestones = BOARD_MA_COUNT - drawn.milestones.length;
+  const needAwards = BOARD_MA_COUNT - drawn.awards.length;
+  if (needMilestones <= 0 && needAwards <= 0) {
+    return;
+  }
+
+  const milestonePool = OFFICIAL_BOARDS
+    .flatMap((board) => milestoneManifest.boards[board])
+    .filter((name) => !drawn.milestones.includes(name));
+  const awardPool = OFFICIAL_BOARDS
+    .flatMap((board) => awardManifest.boards[board])
+    .filter((name) => !drawn.awards.includes(name));
+
+  inplaceShuffle(milestonePool, UnseededRandom.INSTANCE);
+  inplaceShuffle(awardPool, UnseededRandom.INSTANCE);
+
+  drawn.milestones.push(...milestonePool.slice(0, Math.max(0, needMilestones)));
+  drawn.awards.push(...awardPool.slice(0, Math.max(0, needAwards)));
+}
+
+/**
+   * Return the list of possible milestones and awards for a given game. Only meant to work with random selection.
+   *
+   * Isn't meant to work with RandomMAOptionType.NONE
+   *
+   * exported for tests
+   */
 export function getCandidates(gameOptions: GameOptions): [Array<MilestoneName>, Array<AwardName>] {
   function include<T extends string>(name: T, manifest: MAManifest<T, any>): boolean {
     // Never include deprecated MAs in random candidates.  They generally have "more official" versions that will be

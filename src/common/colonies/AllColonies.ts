@@ -31,3 +31,9 @@ export const PATHFINDERS_COLONY_NAMES = [
   // ColonyName.LEAVITT_II,
   ColonyName.IAPETUS_II,
 ];
+
+export const CONSORTIUM_COLONY_NAMES = [
+  ColonyName.PSYCHE,
+  ColonyName.VESTA,
+  ColonyName.DAVIDA,
+];

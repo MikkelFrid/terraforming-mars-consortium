@@ -439,6 +439,26 @@ abstract class Builder<T> {
     return this._appendToRow(item);
   }
 
+  /** Consortium: bridge megastructure emblem. */
+  public bridge(count: number = 1): this {
+    return this._appendToRow(new CardRenderItem(CardRenderItemType.BRIDGE, count));
+  }
+
+  /** Consortium: highland terrain hex. */
+  public highland(count: number = 1): this {
+    return this._appendToRow(new CardRenderItem(CardRenderItemType.HIGHLAND, count));
+  }
+
+  /** Consortium: ordinary megastructure segment cell. */
+  public megastructureSegment(count: number = 1): this {
+    return this._appendToRow(new CardRenderItem(CardRenderItemType.MEGASTRUCTURE_SEGMENT, count));
+  }
+
+  /** Consortium: keystone (final) megastructure segment cell. */
+  public keystoneSegment(count: number = 1): this {
+    return this._appendToRow(new CardRenderItem(CardRenderItemType.KEYSTONE_SEGMENT, count));
+  }
+
   public claim(count: number = 1) {
     return this.text('CLAIM').text(' ' + count.toString());
   }

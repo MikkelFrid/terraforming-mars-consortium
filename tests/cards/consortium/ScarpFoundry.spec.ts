@@ -50,23 +50,23 @@ describe('ScarpFoundry', () => {
     player.playedCards.push(reserve);
 
     expect(player.getMegastructureSteelValue()).eq(3);
-    expect(player.getIridiumValue()).eq(5);
+    expect(player.getIridiumValue()).eq(6);
     expect(player.getSteelValue()).eq(2);
 
-    // 2 steel @ 3 + 1 iridium @ 5 = 11; not double-counted as 2*(3+5) or similar
+    // 2 steel @ 3 + 1 iridium @ 6 = 12; not double-counted as 2*(3+6) or similar
     const paid = player.payingAmount(Payment.of({steel: 2, iridium: 1}), {
       steel: true,
       iridium: true,
       steelRate: player.getMegastructureSteelValue(),
     });
-    expect(paid).eq(2 * 3 + 1 * 5);
+    expect(paid).eq(2 * 3 + 1 * 6);
 
-    // Ordinary card payment still uses steel 2 and iridium 5
+    // Ordinary card payment still uses steel 2 and iridium 6
     const cardPaid = player.payingAmount(Payment.of({steel: 2, iridium: 1}), {
       steel: true,
       iridium: true,
     });
-    expect(cardPaid).eq(2 * 2 + 1 * 5);
+    expect(cardPaid).eq(2 * 2 + 1 * 6);
 
     // Segment placement accepts the composed payment against bridge cost 12
     player.steel = 2;

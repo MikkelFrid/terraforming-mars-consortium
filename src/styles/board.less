@@ -29,8 +29,9 @@
   // Containing block for scaled chrome (tracks + colony tiles).
   position: relative;
   width: 891px;
-  // Override shared mars backgrounds with the upscaled Consortium art.
+  // 2× bitmap painted into logical 891×860 — hex CSS coords stay put.
   background: url(./assets/board/mars_consortium.png) no-repeat;
+  background-size: 891px 860px;
 
   // User preference (settings panel). Default 0.85 fits 1080p; 1.0 for 1440p+.
   // Layout height is recovered via margin-bottom so the player panel moves up.
@@ -40,7 +41,7 @@
   margin-bottom: calc((var(--consortium-board-scale, 1) - 1) * 900px);
 
   .board {
-    // Hex CSS positions from build_board.py include OFFSET_X/Y (137, 134),
+    // Hex CSS positions from build_board.py include OFFSET_X/Y (144, 160),
     // so the field is already centred on the 891 x 860 disc — no extra margin.
     width: 891px;
     height: 860px;

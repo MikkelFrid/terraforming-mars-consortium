@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import {IRIDIUM_BANK_CAPACITY, IRIDIUM_VALUE, CORE_SAMPLING_COST} from '../../src/common/constants';
+import {IRIDIUM_BANK_CAPACITY, IRIDIUM_VALUE, CORE_SAMPLING_COST, CRATER_FIELD_IRIDIUM_GRANT} from '../../src/common/constants';
 import {Payment} from '../../src/common/inputs/Payment';
 import {Tag} from '../../src/common/cards/Tag';
 import {TileType} from '../../src/common/TileType';
@@ -117,14 +117,14 @@ describe('Consortium iridium', () => {
 
     game.addTile(player, space, {tileType: TileType.CITY});
     expect(space.craterBonusClaimed).is.true;
-    expect(player.iridium).eq(1);
-    expect(game.iridiumBank).eq(IRIDIUM_BANK_CAPACITY - 1);
+    expect(player.iridium).eq(CRATER_FIELD_IRIDIUM_GRANT);
+    expect(game.iridiumBank).eq(IRIDIUM_BANK_CAPACITY - CRATER_FIELD_IRIDIUM_GRANT);
 
     // Second placement after clearing the tile must not re-grant.
     game.removeTile(space.id);
     game.addTile(player, space, {tileType: TileType.GREENERY});
-    expect(player.iridium).eq(1);
-    expect(game.iridiumBank).eq(IRIDIUM_BANK_CAPACITY - 1);
+    expect(player.iridium).eq(CRATER_FIELD_IRIDIUM_GRANT);
+    expect(game.iridiumBank).eq(IRIDIUM_BANK_CAPACITY - CRATER_FIELD_IRIDIUM_GRANT);
 
     // Empty bank: claim still marks the space, grant is a no-op.
     const space2 = game.board.getAvailableSpacesOnLand(player)[0];
@@ -188,9 +188,9 @@ describe('Consortium iridium', () => {
       .to.not.be.undefined;
   });
 
-  it('iridium payment value is 4', () => {
+  it('iridium payment value is 5', () => {
     const [/* game */, player] = testGame(1, {consortiumExpansion: true});
-    expect(player.payingAmount(Payment.of({iridium: 3}), {iridium: true})).eq(12);
+    expect(player.payingAmount(Payment.of({iridium: 3}), {iridium: true})).eq(15);
   });
 
   it('Core Sampling is offered among standard projects when consortium is on', () => {

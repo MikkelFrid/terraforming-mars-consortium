@@ -6,10 +6,12 @@ geometry. Run from the repository root:
 
     python3 tools/consortium-art/build_board.py
 
-Requires Pillow only.
+Requires Pillow + numpy + rsvg-convert (or cairosvg). No EDSR.
+No sampling of Tharsis mars.png RGB.
 
 Produces (shared geometry — all variants use the same hex positions):
-    assets/board/mars_consortium.png
+    assets/board/mars_consortium.svg   (SVG chrome authoring source)
+    assets/board/mars_consortium.png   (2× hybrid raster; CSS @ 891×860)
     src/styles/board_positions.less
     src/server/boards/consortiumSpaces.json              (Massif)
     src/server/boards/consortiumRiftSpaces.json
@@ -23,8 +25,12 @@ oceans / frontier lock arcs). Hex radius, pitch and CSS ids stay identical.
 Previews composite the shared Mars disc with per-space hex tiles so the
 rulebook and lobby can show the three maps distinctly.
 
-Artwork derives from the official Terraforming Mars asset sources,
-CC BY-SA 4.0.
+Board art contract (hybrid — recommended):
+  - Hex coordinates / LESS / JSON are geometry, not paint
+  - Logical layout stays 891×860; PNG is 2× denser with CSS background-size
+  - Planet = DEM hillshade (_board_dem.py)
+  - Chrome = SVG tracks/icons (_board_svg.py), composited over the disc
+  - Disc centre/radius locked to REF / hex / HTML pin frame
 """
 
 from __future__ import annotations
@@ -33,10 +39,20 @@ import json
 import math
 import os
 import sys
-from PIL import Image, ImageChops, ImageDraw, ImageEnhance, ImageFilter, ImageStat
+import tempfile
+from PIL import (
+    Image,
+    ImageDraw,
+    ImageEnhance,
+)
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _board_dem import render_dem_planet  # noqa: E402
+from _board_svg import rasterize_svg, write_svg  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-MARS_SRC = os.path.join(ROOT, 'assets', 'board', 'mars.png')
+MARS_SRC = os.path.join(ROOT, 'assets', 'board', 'mars.png')  # size reference only
+MARS_SVG = os.path.join(ROOT, 'assets', 'board', 'mars_consortium.svg')
 MARS_DST = os.path.join(ROOT, 'assets', 'board', 'mars_consortium.png')
 LESS_DST = os.path.join(ROOT, 'src', 'styles', 'board_positions.less')
 JSON_DIR = os.path.join(ROOT, 'src', 'server', 'boards')
@@ -46,7 +62,9 @@ N = 6                       # map radius -> 3N^2+3N+1 = 127 spaces
 SECTORS = [90.0, 210.0, 330.0]
 PITCH_X, PITCH_Y = 49, 41
 HEX_W, HEX_H = 46, 50
-OFFSET_X, OFFSET_Y = 137, 134
+# Shifted (+7,+26) from the first Consortium OFFSET so the hex field centres
+# on the Tharsis chrome / HTML O2·temp pin frame (not up-left of it).
+OFFSET_X, OFFSET_Y = 144, 160
 
 HEX_ASSET = {
     'land': 'hex_black.png',
@@ -218,32 +236,72 @@ def write_json(spaces, filename):
     return path
 
 
+# Logical CSS layout — hex positions / board.less assume these sizes.
+BOARD_W, BOARD_H = 891, 860
+# Bitmap density. CSS uses background-size: BOARD_W x BOARD_H so coords stay.
+ART_SCALE = 2
+ART_W, ART_H = BOARD_W * ART_SCALE, BOARD_H * ART_SCALE
+
+# REF silhouette centre (scaled mars.png) — same frame as HTML O2/temp pins.
+# Hex OFFSET is chosen so the hex-field centre lands here too.
+# Logical (891×860): centre ≈ (461, 431), planet_r ≈ 304.
+DISC_CX0, DISC_CY0, DISC_R0 = 320.75, 300.47, 211.85
+
+
 def build_mars():
-    if not os.path.exists(MARS_SRC):
-        sys.exit(f'missing {MARS_SRC} - run from the repository root')
+    """
+    Build hybrid mars_consortium.png — DEM planet + SVG chrome.
 
-    src = Image.open(MARS_SRC).convert('RGBA')
-    rgb, alpha = src.convert('RGB'), src.split()[3]
+    Contract (do not break):
+      - Logical layout stays BOARD_W x BOARD_H (891×860)
+      - PNG is ART_W x ART_H; CSS background-size paints at logical size
+      - Disc centre/radius locked to REF / hex / HTML pin frame (DISC_*)
+      - No Tharsis mars.png RGB sampling
+    """
+    if os.path.exists(MARS_SRC):
+        src_w, src_h = Image.open(MARS_SRC).size
+        assert BOARD_W == round(src_w * 634 / 441)
+        assert BOARD_H == round(src_h * 542 / 378)
+        sx = ART_W / src_w
+        sy = ART_H / src_h
+    else:
+        sx = ART_W / 620.0
+        sy = ART_H / 600.0
 
-    residual = ImageChops.difference(rgb, rgb.filter(ImageFilter.GaussianBlur(1.2)))
-    sigma = max(ImageStat.Stat(residual.convert('L')).stddev[0], 6.0)
+    cx = DISC_CX0 * sx
+    cy = DISC_CY0 * sy
+    radius = DISC_R0 * ((sx + sy) / 2.0)
+    diameter = int(round(radius * 2))
 
-    tw = round(src.width * 634 / 441)
-    th = round(src.height * 542 / 378)
+    print(f'rendering DEM hillshade planet ({diameter}px disc @ {ART_SCALE}x)...')
+    planet = render_dem_planet(diameter, seed=20260731)
+    planet_rgb = ImageEnhance.Contrast(planet.convert('RGB')).enhance(1.06)
+    planet_rgb = ImageEnhance.Color(planet_rgb).enhance(1.04)
+    planet = Image.merge('RGBA', (*planet_rgb.split(), planet.split()[3]))
 
-    up = rgb.resize((tw, th), Image.LANCZOS)
-    up = up.filter(ImageFilter.UnsharpMask(radius=1.6, percent=68, threshold=2))
+    print(f'writing SVG chrome ({BOARD_W}x{BOARD_H} viewBox)...')
+    write_svg(MARS_SVG, seed=20260731)
+    with tempfile.TemporaryDirectory() as tmp:
+        chrome_png = os.path.join(tmp, 'chrome.png')
+        print(f'rasterizing SVG chrome → PNG @ {ART_SCALE}x...')
+        rasterize_svg(MARS_SVG, chrome_png, scale=ART_SCALE)
+        chrome = Image.open(chrome_png).convert('RGBA')
 
-    noise = Image.effect_noise((tw, th), sigma).filter(
-        ImageFilter.GaussianBlur(0.4)).convert('L')
-    grain = Image.merge('RGB', (noise, noise, noise))
+    out = Image.new('RGBA', (ART_W, ART_H), (0, 0, 0, 255))
+    dx = int(round(cx - diameter / 2.0))
+    dy = int(round(cy - diameter / 2.0))
+    out.alpha_composite(planet, (dx, dy))
+    if chrome.size != (ART_W, ART_H):
+        chrome = chrome.resize((ART_W, ART_H), Image.LANCZOS)
+    out.alpha_composite(chrome)
 
-    out = ImageChops.add(up, grain, scale=1.0, offset=-128).convert('RGBA')
-    out.putalpha(alpha.resize((tw, th), Image.LANCZOS))
-    out.save(MARS_DST)
-    return out
-
-
+    flat = Image.new('RGBA', (ART_W, ART_H), (0, 0, 0, 255))
+    flat.alpha_composite(out)
+    flat.save(MARS_DST, optimize=True)
+    print(f'board svg   : {MARS_SVG}  (chrome)')
+    print(f'board image : {flat.size[0]} x {flat.size[1]} px  '
+          f'(logical {BOARD_W}x{BOARD_H} @ {ART_SCALE}x) -> {MARS_DST}')
+    return flat
 def summarize(name, spaces):
     counts, zones = {}, {}
     for s in spaces:
@@ -292,7 +350,11 @@ def _tint_locked(hex_img):
 def build_preview(mars_base, spaces, filename, tiles):
     """Composite terrain hexes onto the shared Mars disc for lobby/rulebook."""
     os.makedirs(PREVIEW_DIR, exist_ok=True)
-    img = mars_base.copy()
+    # Hex CSS coords are logical 891×860; downscale 2× art if needed.
+    if mars_base.size != (BOARD_W, BOARD_H):
+        img = mars_base.resize((BOARD_W, BOARD_H), Image.LANCZOS)
+    else:
+        img = mars_base.copy()
     # Slight dim so hex colours read on the bright disc.
     dim = Image.new('RGBA', img.size, (0, 0, 0, 50))
     img = Image.alpha_composite(img, dim)

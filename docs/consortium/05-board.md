@@ -10,13 +10,16 @@ Base: `main` after iridium merge (`24b0137cf`)
 
 | Output | Spec |
 |--------|------|
-| `assets/board/mars_consortium.png` | 891×860 RGBA (mars.png upscaled 1.44× with grain) |
+| `assets/board/mars_consortium.svg` | SVG **chrome** authoring source (`_board_svg.py`) — tracks/icons. |
+| `assets/board/mars_consortium.png` | **1782×1720** hybrid: DEM hillshade planet (`_board_dem.py`) + SVG chrome. CSS paints at 891×860 via `background-size`. Hex geometry unchanged. |
 | `src/styles/board_positions.less` | 127 CSS margin rules (`.board-space-001` …) |
 | `src/server/boards/consortiumSpaces.json` | 127 space records |
 
-Confirmed: **127 spaces**, hex field **634×542**, field origin **137, 134**
-(centred on the planet disc). Massif (default) types: land 72 / crater 12 /
-chasm 24 / ocean 13 / highland 6.
+Confirmed: **127 spaces**, hex field **634×542**, field origin **144, 160**
+(shifted +7/+26 from the first OFFSET so hexes share the Tharsis chrome /
+HTML O2·temp pin frame). Planet `DISC_*` centre ≈ `(461, 431)` / r≈304.
+Massif (default) types: land 72 / crater 12 / chasm 24 / ocean 13 / highland 6.
+Filled-board visual QA: `python3 tools/consortium-art/simulate_filled_board.py`.
 
 Three terrain variants share this geometry — see `docs/consortium/19-maps.md`
 (Massif / Rift Basin / Archipelago).
@@ -46,15 +49,18 @@ apply to a radius-6 hexagon). `SpaceId` accepts 3-digit ids (`001`–`127`).
 
 ## CSS sizing (Consortium-scoped)
 
-`.board-cont.board-consortium` is 891×860 with `mars_consortium.png`.
+`.board-cont.board-consortium` is logically 891×860 with
+`background-size: 891px 860px` on the 2× `mars_consortium.png`.
 Inner `.board` is full-size (hex margins include the generator OFFSET).
 Ocean / oxygen / temperature tracks and colony tiles are scaled from the
-Tharsis 620×600 chrome (`transform: scale(891/620, 860/600)`).
+Tharsis 620×600 chrome (`transform: scale(891/620, 860/600)`), pinned to the
+`.board-cont` origin.
 `.global-numbers` keeps a scaled copy of the Tharsis inset
 (`margin: 11×860/600 / 16×891/620`) so the pin tables in `globs.less` land on
 the upscaled track art; `.board-outer-spaces` stays at the board-cont origin
 (colony positions have no 11/16 inset). Tharsis / Hellas / Elysium / Amazonis
-keep the default 600×488 / 670px container — pixel-identical.
+keep the default 600×488 / 670px container — pixel-identical (unless
+Consortium overlay is active — metadata only, no chrome change).
 
 ### Board scale preference
 

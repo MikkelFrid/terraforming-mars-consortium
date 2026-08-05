@@ -82,7 +82,7 @@ describe('ApiCreateGame', () => {
           deltaProject: false,
           consortium: true,
         },
-        // Client mistake / old saved settings: Tharsis with Consortium on.
+        // Consortium + Tharsis is valid (terrain overlay on standard map).
         board: BoardName.THARSIS,
         seed: 0,
         randomFirstPlayer: false,
@@ -104,6 +104,7 @@ describe('ApiCreateGame', () => {
         shuffleMapOption: false,
         randomMA: RandomMAOptionType.NONE,
         includeFanMA: false,
+        padConsortiumMA: false,
         soloTR: false,
         customCorporationsList: [],
         bannedCards: [],
@@ -129,7 +130,7 @@ describe('ApiCreateGame', () => {
     const model = JSON.parse(res.content) as SimpleGameModel;
     const game = await scaffolding.ctx.gameLoader.getGame(model.id);
     expect(game).is.not.undefined;
-    expect(game!.gameOptions.boardName).eq(BoardName.CONSORTIUM);
+    expect(game!.gameOptions.boardName).eq(BoardName.THARSIS);
     expect(game!.gameOptions.consortiumExpansion).eq(true);
   });
 
@@ -183,6 +184,7 @@ describe('ApiCreateGame', () => {
         shuffleMapOption: false,
         randomMA: RandomMAOptionType.NONE,
         includeFanMA: false,
+        padConsortiumMA: false,
         soloTR: false,
         customCorporationsList: [],
         bannedCards: [],
@@ -261,6 +263,7 @@ describe('ApiCreateGame', () => {
         shuffleMapOption: false,
         randomMA: RandomMAOptionType.NONE,
         includeFanMA: false,
+        padConsortiumMA: false,
         soloTR: false,
         customCorporationsList: [],
         bannedCards: [],
