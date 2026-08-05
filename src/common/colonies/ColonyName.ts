@@ -29,5 +29,10 @@ export enum ColonyName {
     LEAVITT_II = 'Leavitt II',
     IAPETUS_II = 'Iapetus II',
 
+    // Consortium — only dealt when consortiumExpansion is on
+    PSYCHE = 'Psyche',
+    VESTA = 'Vesta',
+    DAVIDA = 'Davida',
+
     // WHEN ADDING A NEW COLONY, ADD IT TO AllColonies.ts
 }

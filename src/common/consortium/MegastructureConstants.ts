@@ -75,8 +75,13 @@ export const MEGASTRUCTURE_BALANCE = {
   SCAFFOLD_YARD_DISCOUNT: 3,
   /** Site Foreman: permanent segment discount while in play. Balance knob. */
   SITE_FOREMAN_DISCOUNT: 2,
+  /** Truss Charter prelude: permanent segment discount while in play. Balance knob. */
+  TRUSS_CHARTER_DISCOUNT: 2,
   /** Keystone Consortium: permanent segment discount while in play. Balance knob. */
   KEYSTONE_CONSORTIUM_DISCOUNT: 3,
+  /** Prefab Depot / Foreperson Vale: one-shot next-segment discount. Balance knobs. */
+  PREFAB_DEPOT_DISCOUNT: 3,
+  FOREPERSON_VALE_DISCOUNT: 5,
 
   // --- Keystone Rights -----------------------------------------------------
   /** Extra end-game VP from Keystone Rights (once). Balance knob. */

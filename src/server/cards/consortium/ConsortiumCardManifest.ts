@@ -62,6 +62,23 @@ import {RimwardExpeditions} from './corporations/RimwardExpeditions';
 import {MassifGroup} from './corporations/MassifGroup';
 import {IridiumAuthority} from './corporations/IridiumAuthority';
 import {CharterSyndicate} from './corporations/CharterSyndicate';
+import {ClaimStakes} from './preludes/ClaimStakes';
+import {TrussCharter} from './preludes/TrussCharter';
+import {HighlandGrant} from './preludes/HighlandGrant';
+import {CraterLease} from './preludes/CraterLease';
+import {RimSurvey} from './preludes/RimSurvey';
+import {AssayBond} from './preludes/AssayBond';
+import {MassifDeed} from './preludes/MassifDeed';
+import {PrefabDepot} from './preludes/PrefabDepot';
+import {ForepersonVale} from './ceos/ForepersonVale';
+import {SurveyorKade} from './ceos/SurveyorKade';
+import {Rackham} from './ceos/Rackham';
+import {MasonRhee} from './ceos/MasonRhee';
+import {GlobalEventName} from '../../../common/turmoil/globalEvents/GlobalEventName';
+import {CharterReview} from './globalEvents/CharterReview';
+import {IridiumEmbargo} from './globalEvents/IridiumEmbargo';
+import {MegastructureAudit} from './globalEvents/MegastructureAudit';
+import {RimQuake} from './globalEvents/RimQuake';
 
 export const CONSORTIUM_CARD_MANIFEST = new ModuleManifest({
   module: 'consortium',
@@ -129,6 +146,30 @@ export const CONSORTIUM_CARD_MANIFEST = new ModuleManifest({
     [CardName.MASSIF_GROUP]: {Factory: MassifGroup, compatibility: 'consortium'},
     [CardName.IRIDIUM_AUTHORITY]: {Factory: IridiumAuthority, compatibility: 'consortium'},
     [CardName.CHARTER_SYNDICATE]: {Factory: CharterSyndicate, compatibility: 'consortium'},
+  },
+  preludeCards: {
+    [CardName.CLAIM_STAKES]: {Factory: ClaimStakes},
+    [CardName.TRUSS_CHARTER]: {Factory: TrussCharter},
+    [CardName.HIGHLAND_GRANT]: {Factory: HighlandGrant},
+    [CardName.CRATER_LEASE]: {Factory: CraterLease},
+    [CardName.RIM_SURVEY]: {Factory: RimSurvey},
+    [CardName.ASSAY_BOND]: {Factory: AssayBond},
+    [CardName.MASSIF_DEED]: {Factory: MassifDeed},
+    [CardName.PREFAB_DEPOT]: {Factory: PrefabDepot},
+  },
+  ceoCards: {
+    // Dealt only when CEO expansion is also on (Game deals CEOs under ceoExtension).
+    [CardName.FOREPERSON_VALE]: {Factory: ForepersonVale},
+    [CardName.SURVEYOR_KADE]: {Factory: SurveyorKade},
+    [CardName.RACKHAM]: {Factory: Rackham},
+    [CardName.MASON_RHEE]: {Factory: MasonRhee},
+  },
+  globalEvents: {
+    // Enter the Turmoil pool only when Consortium is on (GlobalEventDealer includes).
+    [GlobalEventName.CHARTER_REVIEW]: {Factory: CharterReview},
+    [GlobalEventName.IRIDIUM_EMBARGO]: {Factory: IridiumEmbargo, negative: true},
+    [GlobalEventName.MEGASTRUCTURE_AUDIT]: {Factory: MegastructureAudit},
+    [GlobalEventName.RIM_QUAKE]: {Factory: RimQuake, negative: true},
   },
   standardProjects: {
     [CardName.CORE_SAMPLING_STANDARD_PROJECT]: {Factory: CoreSamplingStandardProject},

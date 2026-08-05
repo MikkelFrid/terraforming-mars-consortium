@@ -788,11 +788,18 @@ export class Player implements IPlayer {
       graphene: card.tags.includes(Tag.CITY) || card.tags.includes(Tag.SPACE),
       kuiperAsteroids: card.name === CardName.AQUIFER_STANDARD_PROJECT || card.name === CardName.ASTEROID_STANDARD_PROJECT,
       // Iridium is tag-gated (Structure / Prospecting only), unless Siderite Holdings
-      // lifts the gate for this player alone.
+      // lifts the gate permanently, or Rackham CEO lifts it for this generation.
       iridium: card.tags.includes(Tag.STRUCTURE) ||
         card.tags.includes(Tag.PROSPECTING) ||
-        this.tableau.has(CardName.SIDERITE_HOLDINGS),
+        this.tableau.has(CardName.SIDERITE_HOLDINGS) ||
+        this.hasActiveRackham(),
     };
+  }
+
+  /** Rackham CEO: one-generation iridium payment gate lift. */
+  private hasActiveRackham(): boolean {
+    const rackham = this.tableau.get(CardName.RACKHAM);
+    return rackham !== undefined && isCeoCard(rackham) && rackham.opgActionIsActive === true;
   }
 
   public checkPaymentAndPlayCard(selectedCard: IProjectCard, payment: Payment, cardAction: CardAction = 'add') {

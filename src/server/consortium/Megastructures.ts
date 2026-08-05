@@ -146,6 +146,9 @@ export class Megastructures {
     if (player.tableau.has(CardName.SITE_FOREMAN)) {
       discount += BALANCE.SITE_FOREMAN_DISCOUNT;
     }
+    if (player.tableau.has(CardName.TRUSS_CHARTER)) {
+      discount += BALANCE.TRUSS_CHARTER_DISCOUNT;
+    }
     if (player.tableau.has(CardName.KEYSTONE_CONSORTIUM)) {
       discount += BALANCE.KEYSTONE_CONSORTIUM_DISCOUNT;
     }

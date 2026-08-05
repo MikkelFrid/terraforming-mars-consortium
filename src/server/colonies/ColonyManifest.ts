@@ -23,6 +23,9 @@ import {IapetusII} from '../cards/pathfinders/IapetusII';
 import {Deimos} from './Deimos';
 import {Terra} from '../cards/community/Terra';
 import {Kuiper} from '../cards/community/Kuiper';
+import {Psyche} from './Psyche';
+import {Vesta} from './Vesta';
+import {Davida} from './Davida';
 // import {LeavittII} from '../cards/pathfinders/LeavittII';
 
 export interface IColonyFactory<T> {
@@ -62,7 +65,23 @@ export const PATHFINDERS_COLONIES_TILES: Array<IColonyFactory<Colony>> = [
   {colonyName: ColonyName.IAPETUS_II, Factory: IapetusII},
 ];
 
-export const ALL_COLONIES_TILES = [...BASE_COLONIES_TILES, ...COMMUNITY_COLONIES_TILES, ...PATHFINDERS_COLONIES_TILES];
+/**
+ * Consortium colonies — NEVER add these to BASE. ColonyDealer includes them
+ * only when consortiumExpansion is on (or a custom list names one), so
+ * non-Consortium colonies games and mid-game restores stay stable.
+ */
+export const CONSORTIUM_COLONIES_TILES: Array<IColonyFactory<Colony>> = [
+  {colonyName: ColonyName.PSYCHE, Factory: Psyche},
+  {colonyName: ColonyName.VESTA, Factory: Vesta},
+  {colonyName: ColonyName.DAVIDA, Factory: Davida},
+];
+
+export const ALL_COLONIES_TILES = [
+  ...BASE_COLONIES_TILES,
+  ...COMMUNITY_COLONIES_TILES,
+  ...PATHFINDERS_COLONIES_TILES,
+  ...CONSORTIUM_COLONIES_TILES,
+];
 
 export function getColonyModule(name: ColonyName): GameModule {
   if (COMMUNITY_COLONIES_TILES.some((f) => f.colonyName === name)) {
@@ -70,6 +89,9 @@ export function getColonyModule(name: ColonyName): GameModule {
   }
   if (PATHFINDERS_COLONIES_TILES.some((f) => f.colonyName === name)) {
     return 'pathfinders';
+  }
+  if (CONSORTIUM_COLONIES_TILES.some((f) => f.colonyName === name)) {
+    return 'consortium';
   }
   return 'colonies';
 }

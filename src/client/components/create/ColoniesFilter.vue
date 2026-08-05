@@ -19,24 +19,27 @@ import {defineComponent} from 'vue';
 import ModuleItemFilter from './ModuleItemFilter.vue';
 import {ColonyName} from '@/common/colonies/ColonyName';
 import {COLONY_DESCRIPTIONS} from '@/common/colonies/ColonyDescription';
-import {OFFICIAL_COLONY_NAMES, COMMUNITY_COLONY_NAMES, PATHFINDERS_COLONY_NAMES} from '@/common/colonies/AllColonies';
+import {OFFICIAL_COLONY_NAMES, COMMUNITY_COLONY_NAMES, PATHFINDERS_COLONY_NAMES, CONSORTIUM_COLONY_NAMES} from '@/common/colonies/AllColonies';
 import {Expansion} from '@/common/cards/GameModule';
 import {getColony} from '@/client/colonies/ClientColonyManifest';
 
 const OFFICIAL_COLONIES = [...OFFICIAL_COLONY_NAMES].sort();
 const COMMUNITY_COLONIES = [...COMMUNITY_COLONY_NAMES].sort();
 const PATHFINDERS_COLONIES = [...PATHFINDERS_COLONY_NAMES].sort();
+const CONSORTIUM_COLONIES = [...CONSORTIUM_COLONY_NAMES].sort();
 
 const GROUPS = [
   {key: 'colonies', label: 'Official'},
   {key: 'community', label: 'Community'},
   {key: 'pathfinders', label: 'Pathfinders'},
+  {key: 'consortium', label: 'Consortium'},
 ];
 
 const ITEMS_BY_GROUP: Record<string, Array<ColonyName>> = {
   colonies: OFFICIAL_COLONIES,
   community: COMMUNITY_COLONIES,
   pathfinders: PATHFINDERS_COLONIES,
+  consortium: CONSORTIUM_COLONIES,
 };
 
 export default defineComponent({
@@ -52,6 +55,7 @@ export default defineComponent({
       ...OFFICIAL_COLONIES,
       ...this.expansions.community ? COMMUNITY_COLONIES : [],
       ...this.expansions.pathfinders ? PATHFINDERS_COLONIES : [],
+      ...this.expansions.consortium ? CONSORTIUM_COLONIES : [],
     ];
     return {initialSelected};
   },

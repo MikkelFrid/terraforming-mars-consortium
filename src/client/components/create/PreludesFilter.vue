@@ -60,6 +60,7 @@ export default defineComponent({
       ...this.expansions.ceo ? preludeCardNames('ceo') : [],
       ...this.expansions.underworld ? preludeCardNames('underworld') : [],
       ...this.expansions.prelude2 ? preludeCardNames('prelude2') : [],
+      ...this.expansions.consortium ? preludeCardNames('consortium') : [],
     ];
     return {initialSelected};
   },
