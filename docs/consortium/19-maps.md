@@ -36,13 +36,19 @@ Do not hand-edit JSON/LESS/PNG — change `VARIANTS` in the generator and rerun.
 
 ## Previews
 
-Terrain previews (Mars disc + hex overlays + legend) are used by:
+Create Game shows a preview for **every** concrete board (`BoardPreviews.ts`):
+
+| Maps | Asset root |
+|------|------------|
+| Massif / Rift / Archipelago | `assets/consortium/maps/` (generator) |
+| Official + fan maps | `assets/maps/` (vendored from upstream Maps wiki) |
+
+Also used by:
 
 - Player rulebook §2 (`assets/consortium/rulebook.html#board`, anchors `#massif` / `#rift-basin` / `#archipelago` / `#consortium`)
-- Lobby create-game board column when Consortium is enabled
-- Lobby board ⓘ → rulebook anchors (not upstream wiki — see below)
+- Lobby board ⓘ → rulebook anchors for Consortium maps (not upstream wiki — see below)
 
-Paths come from `consortiumBoardPreviewUrl()` in `src/common/boards/ConsortiumBoards.ts`.
+With Consortium on a non-native map the caption notes that the terrain overlay applies.
 
 ### Upstream wiki Maps#consortium
 
@@ -52,9 +58,11 @@ Railway image URLs): `docs/consortium/wiki-Maps-consortium.md`.
 
 ## Lobby / API
 
-- Consortium expansion on → board list is the three maps (radios enabled)
-- Default selection: Massif (`consortium`) for save-game compatibility
-- API clamps invalid boards to Massif; keeps an explicit Rift/Archipelago pick
+- Consortium expansion on → three native maps **plus** every other board
+  (standard / fan). Non-native boards get a terrain overlay
+  (`ConsortiumMapOverlay.ts`) — see `docs/consortium/24-borbarad-feedback.md`
+- Default selection unchanged when enabling the checkbox (current board kept)
+- API keeps an explicit board pick (Tharsis + Consortium is valid overlay)
 - Random `ALL` without Consortium filters Consortium maps out
 
 ## Code map

@@ -47,14 +47,17 @@ apply to a radius-6 hexagon). `SpaceId` accepts 3-digit ids (`001`–`127`).
 ## CSS sizing (Consortium-scoped)
 
 `.board-cont.board-consortium` is 891×860 with `mars_consortium.png`.
-Inner `.board` is full-size (hex margins include the generator OFFSET).
-Ocean / oxygen / temperature tracks and colony tiles are scaled from the
-Tharsis 620×600 chrome (`transform: scale(891/620, 860/600)`).
+Inner `.board` is full-size (hex margins include the generator OFFSET;
+`OFFSET_Y` is one hex-row deeper than the original 134 so the field sits
+correctly on the disc). Ocean / oxygen / temperature tracks and colony tiles
+are scaled from the Tharsis 620×600 chrome
+(`transform: scale(891/620, 860/600)`).
 `.global-numbers` keeps a scaled copy of the Tharsis inset
 (`margin: 11×860/600 / 16×891/620`) so the pin tables in `globs.less` land on
 the upscaled track art; `.board-outer-spaces` stays at the board-cont origin
 (colony positions have no 11/16 inset). Tharsis / Hellas / Elysium / Amazonis
-keep the default 600×488 / 670px container — pixel-identical.
+keep the default 600×488 / 670px container — pixel-identical (unless
+Consortium overlay is active — metadata only, no chrome change).
 
 ### Board scale preference
 

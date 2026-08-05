@@ -5,6 +5,7 @@ import CreateGameForm from '@/client/components/create/CreateGameForm.vue';
 import {CreateGameSettingsStorage} from '@/client/components/create/CreateGameSettingsStorage';
 import {FakeLocalStorage} from '../FakeLocalStorage';
 import {BoardName} from '@/common/boards/BoardName';
+import {RandomBoardOption} from '@/common/boards/RandomBoardOption';
 import {DEFAULT_EXPANSIONS} from '@/common/cards/GameModule';
 import {JSONObject} from '@/common/Types';
 import {defineComponent} from 'vue';
@@ -68,7 +69,7 @@ describe('CreateGameForm', () => {
     expect((wrapper.vm as any).expansions.consortium).eq(true);
   });
 
-  it('auto-selects Consortium maps when the expansion is enabled', async () => {
+  it('lists Consortium maps plus all boards when the expansion is enabled', async () => {
     const wrapper = mount(CreateGameForm, {
       ...globalConfig,
     });
@@ -76,11 +77,14 @@ describe('CreateGameForm', () => {
     (wrapper.vm as any).expansions.consortium = true;
     await wrapper.vm.$nextTick();
 
-    expect((wrapper.vm as any).board).eq(BoardName.CONSORTIUM);
-    expect((wrapper.vm as any).boards).deep.eq([
+    // Overlay mode: keep the current board; do not force Massif.
+    expect((wrapper.vm as any).board).eq(BoardName.THARSIS);
+    expect((wrapper.vm as any).boards).to.include.members([
       BoardName.CONSORTIUM,
       BoardName.CONSORTIUM_RIFT,
       BoardName.CONSORTIUM_ARCHIPELAGO,
+      BoardName.THARSIS,
+      BoardName.HELLAS,
     ]);
     expect(wrapper.find('#board-consortium-radio').exists()).to.be.true;
     expect(wrapper.find('#board-rift-basin-radio').exists()).to.be.true;
@@ -90,6 +94,7 @@ describe('CreateGameForm', () => {
     expect(wrapper.text()).to.include('Massif');
     expect(wrapper.text()).to.include('Rift Basin');
     expect(wrapper.text()).to.include('Archipelago');
+    expect(wrapper.text()).to.include('All maps (terrain overlay)');
 
     await wrapper.find('#board-rift-basin-radio').setValue(BoardName.CONSORTIUM_RIFT);
     await wrapper.vm.$nextTick();
@@ -102,18 +107,32 @@ describe('CreateGameForm', () => {
     expect((wrapper.vm as any).boards).to.not.include(BoardName.CONSORTIUM);
   });
 
-  it('shows a Consortium map preview that follows the selected board', async () => {
+  it('shows a map preview for every concrete board, including non-Consortium maps', async () => {
     const wrapper = mount(CreateGameForm, {
       ...globalConfig,
     });
 
-    expect(wrapper.find('[data-test="consortium-map-preview"]').exists()).to.be.false;
+    // Default Tharsis — preview without Consortium expansion.
+    let preview = wrapper.find('[data-test="board-map-preview"]');
+    expect(preview.exists()).to.be.true;
+    expect(preview.find('img').attributes('src')).eq('/assets/maps/tharsis.png');
+    expect(preview.text()).to.include('tharsis');
+
+    await wrapper.find('#board-hellas-radio').setValue(BoardName.HELLAS);
+    await wrapper.vm.$nextTick();
+    expect(preview.find('img').attributes('src')).eq('/assets/maps/hellas.png');
 
     (wrapper.vm as any).expansions.consortium = true;
     await wrapper.vm.$nextTick();
 
-    const preview = wrapper.find('[data-test="consortium-map-preview"]');
+    preview = wrapper.find('[data-test="board-map-preview"]');
     expect(preview.exists()).to.be.true;
+    // Enabling Consortium keeps the current board; overlay blurb appears.
+    expect(preview.find('img').attributes('src')).eq('/assets/maps/hellas.png');
+    expect(preview.text()).to.include('overlay');
+
+    await wrapper.find('#board-consortium-radio').setValue(BoardName.CONSORTIUM);
+    await wrapper.vm.$nextTick();
     expect(preview.find('img').attributes('src')).eq('/assets/consortium/maps/massif.png');
     expect(preview.text()).to.include('Massif');
     expect(preview.text()).to.include('Balanced');
@@ -128,9 +147,10 @@ describe('CreateGameForm', () => {
     expect(preview.find('img').attributes('src')).eq('/assets/consortium/maps/archipelago.png');
     expect(preview.text()).to.include('Archipelago');
 
-    (wrapper.vm as any).expansions.consortium = false;
+    // Random options hide the preview.
+    (wrapper.vm as any).board = RandomBoardOption.OFFICIAL;
     await wrapper.vm.$nextTick();
-    expect(wrapper.find('[data-test="consortium-map-preview"]').exists()).to.be.false;
+    expect(wrapper.find('[data-test="board-map-preview"]').exists()).to.be.false;
   });
 
   it('links Consortium board info to the in-instance rulebook map anchors', async () => {

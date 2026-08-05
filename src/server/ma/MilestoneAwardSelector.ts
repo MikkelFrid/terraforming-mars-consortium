@@ -25,6 +25,43 @@ type DrawnMilestonesAndAwards = {
   awards: Array<AwardName>
 }
 
+/** Official / fan boards expose 5+5; Consortium registers 3+3 themed + modular pad. */
+const BOARD_MA_TARGET = 5;
+
+/**
+ * Pad a short board MA set up to |target| using the Official Random α (modular)
+ * pool gated by the expansions in play. No synergy check — board NONE never
+ * validates synergy (Tharsis itself would fail LIMITED).
+ */
+function fillBoardMasFromModular(
+  drawn: DrawnMilestonesAndAwards,
+  gameOptions: GameOptions,
+  target: number,
+): void {
+  const needM = target - drawn.milestones.length;
+  const needA = target - drawn.awards.length;
+  if (needM <= 0 && needA <= 0) {
+    return;
+  }
+
+  const [milestoneCandidates, awardCandidates] = getCandidates({
+    ...gameOptions,
+    modularMA: true,
+  });
+  const usedMilestones = new Set(drawn.milestones);
+  const usedAwards = new Set(drawn.awards);
+  const mPool = milestoneCandidates.filter((name) => !usedMilestones.has(name));
+  const aPool = awardCandidates.filter((name) => !usedAwards.has(name));
+  inplaceShuffle(mPool, UnseededRandom.INSTANCE);
+  inplaceShuffle(aPool, UnseededRandom.INSTANCE);
+  if (needM > 0) {
+    drawn.milestones.push(...mPool.slice(0, needM));
+  }
+  if (needA > 0) {
+    drawn.awards.push(...aPool.slice(0, needA));
+  }
+}
+
 // Compute max synergy of a given set of milestones and awards. Exported for testing.
 export function maximumSynergy(names: ReadonlyArray<MilestoneName | AwardName>) : number {
   let max = 0;
@@ -76,25 +113,35 @@ export function chooseMilestonesAndAwards(gameOptions: GameOptions): DrawnMilest
 
   switch (gameOptions.randomMA) {
   case RandomMAOptionType.NONE:
-    const boardName = gameOptions.boardName;
-    switch (gameOptions.boardName) {
-    case BoardName.THARSIS:
-    case BoardName.HELLAS:
-    case BoardName.ELYSIUM:
-    case BoardName.UTOPIA_PLANITIA:
-    case BoardName.ARABIA_TERRA:
-    case BoardName.AMAZONIS:
-    case BoardName.TERRA_CIMMERIA:
-    case BoardName.TERRA_CIMMERIA_NOVA:
-    case BoardName.VASTITAS_BOREALIS:
-    case BoardName.VASTITAS_BOREALIS_NOVA:
-    case BoardName.CONSORTIUM:
-    case BoardName.CONSORTIUM_RIFT:
-    case BoardName.CONSORTIUM_ARCHIPELAGO:
-      push(milestoneManifest.boards[boardName], awardManifest.boards[gameOptions.boardName]);
-      break;
-    default:
-      return getRandomMilestonesAndAwards(gameOptions, requiredQty, LIMITED_SYNERGY);
+    // Consortium games always use the themed 3+3 set (native maps and overlay),
+    // then pad to 5+5 from the modular pool so boards match official density.
+    if (gameOptions.consortiumExpansion) {
+      push(
+        milestoneManifest.boards[BoardName.CONSORTIUM],
+        awardManifest.boards[BoardName.CONSORTIUM],
+      );
+      fillBoardMasFromModular(drawnMilestonesAndAwards, gameOptions, BOARD_MA_TARGET);
+    } else {
+      const boardName = gameOptions.boardName;
+      switch (gameOptions.boardName) {
+      case BoardName.THARSIS:
+      case BoardName.HELLAS:
+      case BoardName.ELYSIUM:
+      case BoardName.UTOPIA_PLANITIA:
+      case BoardName.ARABIA_TERRA:
+      case BoardName.AMAZONIS:
+      case BoardName.TERRA_CIMMERIA:
+      case BoardName.TERRA_CIMMERIA_NOVA:
+      case BoardName.VASTITAS_BOREALIS:
+      case BoardName.VASTITAS_BOREALIS_NOVA:
+      case BoardName.CONSORTIUM:
+      case BoardName.CONSORTIUM_RIFT:
+      case BoardName.CONSORTIUM_ARCHIPELAGO:
+        push(milestoneManifest.boards[boardName], awardManifest.boards[gameOptions.boardName]);
+        break;
+      default:
+        return getRandomMilestonesAndAwards(gameOptions, requiredQty, LIMITED_SYNERGY);
+      }
     }
     if (gameOptions.padConsortiumMA && isConsortiumBoard(boardName)) {
       padConsortiumWithOfficialMas(drawnMilestonesAndAwards);

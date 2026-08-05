@@ -273,6 +273,14 @@ export default defineComponent({
         return ['card-geoscan-icon'];
       case CardRenderItemType.UNDERGROUND_SHELTERS:
         return ['card-underground-shelters'];
+      case CardRenderItemType.BRIDGE:
+        return ['card-bridge'];
+      case CardRenderItemType.HIGHLAND:
+        return ['card-highland'];
+      case CardRenderItemType.MEGASTRUCTURE_SEGMENT:
+        return ['card-megastructure-segment'];
+      case CardRenderItemType.KEYSTONE_SEGMENT:
+        return ['card-keystone-segment'];
       default:
         return [];
       }

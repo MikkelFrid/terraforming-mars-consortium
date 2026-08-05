@@ -265,6 +265,10 @@ export abstract class Board {
         return false;
       }
 
+      if (space.locked === true) {
+        return false;
+      }
+
       return this.canAfford(player, space, canAffordOptions);
     });
     return landSpaces;
@@ -295,9 +299,12 @@ export abstract class Board {
   }
 
   public canPlaceTile(space: Space): boolean {
+    // Consortium locked frontier (native maps or overlay) stays unplaceable
+    // until its bridge completes — same rule on every board class.
     return space.tile === undefined &&
       Board.isTileableLandSpaceType(space.spaceType) &&
-      space.id !== this.noctisCitySpaceId;
+      space.id !== this.noctisCitySpaceId &&
+      space.locked !== true;
   }
 
   public static isCitySpace(space: Space): boolean {

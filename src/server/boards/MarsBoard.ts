@@ -264,6 +264,9 @@ export class MarsBoard extends Board {
       if (space.id === this.noctisCitySpaceId) {
         return false;
       }
+      if (space.locked === true) {
+        return false;
+      }
       return (space.spaceType === SpaceType.LAND ||
         space.spaceType === SpaceType.COVE ||
         space.spaceType === SpaceType.DEFLECTION_ZONE ||

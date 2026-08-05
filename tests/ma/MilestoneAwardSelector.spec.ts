@@ -258,6 +258,43 @@ describe('MilestoneAwardSelector', () => {
     expect(intersection(awards as Array<string>, deprecatedAwards)).is.empty;
   });
 
+  it('Consortium NONE pads themed 3+3 to 5+5 from modular pool', () => {
+    const mas = choose({
+      consortiumExpansion: true,
+      boardName: BoardName.CONSORTIUM,
+      randomMA: RandomMAOptionType.NONE,
+    });
+    expect(mas.milestones).to.have.length(5);
+    expect(mas.awards).to.have.length(5);
+    expect(mas.milestones).to.include.members(['Mason', 'Pathfinder', 'Assayer']);
+    expect(mas.awards).to.include.members(['Underwriter', 'Cartographer', 'Refiner']);
+  });
+
+  it('Consortium overlay board uses Consortium MAs, not Tharsis MAs', () => {
+    const mas = choose({
+      consortiumExpansion: true,
+      boardName: BoardName.THARSIS,
+      randomMA: RandomMAOptionType.NONE,
+    });
+    expect(mas.milestones).to.have.length(5);
+    expect(mas.milestones).to.include.members(['Mason', 'Pathfinder', 'Assayer']);
+    expect(mas.milestones).to.not.include('Terraformer');
+  });
+
+  it('Consortium NONE + Venus is 6+6 and keeps themed MAs', () => {
+    const mas = choose({
+      consortiumExpansion: true,
+      boardName: BoardName.CONSORTIUM_RIFT,
+      randomMA: RandomMAOptionType.NONE,
+      venusNextExtension: true,
+    });
+    expect(mas.milestones).to.have.length(6);
+    expect(mas.awards).to.have.length(6);
+    expect(mas.milestones).to.include('Hoverlord');
+    expect(mas.awards).to.include('Venuphile');
+    expect(mas.milestones).to.include.members(['Mason', 'Pathfinder', 'Assayer']);
+  });
+
   function choose(options: Partial<GameOptions>) {
     return chooseMilestonesAndAwards({...DEFAULT_GAME_OPTIONS, ...options});
   }
