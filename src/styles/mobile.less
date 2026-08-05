@@ -1,0 +1,288 @@
+/* Mobile client shell (P0). Desktop layout is unchanged when .mobile-client is absent. */
+
+body.mobile-client,
+html.mobile-client {
+  background: #1a1f24;
+}
+
+body.mobile-client .notice {
+  display: none;
+}
+
+body.mobile-client .main-container {
+  margin-left: 0;
+  max-width: none;
+  padding: 0;
+}
+
+.mobile-player-home {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  min-height: 100vh;
+  background: #1a1f24;
+  color: #e8eaed;
+  padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+}
+
+.mobile-hud {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: #12161a;
+  border-bottom: 1px solid #2c343c;
+  padding: calc(8px + env(safe-area-inset-top, 0px)) 10px 8px;
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.mobile-hud__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+}
+
+.mobile-hud__row + .mobile-hud__row {
+  margin-top: 6px;
+}
+
+.mobile-hud__gen,
+.mobile-hud__phase,
+.mobile-hud__tr {
+  font-weight: 600;
+}
+
+.mobile-hud__acting {
+  margin-left: auto;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #2c343c;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 11px;
+}
+
+.mobile-hud__acting--you {
+  background: #c45c26;
+  color: #fff;
+}
+
+.mobile-hud__param {
+  opacity: 0.9;
+}
+
+.mobile-hud__res {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 28px;
+}
+
+.mobile-hud__res .resource_icon {
+  transform: scale(0.75);
+  transform-origin: center left;
+}
+
+.mobile-hud__res--iridium {
+  color: #c9b37e;
+}
+
+.mobile-player-home__main {
+  flex: 1;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px 10px 24px;
+}
+
+.mobile-mode__title {
+  margin: 0 0 10px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.mobile-mode__title + .mobile-mode__title,
+.mobile-card-scroller + .mobile-mode__title {
+  margin-top: 20px;
+}
+
+.mobile-mode__note,
+.mobile-mode__hint {
+  margin: 12px 0 0;
+  font-size: 13px;
+  opacity: 0.75;
+  line-height: 1.4;
+}
+
+.mobile-bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  display: flex;
+  height: calc(56px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: #0e1216;
+  border-top: 1px solid #2c343c;
+}
+
+.mobile-bottom-nav__item {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #9aa3ad;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.mobile-bottom-nav__item--active {
+  color: #f0f3f6;
+  background: #1c242c;
+}
+
+.mobile-bottom-nav__badge {
+  position: absolute;
+  top: 10px;
+  right: calc(50% - 22px);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #c45c26;
+}
+
+.mobile-table-scroll {
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+  /* Leave room for hint text */
+  max-height: calc(100dvh - 200px);
+  max-height: calc(100vh - 200px);
+  background: #0a0d10;
+  border-radius: 4px;
+}
+
+.mobile-table-scale {
+  /* Height recovered roughly so scroll area isn't huge empty space — board content drives it */
+  min-height: 200px;
+}
+
+.mobile-card-scroller {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 8px;
+  scroll-snap-type: x mandatory;
+}
+
+.mobile-card-scroller--wrap {
+  flex-wrap: wrap;
+  overflow-x: visible;
+  scroll-snap-type: none;
+}
+
+.mobile-card-scroller__item {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  transform: scale(0.85);
+  transform-origin: top left;
+  margin-right: -36px;
+}
+
+.mobile-card-scroller--wrap .mobile-card-scroller__item {
+  margin-right: -48px;
+  margin-bottom: -40px;
+  transform: scale(0.55);
+}
+
+.mobile-rivals {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.mobile-rivals__row {
+  padding: 12px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  background: #22282f;
+  border-left: 4px solid #666;
+}
+
+.mobile-rivals__row--self {
+  outline: 1px solid #c45c26;
+}
+
+.mobile-rivals__name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.mobile-rivals__pip {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.mobile-rivals__status {
+  margin-left: auto;
+  font-size: 11px;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.mobile-rivals__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.mobile-more-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.mobile-more-actions__label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.mobile-more-actions__label select {
+  min-height: 44px;
+  font-size: 16px;
+}
+
+.mobile-more-actions .btn {
+  min-height: 48px;
+}
+
+/* Player color accents on rival rows / hud — reuse common color vars where present */
+.mobile-rivals__row--red { border-left-color: #c62828; }
+.mobile-rivals__row--blue { border-left-color: #1565c0; }
+.mobile-rivals__row--green { border-left-color: #2e7d32; }
+.mobile-rivals__row--yellow { border-left-color: #f9a825; }
+.mobile-rivals__row--black { border-left-color: #424242; }
+.mobile-rivals__row--purple { border-left-color: #6a1b9a; }
+.mobile-rivals__row--orange { border-left-color: #ef6c00; }
+.mobile-rivals__row--pink { border-left-color: #ad1457; }

@@ -1,3 +1,5 @@
+export type MobileClientMode = 'auto' | 'on' | 'off';
+
 export type Preferences = {
   learner_mode: boolean,
   enable_sounds: boolean,
@@ -24,13 +26,19 @@ export type Preferences = {
   experimental_ui: boolean,
   /** Display scale for the Consortium board (0.7–1.0, step 0.05). */
   consortium_board_scale: number,
+  /**
+   * Mobile client presentation layer.
+   * auto = narrow / coarse-pointer heuristic; on/off force either shell.
+   * URL ?mobile=1|0 overrides.
+   */
+  mobile_client: MobileClientMode,
   lang: string,
 }
 
 export type Preference = keyof Preferences;
 
-/** Boolean preferences (everything except lang + numeric scale). */
-export type BooleanPreference = Exclude<Preference, 'lang' | 'consortium_board_scale'>;
+/** Boolean preferences (everything except lang + numeric + mobile_client mode). */
+export type BooleanPreference = Exclude<Preference, 'lang' | 'consortium_board_scale' | 'mobile_client'>;
 
 const defaults: Preferences = {
   learner_mode: true,
@@ -61,7 +69,19 @@ const defaults: Preferences = {
   debug_view: false,
 
   consortium_board_scale: 0.85,
+  mobile_client: 'auto',
 };
+
+function parseMobileClientMode(val: string | boolean | number): MobileClientMode {
+  const s = String(val);
+  if (s === 'on' || s === '1' || s === 'true') {
+    return 'on';
+  }
+  if (s === 'off' || s === '0' || s === 'false') {
+    return 'off';
+  }
+  return 'auto';
+}
 
 const SCALE_MIN = 0.7;
 const SCALE_MAX = 1.0;
@@ -105,6 +125,8 @@ export class PreferencesManager {
     } else if (key === 'consortium_board_scale') {
       const n = typeof val === 'number' ? val : Number.parseFloat(String(val));
       this._values.consortium_board_scale = clampConsortiumBoardScale(n);
+    } else if (key === 'mobile_client') {
+      this._values.mobile_client = parseMobileClientMode(val);
     } else {
       this._values[key] = typeof(val) === 'boolean' ? val : (val === '1');
     }
@@ -127,6 +149,8 @@ export class PreferencesManager {
         localStorage.setItem(name, this._values.lang);
       } else if (name === 'consortium_board_scale') {
         localStorage.setItem(name, String(this._values.consortium_board_scale));
+      } else if (name === 'mobile_client') {
+        localStorage.setItem(name, this._values.mobile_client);
       } else {
         localStorage.setItem(name, this._values[name] ? '1' : '0');
       }
