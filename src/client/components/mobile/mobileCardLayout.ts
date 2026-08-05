@@ -2,10 +2,13 @@
 export const CARD_DESIGN_WIDTH_PX = 240;
 
 /**
- * Design height of card chrome (px).
- * Taller than a short project card so corps/preludes are not clipped when scaled.
+ * Fixed face height for every mobile tile (px at design scale).
+ * All grid cards share this frame so corps and short projects align.
  */
-export const CARD_DESIGN_HEIGHT_PX = 380;
+export const CARD_DESIGN_HEIGHT_PX = 360;
+
+/** CSS aspect-ratio string for uniform tiles. */
+export const CARD_TILE_ASPECT_RATIO = `${CARD_DESIGN_WIDTH_PX} / ${CARD_DESIGN_HEIGHT_PX}`;
 
 export type MobileCardGridSize = 's' | 'm' | 'l';
 

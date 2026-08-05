@@ -104,4 +104,28 @@ describe('MobileTurnMode', () => {
     });
     expect(wrapper.text()).to.not.include('Hand is empty');
   });
+
+  it('hides Your cards preview while SelectCard buy is pending', () => {
+    const wrapper = mount(MobileTurnMode, {
+      ...globalConfig,
+      props: {
+        playerView: stubView({
+          waitingFor: {
+            type: 'card',
+            title: 'Select card(s) to buy',
+            cards: [{name: CardName.ALGAE}],
+            max: 4,
+            min: 0,
+          } as never,
+        }),
+      },
+      global: {
+        ...globalConfig.global,
+        stubs: {WaitingFor: WaitingForStub},
+      },
+    });
+    expect(wrapper.find('[data-test="mobile-turn-cards"]').exists()).eq(false);
+    expect(wrapper.find('[data-test="waiting-for-stub"]').exists()).eq(true);
+    expect(wrapper.find('[data-test="mobile-turn-open-empire"]').exists()).eq(true);
+  });
 });

@@ -26,6 +26,7 @@ import {Color} from '@/common/Color';
 import {
   CARD_DESIGN_HEIGHT_PX,
   CARD_DESIGN_WIDTH_PX,
+  CARD_TILE_ASPECT_RATIO,
   gridTileSize,
 } from '@/client/components/mobile/mobileCardLayout';
 
@@ -49,7 +50,7 @@ export default defineComponent({
       type: String as PropType<MobileCardTileSize>,
       default: 'hand',
     },
-    /** Explicit scale of the 240×335 design card (preferred for grids). */
+    /** Explicit scale of the design card (preferred for grids). */
     scale: {
       type: Number,
       default: undefined,
@@ -93,6 +94,7 @@ export default defineComponent({
       return {
         width: `${box.width}px`,
         height: `${box.height}px`,
+        aspectRatio: CARD_TILE_ASPECT_RATIO,
       };
     },
     scaleStyle(): Record<string, string> {

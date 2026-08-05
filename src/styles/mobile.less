@@ -429,7 +429,7 @@ body.mobile-client .megastructure-track--bridge {
   gap: 10px;
   width: 100%;
   justify-items: center;
-  /* Tiles set their own box; do not clip scaled card faces */
+  align-items: start;
   overflow: visible;
 }
 
@@ -439,15 +439,15 @@ body.mobile-client .megastructure-track--bridge {
   margin: 0;
   padding: 0;
   border: 0;
-  background: transparent;
   color: inherit;
   text-align: left;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  /* Clip only to the measured tile box (height includes full card chrome) */
+  /* Uniform frame — every tile same box; face forced to design size inside */
   overflow: hidden;
-  border-radius: 6px;
-  background: #2a3036;
+  border-radius: 8px;
+  background: #1c2228;
+  flex-shrink: 0;
 }
 
 .mobile-card-tile:focus-visible {
@@ -505,10 +505,10 @@ body.mobile-client .megastructure-track--bridge {
 
 .mobile-select-card__end-spacer {
   /*
-   * Clears the fixed buy bar (one or two rows on narrow phones).
+   * Clears the fixed buy bar (can wrap to two rows on narrow phones).
    * Bottom nav clearance is already on .mobile-player-home.
    */
-  height: 96px;
+  height: 120px;
   width: 100%;
   flex-shrink: 0;
   pointer-events: none;
@@ -572,19 +572,29 @@ body.mobile-client .wf-component--select-card > .wf-component-title {
 }
 
 .mobile-card-tile--scaled {
-  /* width/height set inline from gridTileSize */
+  /* width/height set inline from gridTileSize — identical for every card */
 }
 
 .mobile-card-tile__scale {
   transform-origin: top left;
   pointer-events: none; /* clicks hit the button, not card hover chrome */
+  overflow: hidden;
 }
 
-.mobile-card-tile__scale .filterDiv,
-.mobile-card-tile__scale .card-container {
+/*
+ * Force a single physical card size in the grid. HTML cards grow with
+ * content; without this, corps dwarf preludes and bottoms look "clipped".
+ */
+body.mobile-client .mobile-card-tile__scale .filterDiv,
+body.mobile-client .mobile-card-tile__scale .card-container {
+  width: 240px !important;
+  height: 360px !important;
+  min-height: 360px !important;
+  max-height: 360px !important;
   margin: 0 !important;
-  /* Desktop cards leave side margins that look like clipped gaps on phone */
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35) !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  box-shadow: none !important;
 }
 
 .mobile-card-tile--hand .mobile-card-tile__scale {
