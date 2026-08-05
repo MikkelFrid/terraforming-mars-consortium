@@ -600,6 +600,29 @@ body.mobile-client .wf-component--select-card > .wf-component-title {
   box-shadow: none !important;
 }
 
+/*
+ * Desktop cost/tags hang outside the face (negative margins) so they sit over
+ * the rounded corners. Our fixed tile uses overflow:hidden, which clipped them.
+ * Keep chrome inside the face with a small inset past the border-radius.
+ */
+.mobile-card-tile__scale .card-content-wrapper {
+  padding: 8px 8px 0 !important;
+  box-sizing: border-box !important;
+}
+
+.mobile-card-tile__scale .card-cost-and-tags {
+  margin-top: 0 !important;
+  margin-left: 0 !important;
+}
+
+.mobile-card-tile__scale .card-cost-and-tags .card-tags {
+  margin-right: 0 !important;
+}
+
+.mobile-card-tile__scale .card-cost-and-tags .card-old-cost {
+  left: 0 !important;
+}
+
 .mobile-card-tile--scaled {
   /* Defend against anything stretching individual tiles */
   max-width: 100%;
