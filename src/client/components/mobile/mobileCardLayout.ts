@@ -7,8 +7,21 @@ export const CARD_DESIGN_WIDTH_PX = 240;
  */
 export const CARD_DESIGN_HEIGHT_PX = 360;
 
+/**
+ * Desktop cost/tags hang outside the face (≈10px). Reserve gutter so
+ * overflow:hidden on the scale wrapper does not clip that chrome.
+ */
+export const CARD_CHROME_TOP_PX = 14;
+export const CARD_CHROME_SIDE_PX = 12;
+
+/** Outer tile width at design scale (face + side gutters). */
+export const CARD_TILE_WIDTH_PX = CARD_DESIGN_WIDTH_PX + CARD_CHROME_SIDE_PX * 2;
+
+/** Outer tile height at design scale (face + top gutter). */
+export const CARD_TILE_HEIGHT_PX = CARD_DESIGN_HEIGHT_PX + CARD_CHROME_TOP_PX;
+
 /** CSS aspect-ratio string for uniform tiles. */
-export const CARD_TILE_ASPECT_RATIO = `${CARD_DESIGN_WIDTH_PX} / ${CARD_DESIGN_HEIGHT_PX}`;
+export const CARD_TILE_ASPECT_RATIO = `${CARD_TILE_WIDTH_PX} / ${CARD_TILE_HEIGHT_PX}`;
 
 export type MobileCardGridSize = 's' | 'm' | 'l';
 
@@ -74,12 +87,12 @@ export function gridCardScale(
   const cols = Math.max(1, columns);
   const gaps = gapPx * (cols - 1);
   const cell = Math.max(48, (gridWidthPx - gaps) / cols);
-  return Math.min(1, cell / CARD_DESIGN_WIDTH_PX);
+  return Math.min(1, cell / CARD_TILE_WIDTH_PX);
 }
 
 export function gridTileSize(scale: number): {width: number, height: number} {
   return {
-    width: Math.round(CARD_DESIGN_WIDTH_PX * scale),
-    height: Math.round(CARD_DESIGN_HEIGHT_PX * scale),
+    width: Math.round(CARD_TILE_WIDTH_PX * scale),
+    height: Math.round(CARD_TILE_HEIGHT_PX * scale),
   };
 }

@@ -24,6 +24,8 @@ import Card from '@/client/components/card/Card.vue';
 import {CardModel} from '@/common/models/CardModel';
 import {Color} from '@/common/Color';
 import {
+  CARD_CHROME_SIDE_PX,
+  CARD_CHROME_TOP_PX,
   CARD_DESIGN_HEIGHT_PX,
   CARD_DESIGN_WIDTH_PX,
   CARD_TILE_ASPECT_RATIO,
@@ -101,8 +103,13 @@ export default defineComponent({
       const s = this.resolvedScale;
       return {
         transform: `scale(${s})`,
+        /* Content box = face; padding = chrome gutter (see mobile.less). */
         width: `${CARD_DESIGN_WIDTH_PX}px`,
         height: `${CARD_DESIGN_HEIGHT_PX}px`,
+        paddingTop: `${CARD_CHROME_TOP_PX}px`,
+        paddingLeft: `${CARD_CHROME_SIDE_PX}px`,
+        paddingRight: `${CARD_CHROME_SIDE_PX}px`,
+        boxSizing: 'content-box',
       };
     },
   },

@@ -443,10 +443,13 @@ body.mobile-client .megastructure-track--bridge {
   text-align: left;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  /* Uniform frame — every tile same box; face forced to design size inside */
-  overflow: hidden;
+  /*
+   * Visible so cost/tag chrome in the scale gutter is not clipped by the
+   * tile's own border-radius. Face body is still clipped on .filterDiv.
+   */
+  overflow: visible;
   border-radius: 8px;
-  background: #1c2228;
+  background: transparent;
   flex-shrink: 0;
 }
 
@@ -561,14 +564,15 @@ body.mobile-client .wf-component--select-card > .wf-component-title {
   line-height: 1.25;
 }
 
+/* (240+24)×(360+14) face+chrome, scaled */
 .mobile-card-tile--hand {
-  width: 180px;
-  height: 250px;
+  width: 198px;
+  height: 281px;
 }
 
 .mobile-card-tile--thumb {
-  width: 118px;
-  height: 165px;
+  width: 130px;
+  height: 183px;
 }
 
 .mobile-card-tile--scaled {
@@ -578,7 +582,13 @@ body.mobile-client .wf-component--select-card > .wf-component-title {
 .mobile-card-tile__scale {
   transform-origin: top left;
   pointer-events: none; /* clicks hit the button, not card hover chrome */
+  /*
+   * Padding (set inline) is a gutter for desktop negative-margin chrome.
+   * Clip to the padding box so hanging cost/tags stay visible, while face
+   * body overflow below/side is still contained.
+   */
   overflow: hidden;
+  box-sizing: content-box;
 }
 
 /*
@@ -586,6 +596,9 @@ body.mobile-client .wf-component--select-card > .wf-component-title {
  * content; without this, corps dwarf preludes and bottoms look "clipped".
  * Selector is NOT gated on body.mobile-client — these nodes only exist in
  * the mobile shell, and cached desktop CSS must not win on specificity.
+ *
+ * overflow:visible — cost/tags use negative margins and must paint into the
+ * scale wrapper's padding gutter. Tall card body is still limited by height.
  */
 .mobile-card-tile__scale .filterDiv,
 .mobile-card-tile__scale .filterDiv.card-container,
@@ -595,39 +608,9 @@ body.mobile-client .wf-component--select-card > .wf-component-title {
   min-height: 360px !important;
   max-height: 360px !important;
   margin: 0 !important;
-  overflow: hidden !important;
+  overflow: visible !important;
   box-sizing: border-box !important;
   box-shadow: none !important;
-}
-
-/*
- * Desktop cost/tags hang outside the face (negative margins) so they sit over
- * the rounded corners. Our fixed tile uses overflow:hidden, which clipped them.
- * Keep chrome inside the face with inset past the border-radius (~20px).
- */
-.mobile-card-tile__scale .card-content-wrapper {
-  padding: 12px 12px 0 !important;
-  box-sizing: border-box !important;
-}
-
-.mobile-card-tile__scale .card-cost-and-tags {
-  margin-top: 0 !important;
-  margin-left: 0 !important;
-}
-
-.mobile-card-tile__scale .card-cost-and-tags .card-tags {
-  margin-right: 0 !important;
-}
-
-.mobile-card-tile__scale .card-cost-and-tags .card-old-cost {
-  left: 0 !important;
-}
-
-/* Cost badge uses a full-bleed megacredit background; keep its box fully on-face. */
-.mobile-card-tile__scale .card-cost-and-tags .card-cost,
-.mobile-card-tile__scale .card-cost-and-tags .card-old-cost {
-  position: relative;
-  z-index: 2;
 }
 
 .mobile-card-tile--scaled {
@@ -638,11 +621,17 @@ body.mobile-client .wf-component--select-card > .wf-component-title {
 .mobile-card-tile--hand .mobile-card-tile__scale {
   transform: scale(0.75);
   width: 240px;
+  height: 360px;
+  padding: 14px 12px 0;
+  box-sizing: content-box;
 }
 
 .mobile-card-tile--thumb .mobile-card-tile__scale {
   transform: scale(0.49);
   width: 240px;
+  height: 360px;
+  padding: 14px 12px 0;
+  box-sizing: content-box;
 }
 
 /* Legacy class kept for any leftover markup */
