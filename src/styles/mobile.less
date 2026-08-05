@@ -859,51 +859,143 @@ body.mobile-card-focus-open {
 }
 
 .mobile-rivals {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.mobile-rivals__row {
-  padding: 12px;
-  margin-bottom: 8px;
-  border-radius: 4px;
-  background: #22282f;
-  border-left: 4px solid #666;
-}
-
-.mobile-rivals__row--self {
-  outline: 1px solid #c45c26;
-}
-
-.mobile-rivals__name {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-  margin-bottom: 6px;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.mobile-rivals__pip {
-  width: 10px;
-  height: 10px;
+.mobile-player-sheet {
+  padding: 12px;
+  border-radius: 8px;
+  background: #1a2026;
+  border: 1px solid #2a323a;
+  border-left-width: 4px;
+  border-left-color: #666;
+}
+
+.mobile-player-sheet--self {
+  border-color: #3a4450;
+  box-shadow: inset 0 0 0 1px rgba(196, 92, 38, 0.45);
+}
+
+.mobile-player-sheet--active {
+  background: #1e262e;
+}
+
+.mobile-player-sheet__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.mobile-player-sheet__identity {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
+
+.mobile-player-sheet__pip {
+  flex: 0 0 auto;
+  width: 12px;
+  height: 12px;
+  margin-top: 4px;
   border-radius: 50%;
   background: currentColor;
 }
 
-.mobile-rivals__status {
-  margin-left: auto;
-  font-size: 11px;
-  text-transform: uppercase;
-  opacity: 0.8;
+.mobile-player-sheet__names {
+  min-width: 0;
 }
 
-.mobile-rivals__stats {
+.mobile-player-sheet__name {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 12px;
+  align-items: center;
+  gap: 6px;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.mobile-player-sheet__you {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #e07a3a;
+}
+
+.mobile-player-sheet__corp {
+  margin-top: 2px;
   font-size: 13px;
-  opacity: 0.9;
+  color: #9aa5b1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobile-player-sheet__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.mobile-player-sheet__badge {
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: #2c343c;
+  color: #c5ced6;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.mobile-player-sheet__badge--active {
+  background: rgba(196, 92, 38, 0.22);
+  color: #f0b07a;
+}
+
+.mobile-player-sheet__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #c5ced6;
+}
+
+.mobile-player-sheet__stat abbr {
+  text-decoration: none;
+}
+
+.mobile-player-sheet__resources {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 0 -4px;
+  padding: 0 4px;
+}
+
+/* Scale desktop PlayerResources into a phone strip */
+body.mobile-client .mobile-player-sheet__resources .resource_items_cont {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 4px;
+  justify-content: flex-start;
+  width: max-content;
+  min-width: 100%;
+}
+
+body.mobile-client .mobile-player-sheet__resources .resource_item {
+  flex: 0 0 auto;
+  min-width: 42px;
+  transform: scale(0.92);
+  transform-origin: top left;
 }
 
 .mobile-more-actions {
@@ -930,11 +1022,30 @@ body.mobile-card-focus-open {
 }
 
 /* Player color accents on rival rows / hud — reuse common color vars where present */
-.mobile-rivals__row--red { border-left-color: #c62828; }
-.mobile-rivals__row--blue { border-left-color: #1565c0; }
-.mobile-rivals__row--green { border-left-color: #2e7d32; }
-.mobile-rivals__row--yellow { border-left-color: #f9a825; }
-.mobile-rivals__row--black { border-left-color: #424242; }
-.mobile-rivals__row--purple { border-left-color: #6a1b9a; }
-.mobile-rivals__row--orange { border-left-color: #ef6c00; }
-.mobile-rivals__row--pink { border-left-color: #ad1457; }
+.mobile-player-sheet--red { border-left-color: #c62828; color: #ef9a9a; }
+.mobile-player-sheet--blue { border-left-color: #1565c0; color: #90caf9; }
+.mobile-player-sheet--green { border-left-color: #2e7d32; color: #a5d6a7; }
+.mobile-player-sheet--yellow { border-left-color: #f9a825; color: #ffe082; }
+.mobile-player-sheet--black { border-left-color: #9e9e9e; color: #e0e0e0; }
+.mobile-player-sheet--purple { border-left-color: #6a1b9a; color: #ce93d8; }
+.mobile-player-sheet--orange { border-left-color: #ef6c00; color: #ffcc80; }
+.mobile-player-sheet--pink { border-left-color: #ad1457; color: #f48fb1; }
+
+.mobile-player-sheet__name,
+.mobile-player-sheet__meta,
+.mobile-player-sheet__corp {
+  color: #e8eef4;
+}
+
+.mobile-player-sheet__pip {
+  color: inherit;
+}
+
+.mobile-player-sheet--red .mobile-player-sheet__pip { background: #c62828; }
+.mobile-player-sheet--blue .mobile-player-sheet__pip { background: #1565c0; }
+.mobile-player-sheet--green .mobile-player-sheet__pip { background: #2e7d32; }
+.mobile-player-sheet--yellow .mobile-player-sheet__pip { background: #f9a825; }
+.mobile-player-sheet--black .mobile-player-sheet__pip { background: #9e9e9e; }
+.mobile-player-sheet--purple .mobile-player-sheet__pip { background: #6a1b9a; }
+.mobile-player-sheet--orange .mobile-player-sheet__pip { background: #ef6c00; }
+.mobile-player-sheet--pink .mobile-player-sheet__pip { background: #ad1457; }

@@ -1,39 +1,26 @@
 <template>
   <section class="mobile-mode mobile-mode--rivals">
     <h2 class="mobile-mode__title" v-i18n>Players</h2>
-    <ul class="mobile-rivals">
-      <li
-        v-for="p in playerView.players"
+    <div class="mobile-rivals" data-test="mobile-rivals">
+      <MobilePlayerSheet
+        v-for="p in orderedPlayers"
         :key="p.color"
-        class="mobile-rivals__row"
-        :class="['mobile-rivals__row--' + p.color, {'mobile-rivals__row--self': p.color === thisPlayer.color}]"
-      >
-        <div class="mobile-rivals__name">
-          <span class="mobile-rivals__pip"></span>
-          {{ p.name }}
-          <span v-if="p.isActive" class="mobile-rivals__status" v-i18n>active</span>
-        </div>
-        <div class="mobile-rivals__stats">
-          <span>TR {{ p.terraformRating }}</span>
-          <span>VP {{ p.victoryPointsBreakdown.total }}</span>
-          <span>M€ {{ p.megacredits }}</span>
-          <span v-if="showIridium">Ir {{ p.iridium }}</span>
-          <span>Cards {{ p.cardsInHandNbr }}</span>
-        </div>
-      </li>
-    </ul>
-    <p class="mobile-mode__hint" v-i18n>
-      Full opponent tableau sheets arrive in a later mobile phase.
-    </p>
+        :player="p"
+        :playerView="playerView"
+        :firstForGen="isFirstForGen(p)"
+      />
+    </div>
   </section>
 </template>
 
 <script lang="ts">
 import {defineComponent} from 'vue';
+import MobilePlayerSheet from '@/client/components/mobile/MobilePlayerSheet.vue';
 import {PlayerViewModel, PublicPlayerModel} from '@/common/models/PlayerModel';
 
 export default defineComponent({
   name: 'MobileRivalsMode',
+  components: {MobilePlayerSheet},
   props: {
     playerView: {
       type: Object as () => PlayerViewModel,
@@ -41,11 +28,24 @@ export default defineComponent({
     },
   },
   computed: {
-    thisPlayer(): PublicPlayerModel {
-      return this.playerView.thisPlayer;
+    /**
+     * Active player first (whose turn / research focus), then seating order.
+     * Everyone — including you — uses the same sheet with full resources.
+     */
+    orderedPlayers(): Array<PublicPlayerModel> {
+      const players = this.playerView.players.slice();
+      const activeIdx = players.findIndex((p) => p.isActive);
+      if (activeIdx <= 0) {
+        return players;
+      }
+      const [active] = players.splice(activeIdx, 1);
+      return [active, ...players];
     },
-    showIridium(): boolean {
-      return this.playerView.game.gameOptions.expansions.consortium === true;
+  },
+  methods: {
+    isFirstForGen(player: PublicPlayerModel): boolean {
+      return this.playerView.players.length > 1 &&
+        this.playerView.players[0]?.color === player.color;
     },
   },
 });
