@@ -15,7 +15,9 @@ describe('MobileBottomNav', () => {
       props: {mode: 'table', turnBadge: true},
     });
     expect(wrapper.findAll('.mobile-bottom-nav__item')).length(5);
+    expect(wrapper.findAll('.mobile-bottom-nav__icon')).length(5);
     expect(wrapper.find('.mobile-bottom-nav__item--badge').exists()).eq(true);
+    expect(wrapper.find('.mobile-bottom-nav__item--active').text()).to.include('Table');
     await wrapper.findAll('.mobile-bottom-nav__item')[0].trigger('click');
     expect(wrapper.emitted('update:mode')?.[0]).deep.eq(['turn']);
   });

@@ -28,34 +28,36 @@
           type="button"
           role="tab"
           class="mobile-card-focus__tab"
-          :class="{'mobile-card-focus__tab--active': tab === 'rules'}"
-          :aria-selected="tab === 'rules'"
-          @click="tab = 'rules'"
-          v-i18n
-        >Rules</button>
-        <button
-          type="button"
-          role="tab"
-          class="mobile-card-focus__tab"
           :class="{'mobile-card-focus__tab--active': tab === 'original'}"
           :aria-selected="tab === 'original'"
           @click="tab = 'original'"
           v-i18n
         >Original</button>
+        <button
+          type="button"
+          role="tab"
+          class="mobile-card-focus__tab"
+          :class="{'mobile-card-focus__tab--active': tab === 'rules'}"
+          :aria-selected="tab === 'rules'"
+          @click="tab = 'rules'"
+          v-i18n
+        >Rules</button>
+      </div>
+
+      <div class="mobile-card-focus__body mobile-card-focus__body--original" v-show="tab === 'original'">
+        <div class="mobile-card-focus__stage-wrap" :style="stageWrapStyle">
+          <div class="mobile-card-focus__stage" :style="stageStyle">
+            <Card
+              :card="card"
+              :actionUsed="actionUsed"
+              :cubeColor="cubeColor"
+            />
+          </div>
+        </div>
       </div>
 
       <div class="mobile-card-focus__body" v-show="tab === 'rules'">
         <MobileCardRulesPanel :card="card" />
-      </div>
-
-      <div class="mobile-card-focus__body mobile-card-focus__body--original" v-show="tab === 'original'">
-        <div class="mobile-card-focus__stage" :style="stageStyle">
-          <Card
-            :card="card"
-            :actionUsed="actionUsed"
-            :cubeColor="cubeColor"
-          />
-        </div>
       </div>
 
       <p class="mobile-card-focus__hint" v-i18n>Tap outside or Close to dismiss</p>
@@ -70,7 +72,11 @@ import MobileCardRulesPanel from '@/client/components/mobile/MobileCardRulesPane
 import {CardModel} from '@/common/models/CardModel';
 import {Color} from '@/common/Color';
 import {getCard} from '@/client/cards/ClientCardManifest';
-import {CARD_DESIGN_WIDTH_PX, focusCardScale} from '@/client/components/mobile/mobileCardLayout';
+import {
+  CARD_DESIGN_HEIGHT_PX,
+  CARD_DESIGN_WIDTH_PX,
+  focusCardScale,
+} from '@/client/components/mobile/mobileCardLayout';
 
 type FocusTab = 'rules' | 'original';
 
@@ -95,7 +101,7 @@ export default defineComponent({
   data() {
     return {
       scale: 1.2,
-      tab: 'rules' as FocusTab,
+      tab: 'original' as FocusTab,
     };
   },
   computed: {
@@ -103,12 +109,17 @@ export default defineComponent({
       const meta = getCard(this.card.name);
       return meta?.name ?? String(this.card.name);
     },
+    stageWrapStyle(): Record<string, string> {
+      // Contain scaled card layout space so the sheet does not overscroll.
+      return {
+        height: `${Math.ceil(CARD_DESIGN_HEIGHT_PX * this.scale)}px`,
+      };
+    },
     stageStyle(): Record<string, string> {
       const s = this.scale;
       return {
         transform: `scale(${s})`,
         transformOrigin: 'top center',
-        marginBottom: `${(s - 1) * 280}px`,
         width: `${CARD_DESIGN_WIDTH_PX}px`,
       };
     },

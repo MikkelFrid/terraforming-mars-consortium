@@ -256,7 +256,7 @@ on phone even when rules are correct.
 |-------|------|-----|
 | **C1** | Focus sheet = scaled art | Done — pinch stopgap |
 | **C1.5** | Keep C1 as “Original card” tab inside focus | Cheap bridge |
-| **C2★** | **Structured focus panel** from `renderData` + description | **Done** — Rules tab default; Original secondary |
+| **C2★** | **Structured focus panel** from `renderData` + description | **Done** — Rules available; **Original is default** (player preference) |
 | **C3★** | **Hand decision list** in Turn / Play flow (playable reasons) | Where cards matter most |
 | **C4** | Browse tokens (not mini full cards) in Empire / draft | Density without unreadability |
 | **C5** | Setup/draft theater using tokens + C2 panel | Same system everywhere |
@@ -286,7 +286,7 @@ miss — skip it as a headline goal.
 
 Open product calls:
 
-- Default focus tab: **Rules** (shipped in C2).  
+- Default focus tab: **Original** (shipped; Rules on demand).  
 - During Play: list-first or carousel-first? (Recommend list-first — C3.)  
 - How much corp logo / art identity in the token? (Recommend strong type color
   + logo mark for corps.)

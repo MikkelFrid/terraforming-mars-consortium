@@ -1,6 +1,9 @@
 /** Design width of `.filterDiv` / Card chrome (px). */
 export const CARD_DESIGN_WIDTH_PX = 240;
 
+/** Approximate design height of project/corp card chrome (px). */
+export const CARD_DESIGN_HEIGHT_PX = 335;
+
 /**
  * Scale so a fixed 240px card fills phone width for the focus sheet.
  * Never below 1.0 (browse is for thumbs; focus must be readable).

@@ -1,8 +1,11 @@
 /* Mobile client shell (P0). Desktop layout is unchanged when .mobile-client is absent. */
 
-body.mobile-client,
-html.mobile-client {
+html.mobile-client,
+body.mobile-client {
+  height: 100%;
+  overflow: hidden;
   background: #1a1f24;
+  overscroll-behavior: none;
 }
 
 body.mobile-client .notice {
@@ -13,21 +16,31 @@ body.mobile-client .main-container {
   margin-left: 0;
   max-width: none;
   padding: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+body.mobile-client .topmost-player-home,
+body.mobile-client #app {
+  height: 100%;
+  overflow: hidden;
 }
 
 .mobile-player-home {
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
-  min-height: 100vh;
+  height: 100dvh;
+  height: 100vh;
+  max-height: 100dvh;
+  max-height: 100vh;
+  overflow: hidden;
   background: #1a1f24;
   color: #e8eaed;
-  padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px));
 }
 
 .mobile-hud {
-  position: sticky;
-  top: 0;
+  flex: 0 0 auto;
+  position: relative;
   z-index: 20;
   background: #12161a;
   border-bottom: 1px solid #2c343c;
@@ -98,10 +111,13 @@ body.mobile-client .main-container {
 }
 
 .mobile-player-home__main {
-  flex: 1;
-  overflow: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 12px 10px 24px;
+  overscroll-behavior: contain;
+  padding: 12px 10px 16px;
 }
 
 .mobile-mode__title {
@@ -123,51 +139,86 @@ body.mobile-client .main-container {
   line-height: 1.4;
 }
 
+/* Flex footer — not position:fixed — so the page cannot scroll under/past the bar */
 .mobile-bottom-nav {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  flex: 0 0 auto;
+  position: relative;
   z-index: 30;
-  display: flex;
-  height: calc(56px + env(safe-area-inset-bottom, 0px));
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  background: #0e1216;
-  border-top: 1px solid #2c343c;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 2px;
+  min-height: 56px;
+  padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(180deg, #151a1f 0%, #0c1014 100%);
+  border-top: 1px solid #2a323a;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.35);
 }
 
 .mobile-bottom-nav__item {
   position: relative;
-  flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 3px;
   min-height: 48px;
   margin: 0;
-  padding: 0;
+  padding: 4px 2px;
   border: 0;
+  border-radius: 10px;
   background: transparent;
-  color: #9aa3ad;
-  font-size: 12px;
+  color: #8b959f;
+  font-size: 10px;
   font-weight: 600;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.mobile-bottom-nav__item:active {
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .mobile-bottom-nav__item--active {
-  color: #f0f3f6;
-  background: #1c242c;
+  color: #f4f7fa;
+  background: rgba(196, 92, 38, 0.16);
+}
+
+.mobile-bottom-nav__item--active .mobile-bottom-nav__icon {
+  color: #e07a3a;
+}
+
+.mobile-bottom-nav__icon {
+  display: flex;
+  width: 22px;
+  height: 22px;
+  color: inherit;
+}
+
+.mobile-bottom-nav__icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.mobile-bottom-nav__label {
+  line-height: 1;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .mobile-bottom-nav__badge {
   position: absolute;
-  top: 10px;
-  right: calc(50% - 22px);
+  top: 6px;
+  right: calc(50% - 18px);
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background: #c45c26;
+  box-shadow: 0 0 0 2px #0c1014;
 }
 
 .mobile-table-scroll {
@@ -360,8 +411,16 @@ body.mobile-card-focus-open {
   justify-content: center;
 }
 
+.mobile-card-focus__stage-wrap {
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+  width: 100%;
+}
+
 .mobile-card-focus__stage {
   /* width/transform set inline from focusCardScale */
+  flex: 0 0 auto;
 }
 
 .mobile-card-focus__stage .filterDiv,
