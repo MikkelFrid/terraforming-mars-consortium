@@ -188,10 +188,10 @@ body.mobile-client .main-container {
 
 .mobile-card-scroller {
   display: flex;
-  gap: 8px;
+  gap: 12px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: 8px;
+  padding: 4px 4px 16px;
   scroll-snap-type: x mandatory;
 }
 
@@ -199,20 +199,154 @@ body.mobile-client .main-container {
   flex-wrap: wrap;
   overflow-x: visible;
   scroll-snap-type: none;
+  gap: 10px 8px;
 }
 
+.mobile-card-tile {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-card-tile:focus-visible {
+  outline: 2px solid #c45c26;
+  outline-offset: 4px;
+}
+
+.mobile-card-tile--hand {
+  width: 180px;
+  height: 250px;
+}
+
+.mobile-card-tile--thumb {
+  width: 118px;
+  height: 165px;
+}
+
+.mobile-card-tile__scale {
+  transform-origin: top left;
+  pointer-events: none; /* clicks hit the button, not card hover chrome */
+}
+
+.mobile-card-tile__scale .filterDiv,
+.mobile-card-tile__scale .card-container {
+  margin: 0 !important;
+}
+
+.mobile-card-tile--hand .mobile-card-tile__scale {
+  transform: scale(0.75);
+  width: 240px;
+}
+
+.mobile-card-tile--thumb .mobile-card-tile__scale {
+  transform: scale(0.49);
+  width: 240px;
+}
+
+/* Focus sheet — inspect ritual (C1) */
+body.mobile-card-focus-open {
+  overflow: hidden;
+}
+
+.mobile-card-focus {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.mobile-card-focus__backdrop {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: rgba(0, 0, 0, 0.72);
+  cursor: pointer;
+}
+
+.mobile-card-focus__sheet {
+  position: relative;
+  z-index: 1;
+  max-height: min(92dvh, 92vh);
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px 12px calc(16px + env(safe-area-inset-bottom, 0px));
+  background: #12161a;
+  border-radius: 12px 12px 0 0;
+  border-top: 1px solid #3a4450;
+}
+
+.mobile-card-focus__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #12161a;
+  padding-bottom: 8px;
+}
+
+.mobile-card-focus__title {
+  flex: 1;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.mobile-card-focus__close {
+  flex: 0 0 auto;
+  min-width: 72px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 6px;
+  background: #2c343c;
+  color: #f0f3f6;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mobile-card-focus__body {
+  display: flex;
+  justify-content: center;
+  padding: 4px 0 8px;
+  overflow-x: hidden;
+}
+
+.mobile-card-focus__stage {
+  /* width/transform set inline from focusCardScale */
+}
+
+.mobile-card-focus__stage .filterDiv,
+.mobile-card-focus__stage .card-container {
+  margin: 0 !important;
+}
+
+.mobile-card-focus__hint {
+  margin: 8px 0 0;
+  text-align: center;
+  font-size: 12px;
+  opacity: 0.65;
+}
+
+/* Legacy scroller item (unused after C1 tiles) */
 .mobile-card-scroller__item {
   flex: 0 0 auto;
   scroll-snap-align: start;
-  transform: scale(0.85);
-  transform-origin: top left;
-  margin-right: -36px;
-}
-
-.mobile-card-scroller--wrap .mobile-card-scroller__item {
-  margin-right: -48px;
-  margin-bottom: -40px;
-  transform: scale(0.55);
 }
 
 .mobile-rivals {
