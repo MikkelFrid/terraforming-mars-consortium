@@ -147,14 +147,16 @@ describe('MilestoneAwardSelector', () => {
     expect(mas.awards).to.have.length(8);
   });
 
-  it('Consortium board has three milestones and awards by default', () => {
+  it('Consortium board keeps themed 3+3 and pads to five by default', () => {
     const mas = choose({
       boardName: BoardName.CONSORTIUM,
       consortiumExpansion: true,
       randomMA: RandomMAOptionType.NONE,
     });
-    expect(mas.milestones).to.deep.eq(['Mason', 'Pathfinder', 'Assayer']);
-    expect(mas.awards).to.deep.eq(['Underwriter', 'Cartographer', 'Refiner']);
+    expect(mas.milestones).to.have.length(5);
+    expect(mas.awards).to.have.length(5);
+    expect(mas.milestones.slice(0, 3)).to.deep.eq(['Mason', 'Pathfinder', 'Assayer']);
+    expect(mas.awards.slice(0, 3)).to.deep.eq(['Underwriter', 'Cartographer', 'Refiner']);
   });
 
   it('padConsortiumMA fills Consortium to five from official boards', () => {

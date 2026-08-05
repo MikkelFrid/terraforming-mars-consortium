@@ -114,13 +114,18 @@ export function chooseMilestonesAndAwards(gameOptions: GameOptions): DrawnMilest
   switch (gameOptions.randomMA) {
   case RandomMAOptionType.NONE:
     // Consortium games always use the themed 3+3 set (native maps and overlay),
-    // then pad to 5+5 from the modular pool so boards match official density.
+    // then pad to 5+5 so boards match official density. Default fillers come
+    // from the modular pool; padConsortiumMA opts into official-board fillers.
     if (gameOptions.consortiumExpansion) {
       push(
         milestoneManifest.boards[BoardName.CONSORTIUM],
         awardManifest.boards[BoardName.CONSORTIUM],
       );
-      fillBoardMasFromModular(drawnMilestonesAndAwards, gameOptions, BOARD_MA_TARGET);
+      if (gameOptions.padConsortiumMA) {
+        padConsortiumWithOfficialMas(drawnMilestonesAndAwards);
+      } else {
+        fillBoardMasFromModular(drawnMilestonesAndAwards, gameOptions, BOARD_MA_TARGET);
+      }
     } else {
       const boardName = gameOptions.boardName;
       switch (gameOptions.boardName) {
@@ -142,9 +147,9 @@ export function chooseMilestonesAndAwards(gameOptions: GameOptions): DrawnMilest
       default:
         return getRandomMilestonesAndAwards(gameOptions, requiredQty, LIMITED_SYNERGY);
       }
-    }
-    if (gameOptions.padConsortiumMA && isConsortiumBoard(boardName)) {
-      padConsortiumWithOfficialMas(drawnMilestonesAndAwards);
+      if (gameOptions.padConsortiumMA && isConsortiumBoard(boardName)) {
+        padConsortiumWithOfficialMas(drawnMilestonesAndAwards);
+      }
     }
     if (gameOptions.venusNextExtension) {
       push(milestoneManifest.expansions['venus'], awardManifest.expansions['venus']);

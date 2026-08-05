@@ -26,8 +26,17 @@ describe('CraterLease', () => {
 
   it('falls back to iridium and M€ without crater spaces', () => {
     const card = new CraterLease();
-    const [game, player] = testGame(2, {consortiumExpansion: true});
-    // Tharsis has no crater fields.
+    const [game, player] = testGame(2, {
+      consortiumExpansion: true,
+      boardName: BoardName.THARSIS,
+    });
+    // Consortium overlay can stamp crater fields onto non-native boards;
+    // clear them so this path exercises the no-crater fallback.
+    for (const space of game.board.spaces) {
+      if (space.spaceType === SpaceType.CRATER_FIELD) {
+        space.spaceType = SpaceType.LAND;
+      }
+    }
     const beforeBank = game.iridiumBank;
 
     cast(card.play(player), undefined);
