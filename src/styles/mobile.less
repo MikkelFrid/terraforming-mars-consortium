@@ -584,9 +584,12 @@ body.mobile-client .wf-component--select-card > .wf-component-title {
 /*
  * Force a single physical card size in the grid. HTML cards grow with
  * content; without this, corps dwarf preludes and bottoms look "clipped".
+ * Selector is NOT gated on body.mobile-client — these nodes only exist in
+ * the mobile shell, and cached desktop CSS must not win on specificity.
  */
-body.mobile-client .mobile-card-tile__scale .filterDiv,
-body.mobile-client .mobile-card-tile__scale .card-container {
+.mobile-card-tile__scale .filterDiv,
+.mobile-card-tile__scale .filterDiv.card-container,
+.mobile-card-tile__scale .card-container {
   width: 240px !important;
   height: 360px !important;
   min-height: 360px !important;
@@ -595,6 +598,11 @@ body.mobile-client .mobile-card-tile__scale .card-container {
   overflow: hidden !important;
   box-sizing: border-box !important;
   box-shadow: none !important;
+}
+
+.mobile-card-tile--scaled {
+  /* Defend against anything stretching individual tiles */
+  max-width: 100%;
 }
 
 .mobile-card-tile--hand .mobile-card-tile__scale {
