@@ -67,7 +67,7 @@ Play / pay CTAs belong in Turn flows (P1), not in Empire focus v1 — focus is
 | **C1 — Focus sheet** | Tap any Empire card → readable overlay; close affordances | **This PR** |
 | **C2 — Hand theater** | Snap carousel + peek; empty/playable states | Next |
 | **C3 — Setup/draft theater** | Same focus + carousel in SelectInitialCards / draft | Later |
-| **C4 — SelectCard mobile** | WaitingFor card picks use theater + focus | Later |
+| **C4 — SelectCard mobile** | WaitingFor card picks use grid + sticky confirm | **This PR** |
 | **C5 — Text rules fallback** | Optional plain-language block under art for tiny effect text | Later |
 
 ---

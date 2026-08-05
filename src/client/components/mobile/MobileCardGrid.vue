@@ -35,7 +35,9 @@
         :scale="tileScale"
         :actionUsed="actionUsed"
         :cubeColor="cubeColor"
-        @open="$emit('open', $event)"
+        :selected="isSelected(card)"
+        :disabled="card.isDisabled === true || isSelectionLocked(card)"
+        @open="onTileOpen"
       />
     </div>
   </div>
@@ -45,6 +47,7 @@
 import {defineComponent, PropType} from 'vue';
 import MobileCardTile from '@/client/components/mobile/MobileCardTile.vue';
 import {CardModel} from '@/common/models/CardModel';
+import {CardName} from '@/common/cards/CardName';
 import {Color} from '@/common/Color';
 import {
   MOBILE_CARD_GRID_COLS,
@@ -76,8 +79,18 @@ export default defineComponent({
       type: String as PropType<Color | undefined>,
       default: undefined,
     },
+    /** When set, taps toggle selection instead of only emitting open. */
+    selectedNames: {
+      type: Array as () => Array<CardName>,
+      default: undefined,
+    },
+    /** Max selectable cards; used to grey out unselected when at cap. */
+    maxSelected: {
+      type: Number,
+      default: undefined,
+    },
   },
-  emits: ['open'],
+  emits: ['open', 'toggle'],
   data() {
     return {
       gridSize: loadMobileCardGridSize() as MobileCardGridSize,
@@ -98,6 +111,9 @@ export default defineComponent({
         gridTemplateColumns: `repeat(${this.columns}, minmax(0, 1fr))`,
       };
     },
+    selectionEnabled(): boolean {
+      return this.selectedNames !== undefined;
+    },
   },
   methods: {
     setGridSize(size: MobileCardGridSize) {
@@ -111,6 +127,28 @@ export default defineComponent({
         return;
       }
       this.gridWidth = Math.max(120, el.clientWidth);
+    },
+    isSelected(card: CardModel): boolean {
+      return this.selectedNames?.includes(card.name) === true;
+    },
+    isSelectionLocked(card: CardModel): boolean {
+      if (!this.selectionEnabled || this.maxSelected === undefined) {
+        return false;
+      }
+      if (this.isSelected(card)) {
+        return false;
+      }
+      return (this.selectedNames?.length ?? 0) >= this.maxSelected;
+    },
+    onTileOpen(card: CardModel) {
+      if (this.selectionEnabled) {
+        if (card.isDisabled === true || this.isSelectionLocked(card)) {
+          return;
+        }
+        this.$emit('toggle', card);
+        return;
+      }
+      this.$emit('open', card);
     },
   },
   mounted() {

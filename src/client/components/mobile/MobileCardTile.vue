@@ -2,10 +2,16 @@
   <button
     type="button"
     class="mobile-card-tile"
-    :class="sizeClass"
+    :class="[sizeClass, {
+      'mobile-card-tile--selected': selected,
+      'mobile-card-tile--disabled': disabled,
+    }]"
     :style="tileStyle"
+    :disabled="disabled"
+    :aria-pressed="selected ? 'true' : undefined"
     @click="$emit('open', card)"
   >
+    <span v-if="selected" class="mobile-card-tile__check" aria-hidden="true">✓</span>
     <div class="mobile-card-tile__scale" :style="scaleStyle">
       <Card :card="card" :actionUsed="actionUsed" :cubeColor="cubeColor"/>
     </div>
@@ -55,6 +61,14 @@ export default defineComponent({
     cubeColor: {
       type: String as PropType<Color | undefined>,
       default: undefined,
+    },
+    selected: {
+      type: Boolean,
+      default: false,
+    },
+    disabled: {
+      type: Boolean,
+      default: false,
     },
   },
   emits: ['open'],

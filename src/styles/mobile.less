@@ -408,6 +408,82 @@ body.mobile-client .megastructure-track--bridge {
   outline-offset: 2px;
 }
 
+.mobile-card-tile--selected {
+  position: relative;
+  box-shadow: 0 0 0 2px #c45c26;
+  border-radius: 4px;
+}
+
+.mobile-card-tile__check {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 2;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #c45c26;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 22px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.mobile-card-tile--disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Select card(s) to buy / draft — grid + sticky confirm */
+.mobile-select-card {
+  width: 100%;
+}
+
+.mobile-select-card__scroll {
+  padding-bottom: 88px;
+}
+
+.mobile-select-card__bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  z-index: 35;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  background: linear-gradient(180deg, rgba(18, 22, 26, 0.92) 0%, #12161a 40%);
+  border-top: 1px solid #2a323a;
+  box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.35);
+}
+
+.mobile-select-card__summary {
+  font-size: 13px;
+  font-weight: 600;
+  color: #c5ced6;
+}
+
+.mobile-select-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.mobile-select-card__actions .btn {
+  min-height: 40px;
+}
+
+body.mobile-client .wf-component--select-card > .wf-component-title {
+  margin-bottom: 10px;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
 .mobile-card-tile--hand {
   width: 180px;
   height: 250px;
