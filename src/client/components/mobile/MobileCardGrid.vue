@@ -52,6 +52,7 @@ import {
   MOBILE_CARD_GRID_COLS,
   MobileCardGridSize,
   gridCardScale,
+  isMobileCardGridSize,
   loadMobileCardGridSize,
   saveMobileCardGridSize,
 } from '@/client/components/mobile/mobileCardLayout';
@@ -67,6 +68,11 @@ export default defineComponent({
     showSizeControl: {
       type: Boolean,
       default: true,
+    },
+    /** Controlled size — when set, parent owns S/M/L (e.g. Empire shared control). */
+    size: {
+      type: String as PropType<MobileCardGridSize | undefined>,
+      default: undefined,
     },
     actionUsed: {
       type: Boolean,
@@ -87,21 +93,26 @@ export default defineComponent({
       default: undefined,
     },
   },
-  emits: ['open', 'toggle'],
+  emits: ['open', 'toggle', 'update:size'],
   data() {
     return {
-      gridSize: loadMobileCardGridSize() as MobileCardGridSize,
+      localSize: loadMobileCardGridSize() as MobileCardGridSize,
       gridWidth: 360,
       resizeObserver: null as ResizeObserver | null,
     };
   },
-  watch: {
-    gridSize(next: MobileCardGridSize) {
-      saveMobileCardGridSize(next);
-      this.$nextTick(() => this.measure());
-    },
-  },
   computed: {
+    gridSize: {
+      get(): MobileCardGridSize {
+        return this.localSize;
+      },
+      set(next: MobileCardGridSize) {
+        this.localSize = next;
+        saveMobileCardGridSize(next);
+        this.$emit('update:size', next);
+        this.$nextTick(() => this.measure());
+      },
+    },
     columns(): number {
       return MOBILE_CARD_GRID_COLS[this.gridSize];
     },
@@ -115,6 +126,17 @@ export default defineComponent({
     },
     selectionEnabled(): boolean {
       return this.selectedNames !== undefined;
+    },
+  },
+  watch: {
+    size: {
+      immediate: true,
+      handler(next: MobileCardGridSize | undefined) {
+        if (isMobileCardGridSize(next) && next !== this.localSize) {
+          this.localSize = next;
+          this.$nextTick(() => this.measure());
+        }
+      },
     },
   },
   methods: {

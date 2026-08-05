@@ -7,8 +7,6 @@ import MobileCardGrid from '@/client/components/mobile/MobileCardGrid.vue';
 import {CardName} from '@/common/cards/CardName';
 import {PlayerViewModel} from '@/common/models/PlayerModel';
 import {Phase} from '@/common/Phase';
-import {MOBILE_CARD_GRID_SIZE_KEY} from '@/client/components/mobile/mobileCardLayout';
-
 const WaitingForStub = defineComponent({
   name: 'WaitingFor',
   props: ['playerView', 'waitingfor'],
@@ -45,28 +43,26 @@ function stubView(overrides: Partial<PlayerViewModel> = {}): PlayerViewModel {
 }
 
 describe('MobileCardGrid', () => {
-  beforeEach(() => {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.removeItem(MOBILE_CARD_GRID_SIZE_KEY);
-    }
-  });
-
   it('renders cards in a grid and changes size preset', async () => {
     const wrapper = mount(MobileCardGrid, {
       ...globalConfig,
       props: {
         cards: [{name: CardName.ALGAE}, {name: CardName.BIRDS}] as never,
+        size: 'm',
       },
       attachTo: document.body,
     });
     expect(wrapper.find('[data-test="mobile-card-grid"]').exists()).eq(true);
     expect(wrapper.findAll('.mobile-card-tile')).length(2);
+    expect(wrapper.find('[data-test="mobile-card-grid"]').classes())
+      .to.include('mobile-card-grid--m');
     await wrapper.find('[data-test="mobile-card-size-s"]').trigger('click');
-    if (typeof localStorage !== 'undefined') {
-      expect(localStorage.getItem(MOBILE_CARD_GRID_SIZE_KEY)).eq('s');
-    }
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('[data-test="mobile-card-grid"]').classes())
+      .to.include('mobile-card-grid--s');
     expect(wrapper.find('[data-test="mobile-card-size-s"]').classes())
       .to.include('mobile-card-grid__size--active');
+    expect(wrapper.emitted('update:size')?.[0]).deep.eq(['s']);
     wrapper.unmount();
   });
 });

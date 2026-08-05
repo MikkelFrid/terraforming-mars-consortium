@@ -1,8 +1,11 @@
 /** Design width of `.filterDiv` / Card chrome (px). */
 export const CARD_DESIGN_WIDTH_PX = 240;
 
-/** Approximate design height of project/corp card chrome (px). */
-export const CARD_DESIGN_HEIGHT_PX = 335;
+/**
+ * Design height of card chrome (px).
+ * Taller than a short project card so corps/preludes are not clipped when scaled.
+ */
+export const CARD_DESIGN_HEIGHT_PX = 380;
 
 export type MobileCardGridSize = 's' | 'm' | 'l';
 
@@ -19,19 +22,35 @@ export function isMobileCardGridSize(value: unknown): value is MobileCardGridSiz
   return value === 's' || value === 'm' || value === 'l';
 }
 
+function browserLocalStorage(): Storage | undefined {
+  if (typeof window === 'undefined') {
+    return undefined;
+  }
+  try {
+    const storage = window.localStorage;
+    // Probe — jsdom opaque origins throw SecurityError on use.
+    storage.getItem(MOBILE_CARD_GRID_SIZE_KEY);
+    return storage;
+  } catch {
+    return undefined;
+  }
+}
+
 export function loadMobileCardGridSize(): MobileCardGridSize {
-  if (typeof localStorage === 'undefined') {
+  try {
+    const raw = browserLocalStorage()?.getItem(MOBILE_CARD_GRID_SIZE_KEY);
+    return isMobileCardGridSize(raw) ? raw : 'm';
+  } catch {
     return 'm';
   }
-  const raw = localStorage.getItem(MOBILE_CARD_GRID_SIZE_KEY);
-  return isMobileCardGridSize(raw) ? raw : 'm';
 }
 
 export function saveMobileCardGridSize(size: MobileCardGridSize): void {
-  if (typeof localStorage === 'undefined') {
-    return;
+  try {
+    browserLocalStorage()?.setItem(MOBILE_CARD_GRID_SIZE_KEY, size);
+  } catch {
+    // ignore unavailable storage
   }
-  localStorage.setItem(MOBILE_CARD_GRID_SIZE_KEY, size);
 }
 
 /**

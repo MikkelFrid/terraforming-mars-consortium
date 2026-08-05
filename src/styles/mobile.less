@@ -417,13 +417,20 @@ body.mobile-client .megastructure-track--bridge {
   color: #f0f3f6;
 }
 
+.mobile-empire__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 10px;
+}
+
 .mobile-card-grid {
   display: grid;
-  gap: 8px;
+  gap: 10px;
   width: 100%;
-  /* Prevent scaled card chrome from inventing vertical scroll height */
-  overflow: hidden;
   justify-items: center;
+  /* Tiles set their own box; do not clip scaled card faces */
+  overflow: visible;
 }
 
 .mobile-card-tile {
@@ -437,10 +444,10 @@ body.mobile-client .megastructure-track--bridge {
   text-align: left;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  /* Clip only to the measured tile box (height includes full card chrome) */
   overflow: hidden;
-  border-radius: 3px;
-  /* Contain transform scale so parents do not grow empty scroll space */
-  contain: layout style;
+  border-radius: 6px;
+  background: #2a3036;
 }
 
 .mobile-card-tile:focus-visible {
@@ -576,6 +583,8 @@ body.mobile-client .wf-component--select-card > .wf-component-title {
 .mobile-card-tile__scale .filterDiv,
 .mobile-card-tile__scale .card-container {
   margin: 0 !important;
+  /* Desktop cards leave side margins that look like clipped gaps on phone */
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35) !important;
 }
 
 .mobile-card-tile--hand .mobile-card-tile__scale {

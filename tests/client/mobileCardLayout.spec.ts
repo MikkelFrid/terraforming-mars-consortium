@@ -38,6 +38,6 @@ describe('mobileCardLayout', () => {
     expect(isMobileCardGridSize('xl')).eq(false);
     const box = gridTileSize(0.5);
     expect(box.width).eq(120);
-    expect(box.height).eq(168); // 335 * 0.5 rounded
+    expect(box.height).eq(190); // 380 * 0.5 rounded
   });
 });
