@@ -1,527 +1,707 @@
-# Consortium — Mobile UI analysis
+# Consortium — Top-tier mobile client vision
 
 Date: 2026-08-05  
-Status: design analysis only — no implementation in this document  
-Audience: anyone deciding how (or whether) to invest in a real mobile client
+Status: product / UX design analysis — no implementation in this document  
+Supersedes: earlier “mobile shell around desktop components” framing in this file  
+Audience: product owner deciding ambition; engineers scoping a first-class mobile client
 
 ---
 
-## 1. Verdict
+## 0. Ambition statement
 
-Today’s “mobile support” is **browser pinch-zoom of a fixed desktop layout**.
+**Scaled desktop is not a mobile product.** Tabs wrapping the current
+`PlayerHome` scroll stack are a useful *engineering bridge*, not the destination.
 
-The game is playable on a phone in the same sense that a PDF of a board game
-is playable: you can see everything if you zoom and pan constantly. It is not
-a mobile UI. Layout, hit targets, information architecture, and interaction
-model are all desktop-first.
+The destination is a **top-tier mobile Terraforming Mars client**: the kind of
+experience players compare to Dire Wolf ports (Root, Everdell), MTG Arena
+mobile, and the best Board Game Arena titles — and that beats the official
+Fryx/Artefact TM app on clarity of turn flow, touch ergonomics, and async play.
 
-A real mobile-friendly version is **not media queries on top of the current
-page**. It is a redesign of:
+Definition of done for “top tier”:
 
-1. Viewport contract
-2. Navigation / information architecture
-3. Board presentation (pan/zoom viewport, not page zoom)
-4. Card presentation (scale + sheets, not reflow)
-5. Touch interaction model (no hover dependence)
+> A skilled player can take a full turn on a phone **one-handed, in portrait,
+> at 100% page zoom**, without pinch-hunting for UI, and feel that the phone
+> was the intended platform — not a compromise.
 
-Upstream terraforming-mars has the same shape; this fork inherits it. Consortium
-makes the problem worse (larger board, megastructure strip, iridium UI) but is
-not the root cause.
+That requires **mobile-native information architecture, interaction models,
+and presentation** — while keeping the same server, rules, and card data.
+
+Desktop remains first-class and largely unchanged. Mobile is a **second client
+surface** over the same `PlayerViewModel` / input protocol, not a CSS theme.
 
 ---
 
-## 2. What exists today (evidence)
+## 1. Why today’s client fails the bar (evidence)
 
-### 2.1 Viewport is locked to desktop width
+### 1.1 Wrong product model
+
+| Today | Top tier |
+|-------|----------|
+| One HTML page that is a digital table | A turn-taking **app** with modes |
+| Browser pinch-zooms everything | Only the map has a camera |
+| Actions buried mid-scroll | The turn **is** the primary UI |
+| Hand is a display strip below | Hand is how you play cards |
+| Hover reveals meaning | Tap / long-press reveals meaning |
+| Viewport `width=1260` | `device-width`, app chrome, safe areas |
 
 ```html
-<!-- assets/index.html -->
+<!-- assets/index.html — root cause of constant zoom -->
 <meta name="viewport" content='width=1260, user-scalable=1' />
 ```
 
-The browser is told the layout is **1260px wide**. On a ~390px phone that means
-initial scale ≈ 0.31. Everything is tiny; the user pinch-zooms to act, then
-pinches out to find the next region. That is the “zoomer konstant” experience.
+### 1.2 Interaction inventory is desktop-shaped
 
-Contrast: the Consortium rulebook already uses a correct mobile viewport
-(`width=device-width, initial-scale=1` in `assets/consortium/rulebook.html`).
-The game itself does not.
+Almost every choice is **inline under Actions** via
+`WaitingFor` → `PlayerInputFactory`. No task focus. Board lives far above.
+Hand on `PlayerHome` is display/reorder only — you do not play by tapping a
+card in hand; you open OrOptions → Play project → pick from another card grid.
 
-### 2.2 Almost no responsive CSS
+Densest mobile failures (must be **redesigned**, not restyled):
 
-Under `src/styles/`, the only game-UI media query found:
+| Rank | Flow | Why scale/tabs are not enough |
+|------|------|-------------------------------|
+| 1 | OrOptions → `projectCard` + payment | Nested radio tree + full hand + multi-resource pay |
+| 2 | `SelectSpace` | Prompt in Actions; targets on distant fixed-pixel board |
+| 3 | `SelectInitialCards` | Corp/prelude/CEO/projects as many 240px cards |
+| 4 | Draft `SelectCard` | Repeated picks, no draft theater |
+| 5 | Other player tableau | Inline dump of entire card piles |
+| 6 | Megastructure contribute | Strip + OrOptions tree + payment; hover bridge preview |
+| 7 | Party / colony / global event | Wide horizontal widgets |
+| 8 | Create game | Separate mega-form |
 
-| File | Breakpoint | Effect |
-|------|------------|--------|
-| `players_overview.less` | `max-width: 1740px` | Stack player rows — still desktop widths |
+### 1.3 What “good enough shell” gets wrong as an end state
 
-No phone/tablet breakpoints for `PlayerHome`, board, top bar, sidebar, cards,
-create-game, payment, or action panels.
+A BottomNav that swaps between existing sections still:
 
-### 2.3 Fixed-pixel layout everywhere
+- Presents OrOptions as a desktop radio list
+- Plays cards through a second card grid, not the hand
+- Confirms spaces with a tiny dialog after hunting hexes
+- Shows cards at 240px art without a reading/play ritual
+- Treats log, opponents, and board as equal peers instead of **context for the turn**
 
-| Surface | Sizing |
-|---------|--------|
-| Classic board | `.board` 600×488 px; hexes 46×51 px, absolute positions |
-| Consortium board | 891×860 px + `transform: scale(var(--consortium-board-scale))` (desktop 1080p/1440p pref, default 0.85) |
-| Cards | 240px wide, absolute-positioned chrome (`cards.less` / `cards_v2.less`) |
-| Sidebar | `position: fixed; width: 60px` |
-| Top bar resources | `min-width: 564px !important` |
-| Font tokens | px in `variables.less` (32 / 23 / 18 / 14 / 9) |
-
-`rem` / `vw` are essentially unused for game chrome. Fluid units appear almost
-only in `popup.less` (`90vw` / `90vh`).
-
-### 2.4 Page structure is one long desktop scroll
-
-`PlayerHome.vue` order:
-
-1. Sticky `TopBar` (resources / tags)
-2. Fixed left `Sidebar` (gen, params, hash anchors)
-3. `GameBoardView` (Mars + Turmoil + Moon + Pathfinders + megastructures + M/A)
-4. `PlayersOverview`
-5. `LogPanel`
-6. Actions (`WaitingFor` / inputs)
-7. Hand / drafted cards
-8. Played cards (corp, CEO, active, automated, event)
-9. Colonies
-
-On mobile this becomes: zoom to board → zoom out → scroll → zoom to actions →
-zoom to hand → zoom to payment. There is no “current task” focus.
-
-### 2.5 No touch interaction model
-
-- No `touchstart` / `touchmove` / `pointer` gesture layer for the board
-- `SelectSpace` attaches `tile.onclick` to DOM hexes
-- Consortium bridge highlighting uses `@mouseenter` / `@mouseleave`
-- Card magnify is hover-based (`magnify_cards`)
-- Keyboard hotkeys via `HomeMixin` — useless on phone
-- Only mobile-aware runtime code found: UA sniff in `WaitingFor.vue` to animate
-  the **document title** instead of the favicon when it is your turn
-
-### 2.6 Hit targets are below touch standards
-
-Hex cells are **46×51 CSS px** at design scale. After `width=1260` shrink, they
-are ~15 CSS px on a phone before the user zooms. Apple HIG / Material and BGA
-UX guidance target **≈44×44 px** (WCAG 2.2 AA floor is 24×24 — still failed at
-unzoomed scale). Dense resource chips and sidebar icons have the same problem.
-
-### 2.7 Preferences that look related, but are not mobile
-
-| Pref | Real purpose |
-|------|----------------|
-| `small_cards` | Scale cards to 0.8 — denser desktop |
-| `magnify_cards` | Hover enlarge — desktop pointer |
-| `consortium_board_scale` | Fit 1080p vs 1440p monitors |
-| `hide_tile_confirmation` | Skip confirm dialog — useful on mobile if targets are good |
-
-None of these constitute a mobile layout mode.
+That can stop the zoom pain. It will not feel like a top-tier game.
 
 ---
 
-## 3. Why constant zoom feels broken
+## 2. Reference bar (what to steal)
 
-The pain is not “CSS is ugly on phones.” It is a **wrong zoom ownership**:
+| Reference | Steal | Avoid |
+|-----------|-------|-------|
+| **Dire Wolf (Root, Everdell)** | Tap-select / tap-confirm; long-press inspect; board camera; undo within turn; tutorial that teaches by doing | Cloning fantasy art language |
+| **MTG Arena mobile** | Adaptive UI: same rules, different chrome density; hand as primary; card detail as full ritual; clear priority of “what can I do now” | F2P shop noise |
+| **BGA UX guidelines** | Playable at 100% scale; action zone first on vertical; ≥40–44px targets; no hover-required play; player panels ≤¼ screen | Jump-link soup as the only IA |
+| **Official TM digital** | Board as hero; modular panels for resources/cards | Crowded hitboxes, menu hopping, weak async cues |
+| **Native iOS/Android patterns** | Bottom sheets, large titles, haptics, push when your turn, safe areas | Fighting the platform (custom gestures that conflict with OS) |
 
-| Who zooms today | Who should zoom |
-|-----------------|-----------------|
-| Browser page zoom (whole UI) | In-app board viewport only |
-| User re-finds actions after every zoom | Actions stay in a fixed chrome zone |
-| Cards shrink with the page | Cards open as readable sheets / carousels |
-| Hover tooltips missing | Explicit tap → detail |
-
-Best practice from Board Game Arena UX guidelines and modern strategy-game
-mobile work (map + HUD overlays):
-
-- Default view must be **playable at 100% scale without pinch**
-- Pinch/pan is for **inspecting a dense map**, not for reaching the End Turn
-  button
-- Secondary panels stack or become sheets; they do not sit off-screen at 0.3×
-- Hover is not a gameplay dependency on touch devices
-
-That is the opposite of `width=1260, user-scalable=1`.
+Consortium-specific brand: industrial frontier / iridium / megastructures —
+the mobile chrome should feel **cold, precise, high-contrast utilitarian**, not
+generic purple game UI and not a shrunk Spectre admin form.
 
 ---
 
-## 4. Target experience (product definition)
+## 3. Product principles
 
-### 4.1 Device tiers
-
-| Tier | Width (CSS px) | Goal |
-|------|----------------|------|
-| Phone | &lt; 600 | Fully playable; one primary surface at a time |
-| Tablet portrait | 600–900 | Board + compact HUD; sheets for cards |
-| Tablet landscape / small laptop | 900–1260 | Closer to desktop; optional two-pane |
-| Desktop | ≥ 1260 | Keep current layout (do not regress) |
-
-Phones are the hard case. Design for phone first in the mobile shell; let
-tablet inherit.
-
-### 4.2 Non-goals
-
-- Pixel-perfect clone of the desktop page on a 390px screen
-- Rewriting the server / card engine
-- Native iOS/Android apps (PWA-capable web is enough for v1)
-- Reflowing card art into fluid HTML (cards stay fixed art, scaled)
-
-### 4.3 Goals for “good enough mobile”
-
-1. Open a game on a phone and take a turn **without pinch-zooming the page**
-2. Place a tile by panning/zooming **only the board**, with ≥44px effective
-   targets (or magnify-on-select)
-3. Play a card from hand via a bottom sheet / horizontal scroller, readable
-   text, clear Confirm
-4. Always see: generation, your resources (incl. iridium), whose turn, primary
-   action CTA
-5. Reach log, other players, colonies, settings in ≤2 taps
-6. Desktop layout unchanged unless a shared component is intentionally dual-mode
+1. **Turn is the product.** When it is your turn, the UI is an action cockpit.
+   When it is not, it is a beautiful waiting room with prep tools.
+2. **One decision at a time.** Never nest Play → card grid → payment → confirm
+   as one scrolling tree. Use a step stack with a visible back affordance.
+3. **Hand is verb; board is stage; tableau is memory.**
+4. **Map has a camera; UI does not zoom.**
+5. **Inspect is free; commit is explicit.** Long-press / inspect sheet never
+   spends resources. Primary CTAs say the verb (“Place city”, “Pay 12 M€”).
+6. **Show only what changes the decision.** Collapse everything else behind
+   progressive disclosure.
+7. **Touch language is consistent everywhere:** tap select, tap confirm /
+   primary button commit, long-press inspect, swipe dismiss sheet, pinch only
+   on map.
+8. **Desktop and mobile share protocol, not pixels.**
+9. **Async-first.** Most TM games are not played in one sitting. Notifications,
+   “what happened”, and resume-into-decision matter as much as animations.
+10. **Consortium is first-class.** Iridium, terrains, megastructures are not
+    afterthoughts bolted under More.
 
 ---
 
-## 5. Recommended architecture
-
-Do **not** sprinkle `@media (max-width: 600px)` across every Less file and hope.
-Introduce a **mobile shell** that re-composes existing components.
+## 4. Dual-client architecture
 
 ```
-┌─────────────────────────────────────┐
-│ CompactTopBar  (resources, gen, TR) │  fixed
-├─────────────────────────────────────┤
-│                                     │
-│   Active surface (one of):          │
-│   • BoardViewport (pan/zoom)        │  flex: 1
-│   • Actions / WaitingFor            │
-│   • Hand carousel                   │
-│   • Tableau browser                 │
-│   • Players / Log / Colonies        │
-│                                     │
-├─────────────────────────────────────┤
-│ BottomNav  Board│Act│Hand│More      │  fixed + safe-area
-└─────────────────────────────────────┘
-     ↑ sheets/modals for payment, card detail, other player
+                    ┌─────────────────────────────┐
+                    │  Server (unchanged rules)   │
+                    │  PlayerInputModel protocol  │
+                    └─────────────┬───────────────┘
+                                  │
+                    ┌─────────────▼───────────────┐
+                    │  Shared view-model layer    │
+                    │  (existing PlayerViewModel) │
+                    └─────────────┬───────────────┘
+               ┌──────────────────┴──────────────────┐
+               │                                      │
+    ┌──────────▼──────────┐              ┌────────────▼────────────┐
+    │  DesktopClient      │              │  MobileClient           │
+    │  PlayerHome (keep)  │              │  new route tree / shell │
+    │  current Less       │              │  mobile components      │
+    └─────────────────────┘              └─────────────────────────┘
 ```
 
-Detection:
+### 4.1 Routing
 
-```ts
-// Prefer capability + width, not only UA
-const isCoarsePointer = matchMedia('(pointer: coarse)').matches;
-const isNarrow = matchMedia('(max-width: 600px)').matches;
-const useMobileShell = isNarrow || (isCoarsePointer && width < 900);
+Detect once at app boot (width + `pointer: coarse` + optional preference):
+
+- `DesktopClient` → today’s `PlayerHome` / `SpectatorHome`
+- `MobileClient` → new `mobile/` component tree
+
+Do **not** try to make every existing component “responsive enough.” Fork the
+presentation layer. Share:
+
+- API clients / `WaitingFor` submit+poll logic (extract from UI)
+- Card renderer (`Card.vue`) inside mobile frames
+- Board space DOM or a future board renderer
+- i18n strings
+- Preferences that are semantic (`lang`, sound, learner mode)
+
+### 4.2 Extract before UI rewrite
+
+Pull out of `WaitingFor.vue`:
+
+- Poll loop (`API_WAITING_FOR`)
+- Submit (`PLAYER_INPUT`)
+- Remount policy (today’s `screen='empty'` hack — reconsider)
+- Notify (sound + Notification API)
+
+Mobile and desktop both consume a `useTurnSession()` (or plain TS module).
+Presentation becomes replaceable.
+
+### 4.3 Input presenter registry (mobile)
+
+Replace “one Vue file per type mounted inline” with a **step machine**:
+
+```
+Incoming PlayerInputModel
+  → normalize (flatten learner-mode filters, label actions)
+  → MobileInputRouter
+       or        → ActionSheet (list of verbs)
+       projectCard → PlayCardFlow (hand → detail → pay → confirm)
+       card      → PickCardsFlow (draft/discard/sell/…)
+       space     → PlaceTileFlow (board camera + confirm bar)
+       payment   → PaySheet
+       initialCards → SetupWizard
+       and       → Wizard of children
+       …         → specialized sheets
 ```
 
-Apply a root class (`body.mobile-shell`) similar to BGA’s `mobile_version` /
-`touch-device` pattern so CSS and Vue can branch cleanly without rewriting
-desktop.
-
-Keep `PlayerHome.vue` as the data owner; extract presentational regions into
-slottable views that desktop stacks vertically and mobile routes via tabs.
+Each flow owns its chrome. Nested `or`/`and` become navigation, not indentation.
 
 ---
 
-## 6. Workstreams (phased)
+## 5. Mobile information architecture
 
-Phases are independent enough to ship separately. Each should leave desktop
-green and improve a measurable mobile flow.
+### 5.1 Modes (not equal tabs)
 
-### Phase A — Stop the page zoom (foundation)
+| Mode | When | Job |
+|------|------|-----|
+| **Turn** | `waitingFor` is actionable | Complete the current decision stack |
+| **Table** | Always available | Board camera + global parameters + M/A + megastructures |
+| **Empire** | Always | Your hand, tableau, productions, tags, self-replicating robots |
+| **Rivals** | Always | Opponent summary → drill-in |
+| **Chronicle** | Always | Log, generation jumps, “since you left” |
 
-**Intent:** Make the layout canvas match the device; accept temporary
-horizontal overflow until later phases fix it — or gate the mobile shell
-behind a preference / query flag.
+Bottom nav: **Turn · Table · Empire · Rivals · More**  
+(More = Chronicle, colonies, settings, help).
 
-| Change | Notes |
-|--------|-------|
-| Viewport meta | `width=device-width, initial-scale=1, viewport-fit=cover` |
-| Feature flag | `?mobile=1` or preference `experimental_mobile_shell` |
-| Root class | `mobile-shell` / `touch-device` |
-| Safe areas | `env(safe-area-inset-*)` on fixed chrome |
-| Disable hover gameplay | Prefix hover rules with `.notouch-device` where hover is required to play |
+**Critical:** Turn mode is not “the WaitingFor block from desktop.” It is a
+dedicated full-screen flow host. Badge on Turn when actionable; auto-enter Turn
+when the poll returns `GO` (with a short, skippable “Your turn” pulse).
 
-**Risk:** Flipping viewport without a shell makes the current fixed layout
-overflow badly. Ship viewport change **with** at least CompactTopBar +
-BottomNav + BoardViewport stub, or keep flag off by default.
+### 5.2 Persistent HUD (always)
 
-**Do not** set `user-scalable=no` / `maximum-scale=1` — that harms
-accessibility. Page zoom becomes unnecessary when the shell is correct; leave
-system zoom available.
+Compact, ≤56px + safe-area:
 
-### Phase B — Information architecture (biggest UX win)
+- Generation + phase chip
+- Temperature / oxygen / oceans (/ Venus) as tiny meters — tap opens Table focused on params
+- Your M€ · steel · titanium · **iridium** · energy · heat · TR · VP estimate
+- Acting-player color pip
 
-Replace “one infinite scroll” with task surfaces:
+HUD never includes the full tag row. Tags live in Empire → identity sheet.
 
-| Tab | Contents |
-|-----|----------|
-| Board | Mars (+ Moon toggle), M/A collapsed, megastructure strip collapsed/expandable |
-| Act | `WaitingFor` + payment + confirms — **default tab when it is your turn** |
-| Hand | Drafted + hand as horizontal snap carousel |
-| More | Tableau, other players, log, colonies, settings |
+### 5.3 Waiting room (not your turn)
 
-Auto-switch to **Act** when `waitingFor` becomes actionable; soft badge on
-Board when a space must be selected (or temporarily force Board tab during
-`SelectSpace`).
+Full-bleed Table (board at fit) with:
 
-Sidebar hash anchors and keyboard jumps stay for desktop; mobile uses BottomNav.
-
-### Phase C — Board viewport (kills map pinch-on-page)
-
-Wrap the existing CSS hex board in a **pan/zoom container**:
-
-- Outer: full width × remaining height between top/bottom chrome
-- Inner: current `.board-cont` at a computed `scale` so “fit board” is default
-- Gestures: one-finger pan, pinch zoom, double-tap zoom, “fit” button
-- During `SelectSpace`: optional **selection magnifier** (enlarge available
-  hexes or show a list of region filters: land / ocean / highland / crater)
-- Replace hover-only Consortium bridge preview with tap-to-preview / persistent
-  highlight of available spaces
-
-Implementation options (pick one early):
-
-| Option | Pros | Cons |
-|--------|------|------|
-| CSS `transform` + pointer events on wrapper | Reuses hex DOM + `SelectSpace` onclick | Hit-testing/transform quirks; must sync confirm UI |
-| SVG board with `viewBox` | Clean scaling, accessible | Large rewrite of positions/sprites |
-| Canvas / WebGL | Perf for huge boards | Loses DOM `SelectSpace`; biggest rewrite |
-
-**Recommendation:** CSS transform wrapper first (extends the Consortium scale
-pref pattern). Revisit SVG only if hit targets or legend scaling remain bad.
-
-Touch target mitigation without redrawing the map:
-
-1. Fit-to-width default so hexes are larger than today’s 0.31× page scale
-2. When scale &lt; threshold, first tap selects/highlights, second tap confirms
-   (already partly exists via tile confirmation dialog)
-3. Optional “space picker list” fallback for accessibility
-
-### Phase D — Cards on mobile
-
-Cards are **pixel layouts** (240px, absolute children, thousands of Less lines).
-Do not try to reflow card text into responsive HTML.
-
-| Pattern | Use |
-|---------|-----|
-| Horizontal snap scroller | Hand, draft, corporation draft |
-| Tap → full-screen / 90vh sheet | Read text, play, add resources |
-| Scale factor 1.0–1.25 in sheet | Legibility |
-| Dense grid of thumbnails (0.45–0.55 scale) | Tableau browse; tap opens sheet |
-| Sticky action bar in sheet | Play / Select / Cancel |
-
-Replace hover-magnify with tap-to-open. Keep `Card.vue` renderer; only change
-chrome around it.
-
-### Phase E — Action & payment chrome
-
-`WaitingFor` + `PlayerInputFactory` + payment widgets are the turn loop. On
-mobile they must be:
-
-- Full width
-- Large steppers for steel / titanium / **iridium** / heat / MC
-- Primary CTA ≥48px height, thumb-zone (bottom)
-- OrOptions as vertical radio list, not cramped horizontal chips
-- Confirms as bottom sheets, not tiny dialogs in a zoomed corner
-
-Consortium-specific: iridium is a fourth payment resource with hard-coded paths
-in Units/Payment/UI. Mobile payment UI must include it from day one of Phase E
-— do not ship a mobile payment form that omits iridium and “fix later.”
-
-### Phase F — Secondary surfaces
-
-| Surface | Mobile treatment |
-|---------|------------------|
-| Players overview | Compact rows; tap → player sheet (corp + tags + cards) |
-| Log | Full-height sheet with virtualized list if needed |
-| Colonies | Vertical stack / carousel of colony cards |
-| Turmoil | Collapsed summary + expand sheet |
-| Moon / Pathfinders | Sub-toggle under Board tab |
-| Megastructures | Compact strip; contribute from Act tab or strip sheet |
-| Create game / lobby | Separate responsive pass (forms, expansion toggles) |
-| Spectator | Same shell, Act tab read-only |
-
-### Phase G — Polish & PWA
-
-- `theme-color`, apple-touch-icon, manifest (installable)
-- Turn notification: consolidate empty `sw.js` comment in `ServeAsset.ts` into a
-  real optional notification path — only if product wants it
-- Reduced motion, dynamic type (at least don’t fight iOS text size on chrome)
-- Landscape phone: allow board tab to use width; keep bottom nav or shift to
-  side rail
+- “Waiting for **Red**…” + elapsed soft timer (optional)
+- Prep: browse Empire, inspect Rivals, skim Chronicle
+- Optional “notify me” OS permission CTA once
+- No fake interactivity on disabled actions
 
 ---
 
-## 7. Best-practice checklist (acceptance criteria)
+## 6. Redesign of every critical flow
 
-Use as definition of done for “mobile v1”:
+### 6.1 Play a project card (the heart)
 
-| # | Criterion | Source pattern |
-|---|-----------|----------------|
-| 1 | Playable at 100% page zoom — no required pinch of the document | BGA UX |
-| 2 | Board pinch/pan is local to the map viewport | Strategy HUD / map overlay |
-| 3 | Primary actions in thumb zone; fixed chrome | Mobile HIG |
-| 4 | Interactive targets ≥44×44 CSS px (or spaced ≥24×24 WCAG) | Apple / WCAG 2.2 |
-| 5 | No gameplay-critical `:hover` on coarse pointers | BGA touch notes |
-| 6 | One job per view; sheets for detail | Mobile IA |
-| 7 | Safe-area insets respected | iOS notch / home indicator |
-| 8 | Iridium visible and payable in mobile payment UI | Consortium locked design |
-| 9 | Desktop layout regression-free (visual + client tests) | Fork hygiene |
-| 10 | Manual test matrix: iOS Safari, Android Chrome, tablet, desktop | — |
+**Today:** OrOptions radio → expand → another card grid → PaymentForm → Save.
 
-Validation harness (`tools/consortium/validate.ts`) does **not** measure UX.
-Do not cite it as mobile quality evidence.
+**Top tier:**
 
----
+```
+Turn home
+  └─ big verb tiles: Play card | Standard project | Card actions | …
+        └─ Play card
+              └─ Hand theater (fan / horizontal snap, affordances: cost, tags, can-pay)
+                    └─ Card focus (full-screen art + rules text + warnings)
+                          └─ Pay sheet (smart defaults, iridium first-class)
+                                └─ Confirm (“Play Optimized Aerobraking for 12 M€ + 1 iridium”)
+                                      └─ Success toast + board/log delta
+```
 
-## 8. Technical constraints (why this is hard)
+Details:
 
-1. **Viewport contract** — `width=1260` is load-bearing for the current
-   desktop look. Changing it without a shell breaks assumptions.
+- Hand shows **only playable** by default; toggle “Show unplayable”
+- Unplayable cards stay visible but muted with reason (“Need 2 science”, “Need iridium”)
+- Card focus supports pinch-zoom on art text (card-local, not page)
+- Payment steppers are 48px hit targets; tapping the resource icon spends max useful
+- Heat→MC, steel/titanium/iridium legal mixes explained inline, not in tooltips
+- Back stack preserves selections until confirm
 
-2. **Absolute pixel board** — Hex margins in `board_items_positions.less` /
-   generated `board_positions.less`, sprite offsets, SVG legend coordinates.
-   Scaling must be uniform; per-axis fluid layout is not free.
+### 6.2 Standard projects & milestones/awards
 
-3. **Card art system** — Fixed 240px card chrome across `cards.less`,
-   `cards_v2.less`, `language_hacks.less`. Mobile = scale + container, never
-   reflow.
+Verb list with **cost + requirement state** on the row itself.
+No hunting desktop buttons on the board chrome.
+Claim milestone: row → confirm sheet (“Claim Builder for 8 M€?”).
 
-4. **SelectSpace DOM coupling** — Imperative `onclick` on hex nodes. A
-   transform wrapper must keep those nodes clickable (watch for
-   `touch-action`, overlay intercepts, and confirm dialog positioning).
+### 6.3 Place a tile (`SelectSpace`)
 
-5. **Hover-dependent features** — Magnify cards, unavailable-card brighten,
-   Consortium bridge hover, stacked-card z-index on hover.
+**Today:** Red text in Actions + `GoToMap` scroll + click hex + confirm dialog.
 
-6. **Information density** — Full TM + expansions + Consortium exceeds any
-   phone viewport; IA change is mandatory, not optional polish.
+**Top tier:**
 
-7. **Iridium payment surface area** — Highest-risk Consortium area; any new
-   payment UI must be exhaustive (see project rules on payment hard-coding).
+1. Enter PlaceTileFlow → **Table mode takes over** with camera
+2. Available hexes pulse; illegal hexes dim
+3. Filters chips: Land · Ocean · Highland · Crater · Dedicated (greenery/city/…)
+4. Tap hex → pin selection + bottom **Confirm bar** (“Place city on Tharsis Tholus”)
+5. Optional “list mode” for a11y: searchable space names/ids
+6. After place: brief camera linger on the tile + resource gains toast
 
-8. **Upstream drift** — Large client refactors diverge from
-   terraforming-mars/terraforming-mars. Prefer additive shell + wrappers over
-   rewriting shared card/board internals when possible.
+Consortium terrains: chasms never selectable (already restricted); crater yield
+and highland foundation callouts appear on the confirm bar when relevant.
 
----
+Bridge megastructure preview: **tap** a bridge segment or contribute affordance
+— never hover.
 
-## 9. Suggested implementation order (shipping slices)
+### 6.4 OrOptions action menu
 
-Smallest path to “feels like a game on my phone”:
+Become a **verb grid / list**, not nested radios:
 
-| Slice | Delivers | Depends on |
-|-------|----------|------------|
-| **M1** | Flag + viewport + CompactTopBar + BottomNav + tab switcher hosting existing sections | — |
-| **M2** | Act tab default on your turn; payment/options restyled full-width | M1 |
-| **M3** | BoardViewport pan/zoom + fit; SelectSpace usable | M1 |
-| **M4** | Hand carousel + card detail sheet + play from sheet | M1–M2 |
-| **M5** | Tableau / others / log / colonies as sheets | M1 |
-| **M6** | Create-game + lobby responsive | independent |
-| **M7** | PWA polish, touch hover purge, a11y pass | M2–M5 |
+- Primary verbs large
+- Secondary (sell patents, pass) visually quieter
+- Destructive/pass separated (BGA: cancel/pass away from forward actions)
+- Choosing a verb **navigates** into a flow; Back returns to verb list
+- Learner mode filters apply before rendering verbs
 
-M1+M2 alone already remove most “zoom to find End Turn” pain even before the
-board viewport is perfect.
+### 6.5 Draft
 
----
+Draft is theater:
 
-## 10. Testing strategy
+- Centered pack / row of candidates at readable scale
+- Timer or “waiting for others” if simultaneous
+- Selected card flies to “drafted” tray
+- Pass direction cue (left/right) when relevant
+- Do not show the rest of Empire until the pick is done (reduce mis-taps)
 
-### Automated
+### 6.6 Initial setup wizard
 
-- Client component tests for shell tab switching and “your turn → Act tab”
-- Payment form tests including iridium steppers at narrow viewport (JSDOM width
-  stub)
-- Do **not** expect pixel board gesture tests in Mocha; cover math helpers
-  (clamp scale, fit-to-viewport) with unit tests
+Multi-step wizard, one concern per screen:
 
-### Manual (required)
+1. Corporation (full card, swipe between options, compare sheet)
+2. Preludes (pick N)
+3. CEO if present
+4. Projects (budget meter sticky)
+5. Review → Confirm
 
-| Device | Flows |
-|--------|-------|
-| iPhone Safari | Place ocean/city, play card with mixed payment, contribute megastructure |
-| Android Chrome | Same + browser chrome show/hide (dynamic toolbar) |
-| iPad | Board fit, split views if any |
-| Desktop | Unchanged PlayerHome; flag off |
+MC math is a sticky footer, not a line lost under cards.
 
-Visual check still uses `localhost:8080/cards?search=` for card art; add
-`?mobile=1` (or equivalent) for shell QA.
+### 6.7 Payment (including iridium)
 
-### Metrics (subjective but useful)
+Dedicated Pay sheet used by standard projects, milestones, megastructures, cards:
 
-- Time-to-complete “play standard project City” on phone before/after
-- Count of pinch gestures per turn (goal: ~0 for non-board; board-only when
-  inspecting)
+- Resource order: M€ · steel · titanium · **iridium** · heat (as today legal)
+- Each row: icon, stock, stepper (− / +), “max”
+- Live remaining cost
+- Illegal combinations disabled with reason
+- Consortium: iridium scarcity messaging when paying the last units
 
----
+This sheet is shared; do not fork payment UI per flow.
 
-## 11. Explicitly rejected approaches
+### 6.8 Card actions & blue cards
 
-| Approach | Why reject |
-|----------|------------|
-| Only change viewport meta | Layout overflows; still one long desktop page |
-| `user-scalable=no` as “fix” | Accessibility harm; masks broken layout |
-| Media queries that shrink everything to 50% | Unreadable; same zoom problem |
-| Separate native app for v1 | Huge cost; web shell solves the stated pain |
-| Redesign card HTML fluidly | Conflicts with art pipeline and i18n hacks |
-| Cite validation harness for UX quality | Measures crashes/invariants, not usability |
+Empire → Actions filter, **or** Turn verb “Card actions”:
 
----
+- List actionable cards with state (used this gen / resources on card)
+- Tap → card focus → action confirm / target flow
+- Targeting another player or card jumps into a constrained picker sheet
 
-## 12. Effort shape (technical, not calendar)
+### 6.9 Megastructure contribute
 
-| Area | Invasiveness | Notes |
-|------|----------------|-------|
-| Mobile shell + nav | Medium | New Vue chrome; `PlayerHome` composition |
-| Viewport + feature flag | Low | Small HTML/CSS + preference |
-| Board pan/zoom wrapper | Medium–high | Gesture code + SelectSpace interaction |
-| Card sheets / carousel | Medium | Mostly new containers around `Card` |
-| Payment / inputs restyle | Medium | Touch targets; iridium must be included |
-| Hover purge | Low–medium | Many Less selectors; careful regression |
-| Create-game responsive | Medium | Separate form surface |
-| Full SVG board rewrite | Very high | Avoid for v1 |
+First-class Turn verb **and** Table affordance:
 
-Highest leverage per invasiveness: **M1 shell + M2 Act/payment**, then **M3
-board viewport**.
+- Table: megastructure strip as glanceable tracks; tap structure → sheet
+  (segments, owners, next cost, keystone iridium gate, Contribute CTA)
+- Contribute CTA only when `canContribute` and it is your action window;
+  otherwise explain (`cannot_afford` / `missing_foundation` / not your turn)
+- Payment uses shared Pay sheet
+- On completion of a structure: ceremony (see Motion) + global effect toast +
+  contributor bonus emphasis (design: weak global / strong contributor)
 
----
+### 6.10 Opponents
 
-## 13. Open questions (flagged unknowns)
+Rivals mode:
 
-1. **Default on vs opt-in** — Auto-enable shell on narrow viewports, or require
-   a preference for the first release?
-2. **Spectator + teacher mode** — Same tabs, or denser read-only layout?
-3. **How much Moon/Venus/Turmoil chrome lives under Board vs More** — product
-   taste; affects tab clutter.
-4. **Upstream contribution** — Is a mobile shell valuable enough to design for
-   upstream merge, or keep Consortium-only?
-5. **Offline / PWA install** — Nice-to-have or out of scope for v1?
+- Compact rows: color, corp thumbnail, TR, VP, tag counts, resource totals,
+  status (active/passed/drafting)
+- Tap → opponent sheet: corp, productions, tags, tableau filters
+  (active / automated / events), colonies ownership
+- **Never** dump all cards inline on the home surface
+- Compare sheet: you vs them on tags/productions (optional v2)
 
-When uncertain during implementation: prefer keeping desktop untouched and
-branching on `mobile-shell` rather than making shared components “half
-responsive.”
+### 6.11 Log / Chronicle
 
----
+- Default view: **Since your last turn** (delta summary)
+- Full log beneath with generation scrubber
+- Tap entity → inspect sheet (card / space fly-to on Table / colony)
+- Space highlight uses camera pan on Table, not `scrollIntoView` on a 1260px page
 
-## 14. File map (starting points)
+### 6.12 Colonies, Turmoil, Moon, Pathfinders, Venus
 
-| Area | Paths |
-|------|-------|
-| Viewport | `assets/index.html` |
-| Home composition | `src/client/components/PlayerHome.vue`, `SpectatorHome.vue` |
-| Board | `Board.vue`, `BoardSpace.vue`, `SelectSpace.vue`, `styles/board.less` |
-| Chrome | `Sidebar.vue`, `TopBar.vue`, `styles/preferences.less`, `styles/player_home.less` |
-| Actions | `WaitingFor.vue`, `PlayerInputFactory.vue`, `SelectPayment.vue`, `PaymentForm.vue` |
-| Cards | `card/Card.vue`, `SortableCards.vue`, `styles/cards.less`, `styles/cards_v2.less` |
-| Prefs | `PreferencesManager.ts`, `PreferencesDialog.vue` |
-| Touch title quirk | `WaitingFor.vue` (`isDesktopBrowser`) |
+Each is a **sub-board sheet** from Table → Overlays:
+
+- Glance chips on Table HUD when the expansion is in the game
+- Full interaction only when the current input needs it (colony trade input
+  opens Colonies sheet automatically)
+- Turmoil: current party + dominant + delegates summary first; full board second
+
+### 6.13 Create game / lobby
+
+Separate mobile IA (still dual-client):
+
+- Create: stepped wizard (players → expansions → board → options → advanced)
+- Expansion toggles as large cards with art, not a checkbox forest
+- Lobby: big “Copy my link”, player seats as avatars, Start when ready
+- Spectator link secondary
 
 ---
 
-## 15. Summary
+## 7. Board system (camera, not page)
 
-The client does not have a bad mobile theme — it has **no mobile product**.
-The viewport forces a 1260px desktop canvas; the page is a vertical stack of
-dense fixed-pixel surfaces; interaction assumes a mouse. Users zoom because
-that is the only navigation system they have.
+### 7.1 Requirements
 
-A credible fix is a **flagged mobile shell**: device-width viewport, bottom
-navigation, act-first turn loop, board-local pan/zoom, cards as sheets — while
-leaving the desktop layout alone. Do it in slices; measure with real devices;
-never confuse “runs in Mobile Safari” with “mobile-friendly.”
+- Fit-to-screen default (“Home” camera)
+- Pinch zoom, one-finger pan, double-tap zoom to hex
+- 60fps transforms (`transform` + `will-change` carefully; avoid layout thrash)
+- Selection layer above art
+- Legend / bonuses readable at fit on tablet; on phone, legend becomes a toggle
+  or tap-space inspect
+- Moon / Venus / colony boards as alternate camera targets or sheets
+
+### 7.2 Implementation strategy
+
+| Phase | Approach |
+|-------|----------|
+| v1 | CSS hex board inside a camera container (`transform: translate + scale`), gesture controller, existing sprites |
+| v2 | If legends/hit tests hurt: SVG board with `viewBox`, shared coordinates from `build_board.py` |
+| Avoid v1 | Canvas rewrite — kills DOM `SelectSpace` and accessibility |
+
+Consortium board generator already emits positions — camera math should use the
+same coordinate space as `board_positions.less`.
+
+### 7.3 Hit targets
+
+At fit scale on a 390px phone, Consortium’s large board may still yield small
+hexes. Compensate with:
+
+1. Minimum scale floor while placing tiles (auto-zoom to cluster of valid spaces)
+2. Magnetic selection (nearest valid hex within radius)
+3. Confirm bar always shows selected space name before commit
+4. List picker fallback
+
+---
+
+## 8. Cards as a mobile medium
+
+Cards stay **fixed art** (240px pipeline, codegen, language hacks). Mobile
+changes the **frame**, not the innards.
+
+| Context | Presentation |
+|---------|--------------|
+| Hand theater | ~70–85% width snap carousel; peek next cards |
+| Draft | Same, fewer cards, larger |
+| Tableau browse | Thumbnail grid ~0.42 scale, filter chips |
+| Focus / inspect | 92% width sheet, scale ≥1.0, scroll rules text if needed |
+| Log reference | Thumbnail → focus |
+
+Long-press anywhere a card appears → Focus (inspect).  
+In Play flow, Focus has a primary **Play** CTA when legal.
+
+Do not reflow card HTML into “responsive text cards.” That fights the art
+pipeline and i18n hacks and will never look premium.
+
+---
+
+## 9. Visual & motion language
+
+### 9.1 Visual
+
+- Platform: system fonts for chrome (SF / Roboto) + keep Ubuntu/card fonts on
+  cards only
+- HUD: blur materials / solid high-contrast bars (test outdoors: TM is often
+  played at tables with glare — prefer contrast over glass fashion)
+- Color: player colors as strong identity; iridium as a distinct metallic accent
+  already used in Consortium art — reuse, don’t invent neon
+- Avoid: purple gradients, pill soup, emoji status, multi-shadow cards in chrome
+- Density: desktop may stay dense; mobile chrome is airy, game content is rich
+
+### 9.2 Motion (intentional, 2–5 signatures)
+
+Ship a small choreography set — not random fades:
+
+1. **Your turn pulse** — HUD pip + soft Turn tab attention (respect
+   `prefers-reduced-motion`)
+2. **Card fly** — hand → focus → tableau / discard
+3. **Tile drop** — confirm → hex lands + bonus chips float
+4. **Parameter tick** — temp/oxygen/ocean change
+5. **Megastructure segment lock** — segment fill + keystone climax
+
+Haptics: light impact on select, success on commit (where `navigator.vibrate`
+or future Capacitor bridge exists).
+
+No Vue page transitions today — introduce a minimal motion module; do not
+animate the desktop remount hack.
+
+---
+
+## 10. Async, notifications, resume
+
+Top-tier TM mobile is an **async multiplayer client**:
+
+| Feature | Behavior |
+|---------|----------|
+| Push / OS notification | “Your turn — Generation 8” (opt-in) |
+| Resume | Deep link opens into Turn mode on the pending decision |
+| Delta summary | Chronicle top: what opponents did since your last submit |
+| Dead man’s switch UX | Clear passed / active / disconnected states |
+| Background tab | Today’s title animation is a stopgap; prefer Notification + optional sound |
+| Service worker | Replace empty `sw.js` comment with real offline shell of static assets + push hook if product wants it |
+
+Extract `notify()` from `WaitingFor` so desktop and mobile share policy.
+
+---
+
+## 11. Help, learner mode, trust
+
+- Contextual rules: long-press resource / tag / parameter → plain-language sheet
+- Learner mode: already hides some OrOptions — surface as “Guided” with
+  recommended verbs highlighted, not removed without explanation
+- Confirm copy always restates cost and effect in one sentence
+- Undo: server may not support full undo; if not, do not fake it — offer
+  “Review before confirm” strongly (double confirm only for pass / irreversible)
+- Error/offline: full-screen calm retry, keep local UI state in the step stack
+
+---
+
+## 12. Accessibility & platform rules
+
+- Targets ≥44×44 CSS px; WCAG 2.2 spacing
+- Do **not** disable pinch on the document; map camera handles map zoom
+- `prefers-reduced-motion` disables signature choreography
+- Screen reader: verb list as listbox; card focus announces name, cost, tags,
+  requirements
+- Dynamic type: chrome respects; cards remain art (inspect sheet can show a
+  text fallback rules block if needed later)
+- Safe areas on HUD, bottom nav, confirm bars
+- Landscape: Table can go immersive (hide nav until swipe); Turn flows stay
+  portrait-optimized first
+
+---
+
+## 13. Performance budget
+
+| Metric | Target |
+|--------|--------|
+| Turn mode interactive after resume | &lt; 1s on mid-tier phone |
+| Board pan/zoom | 60fps on last two iPhone / Pixel classes |
+| Card focus open | &lt; 100ms to first paint (reuse mounted Card) |
+| Input submit → next UI | No full-app remount flash; replace today’s empty-screen remount |
+
+Engineering implication: stop remounting the entire home via
+`screen = 'empty'` for mobile; patch `waitingFor` in place.
+
+---
+
+## 14. Consortium-specific mobile requirements (non-negotiable)
+
+1. **Iridium** in HUD, Pay sheet, requirements warnings, crater-yield toasts
+2. **Terrains** readable on Table (chasm / crater / highland) without desktop
+   legend eyestrain — tap hex inspect
+3. **Megastructures** as Table strip + Turn verb + ceremony
+4. **Frontier / bridge** unlock communicated when the bridge completes (camera
+   pan to new zone)
+5. **No building tag on Siderophile Extraction** — UI must not imply workforce
+   synergy that does not exist
+6. Artwork remains generator-owned (`tools/consortium-art/build_assets.py`)
+
+---
+
+## 15. What we deliberately do not do
+
+| Anti-goal | Reason |
+|-----------|--------|
+| Responsive CSS on `PlayerHome` as the product | Caps at “usable”, never “top tier” |
+| `user-scalable=no` | A11y harm; masks bad layout |
+| Fluid HTML cards | Fights art + i18n pipeline |
+| Native-only rewrite first | Web dual-client ships faster; native wrapper later if needed |
+| Feature parity with every desktop preference day one | Port semantic prefs; drop hover-era prefs |
+| Citing validation harness as UX proof | Crashes ≠ delight |
+| Shipping mobile payment without iridium | Consortium integrity |
+
+---
+
+## 16. Phased delivery toward the bar
+
+Phases are **product slices**, each shippable behind a flag, each raising the
+ceiling — not watering down the vision.
+
+### P0 — Foundations
+
+- Client fork detection + `MobileApp` route host
+- Extract turn session (poll/submit/notify)
+- Viewport `device-width`, safe areas, HUD + bottom nav chrome
+- Feature flag / preference `mobile_client` (auto on narrow + coarse)
+
+### P1 — Turn cockpit
+
+- Verb list from OrOptions
+- PlayCardFlow (hand → focus → pay → confirm)
+- Pay sheet with iridium
+- Pass / standard projects as verbs
+- Kill nested radio indentation on mobile
+
+**Exit criteria:** play a card and pass a turn one-handed without page pinch.
+
+### P2 — Table camera
+
+- Board camera (pan/zoom/fit)
+- PlaceTileFlow with confirm bar + filters
+- Parameter meters + M/A glance
+- Megastructure strip glance
+
+**Exit criteria:** place city/ocean/greenery without document zoom.
+
+### P3 — Empire & rivals
+
+- Hand + tableau browser + card actions
+- Opponent sheets
+- Tag / production identity
+
+### P4 — Setup & draft theater
+
+- Initial wizard
+- Draft theater
+- Research/buy flow polish
+
+### P5 — Chronicle & async
+
+- Since-last-turn delta
+- Push notifications
+- Resume deep link into decision
+- Replace remount flash
+
+### P6 — Expansion overlays & create-game
+
+- Colonies / Turmoil / Moon / Venus / Pathfinders sheets
+- Create-game wizard + lobby
+
+### P7 — Ceremony & craft
+
+- Motion signatures, haptics, megastructure climax
+- A11y pass, performance budget, landscape Table
+- Optional PWA install / SW caching
+
+**P1+P2 are the credibility gate.** If those do not feel premium, stop and
+redesign before building More tabs.
+
+---
+
+## 17. Engineering map (starting points)
+
+| Concern | Today | Mobile direction |
+|---------|-------|------------------|
+| Boot / screens | `App.vue` | Branch to `mobile/MobileApp.vue` |
+| Home stack | `PlayerHome.vue` | Not reused as layout; mine for data wiring |
+| Inputs | `PlayerInputFactory.vue` + siblings | `mobile/inputs/*Flow.vue` + router |
+| Turn sync | `WaitingFor.vue` | `turnSession.ts` + thin presenters |
+| Board | `Board.vue`, `SelectSpace.vue` | `mobile/TableCamera.vue` + PlaceTileFlow |
+| Cards | `Card.vue`, `SelectCard.vue`, `SelectProjectCardToPlay.vue` | HandTheater, CardFocusSheet |
+| Payment | `PaymentForm.vue`, `SelectPayment.vue` | `mobile/PaySheet.vue` (shared logic) |
+| Opponents | `OtherPlayer.vue`, overview/* | `mobile/RivalSheet.vue` |
+| Log | `logpanel/*` | `mobile/Chronicle.vue` |
+| Megastructures | `MegastructuresPanel`, contribute util | Table strip + Contribute sheet |
+| Viewport | `assets/index.html` | Dynamic meta or mobile index policy |
+| Prefs | `PreferencesManager.ts` | Add mobile flags; ignore hover prefs on mobile |
+
+Keep server manifests, card behavior, and serialization out of scope unless a
+mobile flow discovers a protocol gap (prefer client normalize).
+
+---
+
+## 18. Acceptance tests for “top tier”
+
+### Qualitative (playtest)
+
+1. New mobile-only playtester completes generation 1–2 without help zooming
+2. Experienced desktop player prefers phone for async turns
+3. Zero required document pinch in a scored turn checklist
+4. Consortium game: pay iridium, place on highland/crater, contribute
+   megastructure — all inside mobile flows
+
+### Quantitative
+
+| Check | Target |
+|-------|--------|
+| Document pinch gestures / turn | ~0 |
+| Map gestures / tile placement | allowed, usually 0–2 |
+| Mis-tap rate on payment steppers | near 0 in playtest |
+| Time to play a legal card from Your turn | competitive with official app |
+| Client test baseline | no regression on desktop suite |
+| Full suite | ≥ existing green baseline before PR merge |
+
+Manual matrix: iOS Safari, Android Chrome, tablet portrait, desktop flag off.
+
+---
+
+## 19. Open product questions
+
+1. **Auto-enable vs opt-in** for the mobile client on first visit?
+2. **How aggressive is auto-jump to Turn mode** when notified mid-browse?
+3. **Spectator mobile** — same IA with Turn replaced by “Follow”?  
+4. **Upstream** — design for eventual contribution to terraforming-mars, or
+   Consortium-only until proven?
+5. **Native wrapper** (Capacitor) for push reliability — v1 web push enough?
+6. **Text rules fallback** for cards when art text is hard to read — ship in P3
+   or later?
+
+Flag unknowns rather than guessing in implementation PRs.
+
+---
+
+## 20. Summary
+
+The current site is a desktop tabletop under a magnifying glass. Making it
+“responsive” will not produce a top-tier mobile game.
+
+A top-tier Consortium mobile client is a **second presentation layer**: turn
+cockpit, board camera, hand theater, shared pay sheet, opponent/chronicle
+sheets, async resume — driven by the existing input protocol. Consortium
+systems (iridium, terrain, megastructures) are designed in from P1/P2, not
+bolted on.
+
+Ship behind a flag, earn credibility with **Play card + Place tile**, then
+expand. Judge success by whether a player forgets the desktop existed — not by
+whether the layout fits within 390px.
