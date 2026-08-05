@@ -2,7 +2,9 @@
 
 html.mobile-client,
 body.mobile-client {
+  /* svh = visible viewport on iOS Chrome (dvh can hide the footer under browser UI) */
   height: 100%;
+  height: 100svh;
   overflow: hidden;
   background: #1a1f24;
   overscroll-behavior: none;
@@ -17,25 +19,28 @@ body.mobile-client .main-container {
   max-width: none;
   padding: 0;
   height: 100%;
+  height: 100svh;
   overflow: hidden;
 }
 
 body.mobile-client .topmost-player-home,
 body.mobile-client #app {
   height: 100%;
+  height: 100svh;
   overflow: hidden;
 }
 
 .mobile-player-home {
   display: flex;
   flex-direction: column;
-  height: 100dvh;
-  height: 100vh;
-  max-height: 100dvh;
-  max-height: 100vh;
+  height: 100%;
+  height: 100svh;
+  max-height: 100svh;
   overflow: hidden;
   background: #1a1f24;
   color: #e8eaed;
+  /* Room for fixed bottom nav */
+  padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
 }
 
 .mobile-hud {
@@ -139,11 +144,61 @@ body.mobile-client #app {
   line-height: 1.4;
 }
 
-/* Flex footer — not position:fixed — so the page cannot scroll under/past the bar */
+.mobile-turn-cards {
+  margin-bottom: 16px;
+  padding: 10px 10px 6px;
+  border-radius: 10px;
+  background: #151a1f;
+  border: 1px solid #2a323a;
+}
+
+.mobile-turn-cards__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.mobile-turn-cards__title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #9aa7b3;
+}
+
+.mobile-turn-cards__all {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid #3a4450;
+  border-radius: 8px;
+  background: #1c242c;
+  color: #f0f3f6;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mobile-turn-cards__hint {
+  margin: 4px 0 8px;
+  font-size: 12px;
+  opacity: 0.7;
+  line-height: 1.35;
+}
+
+.mobile-turn-cards .mobile-card-scroller {
+  padding-bottom: 8px;
+}
+
+/* Fixed footer — must stay above iOS/Chrome browser chrome (svh + safe-area) */
 .mobile-bottom-nav {
-  flex: 0 0 auto;
-  position: relative;
-  z-index: 30;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 2px;

@@ -14,7 +14,11 @@
         </section>
       </template>
       <template v-else>
-        <MobileTurnMode v-if="mode === 'turn'" :playerView="playerView"/>
+        <MobileTurnMode
+          v-if="mode === 'turn'"
+          :playerView="playerView"
+          @open-empire="setMode('empire')"
+        />
         <MobileTableMode
           v-else-if="mode === 'table'"
           :playerView="playerView"
