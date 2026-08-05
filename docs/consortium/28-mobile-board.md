@@ -1,9 +1,9 @@
 # Consortium — Mobile board (Table) brainstorm
 
 Date: 2026-08-05  
-Status: **exploration only — no implementation in this document**  
+Status: **B0 + B1★ shipped** on `cursor/mobile-card-focus-448b` (camera + touch megastructure copy)  
 Depends on: mobile shell P0 (`25-mobile-p0.md`), card focus C1–C2  
-Audience: product decision before Table camera work
+Audience: product decision + implementation notes
 
 ---
 
@@ -123,8 +123,8 @@ Until this exists, Turn cockpit alone cannot feel finished.
 
 | Slice | What | Why |
 |-------|------|-----|
-| **B0** | Delete hover copy; tap megastructure contribute from Table | Cheap trust win |
-| **B1★** | `BoardCamera` pan + pinch + clamp | Real Table |
+| **B0** | Delete hover copy; tap megastructure contribute from Table | **Done** — tap Bridge highlight + larger Contribute |
+| **B1★** | `BoardCamera` pan + pinch + clamp | **Done** — Table uses camera; megastructures sit below |
 | **B2★** | Place mode + legal hex emphasis + confirm | Makes Turn placement mobile |
 | **B3** | Hex inspect sheet (terrain, bonuses, owner) | Parity with card focus |
 | **B4** | Overview / sector jump for Consortium width | Orientation |
@@ -146,13 +146,12 @@ Until this exists, Turn cockpit alone cannot feel finished.
 
 ## 8. Recommendation
 
-Next Table work after shell polish:
+B0 + B1★ are in. Next:
 
-1. Spec **BoardCamera** (gestures, min/max zoom, clamp)  
-2. **B0** megastructure touch copy + contribute entry  
-3. **B1★** camera behind Table mode  
-4. Only then **B2★** Place mode wired from SelectSpace  
+1. **B2★** Place mode + legal hex emphasis + confirm from SelectSpace  
+2. **B3** Hex inspect sheet  
+3. **B4** Sector jump for Consortium width  
 
-Do **not** spend a cycle on prettier scrollbars around the same fit-scale board.
+Do **not** spend a cycle on prettier scrollbars around fit-scale — that path is gone.
 
 **North star:** On mobile, the board is a **camera on Mars**, not a screenshot in a scroll view.
