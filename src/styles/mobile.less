@@ -72,11 +72,20 @@ body.mobile-client .main-container {
   opacity: 0.9;
 }
 
+.mobile-hud__row--resources {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(48px, 1fr));
+  gap: 4px 6px;
+  align-items: center;
+}
+
 .mobile-hud__res {
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  min-height: 28px;
+  min-height: 36px;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .mobile-hud__res .resource_icon {
