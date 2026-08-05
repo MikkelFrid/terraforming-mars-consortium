@@ -458,6 +458,13 @@
                               </label>
                             </template>
 
+                            <template v-if="expansions.consortium && randomMA === RandomMAOptionType.NONE">
+                              <input type="checkbox" v-model="padConsortiumMA" id="padConsortiumMA-checkbox">
+                              <label for="padConsortiumMA-checkbox">
+                                  <span v-i18n>Pad Consortium MAs with official boards</span>
+                              </label>
+                            </template>
+
                             <input type="checkbox" name="showOtherPlayersVP" v-model="showOtherPlayersVP" id="realTimeVP-checkbox">
                             <label for="realTimeVP-checkbox">
                                 <span v-i18n>Show real-time VP</span>&nbsp;<a :href="wikiUrls.showRealtimeVP" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
@@ -1317,6 +1324,8 @@ export default defineComponent({
         removeNegativeGlobalEventsOption,
         includeFanMA,
         modularMA: this.modularMA,
+        padConsortiumMA: this.expansions.consortium && this.randomMA === RandomMAOptionType.NONE ?
+          this.padConsortiumMA : false,
         startingCorporations,
         soloTR,
         clonedGamedId,

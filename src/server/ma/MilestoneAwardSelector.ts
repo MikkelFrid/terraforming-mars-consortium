@@ -1,5 +1,6 @@
 import {awardManifest} from '../awards/Awards';
 import {BoardName} from '../../common/boards/BoardName';
+import {isConsortiumBoard} from '../../common/boards/ConsortiumBoards';
 import {GameOptions} from '../game/GameOptions';
 import {milestoneManifest} from '../milestones/Milestones';
 import {RandomMAOptionType} from '../../common/ma/RandomMAOptionType';
@@ -10,6 +11,14 @@ import {AwardName, awardNames} from '../../common/ma/AwardName';
 import {synergies} from './MilestoneAwardSynergies';
 import {isCompatible, MAManifest} from './MAManifest';
 import {intersection} from '../../common/utils/utils';
+
+const OFFICIAL_BOARDS: ReadonlyArray<BoardName> = [
+  BoardName.THARSIS,
+  BoardName.HELLAS,
+  BoardName.ELYSIUM,
+];
+
+const BOARD_MA_COUNT = 5;
 
 type DrawnMilestonesAndAwards = {
   milestones: Array<MilestoneName>,
@@ -87,6 +96,9 @@ export function chooseMilestonesAndAwards(gameOptions: GameOptions): DrawnMilest
     default:
       return getRandomMilestonesAndAwards(gameOptions, requiredQty, LIMITED_SYNERGY);
     }
+    if (gameOptions.padConsortiumMA && isConsortiumBoard(boardName)) {
+      padConsortiumWithOfficialMas(drawnMilestonesAndAwards);
+    }
     if (gameOptions.venusNextExtension) {
       push(milestoneManifest.expansions['venus'], awardManifest.expansions['venus']);
     }
@@ -117,12 +129,38 @@ export function chooseMilestonesAndAwards(gameOptions: GameOptions): DrawnMilest
 }
 
 /**
- * Return the list of possible milestones and awards for a given game. Only meant to work with random selection.
- *
- * Isn't meant to work with RandomMAOptionType.NONE
- *
- * exported for tests
+ * Fill Consortium's board-defined MAs up to five by drawing from Tharsis, Hellas, and Elysium.
+ * Synergy is not enforced against Consortium pairs (those score above LIMITED_SYNERGY).
+ * Exported for tests.
  */
+export function padConsortiumWithOfficialMas(drawn: DrawnMilestonesAndAwards): void {
+  const needMilestones = BOARD_MA_COUNT - drawn.milestones.length;
+  const needAwards = BOARD_MA_COUNT - drawn.awards.length;
+  if (needMilestones <= 0 && needAwards <= 0) {
+    return;
+  }
+
+  const milestonePool = OFFICIAL_BOARDS
+    .flatMap((board) => milestoneManifest.boards[board])
+    .filter((name) => !drawn.milestones.includes(name));
+  const awardPool = OFFICIAL_BOARDS
+    .flatMap((board) => awardManifest.boards[board])
+    .filter((name) => !drawn.awards.includes(name));
+
+  inplaceShuffle(milestonePool, UnseededRandom.INSTANCE);
+  inplaceShuffle(awardPool, UnseededRandom.INSTANCE);
+
+  drawn.milestones.push(...milestonePool.slice(0, Math.max(0, needMilestones)));
+  drawn.awards.push(...awardPool.slice(0, Math.max(0, needAwards)));
+}
+
+/**
+   * Return the list of possible milestones and awards for a given game. Only meant to work with random selection.
+   *
+   * Isn't meant to work with RandomMAOptionType.NONE
+   *
+   * exported for tests
+   */
 export function getCandidates(gameOptions: GameOptions): [Array<MilestoneName>, Array<AwardName>] {
   function include<T extends string>(name: T, manifest: MAManifest<T, any>): boolean {
     // Never include deprecated MAs in random candidates.  They generally have "more official" versions that will be

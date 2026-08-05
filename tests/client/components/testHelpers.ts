@@ -54,6 +54,7 @@ export function fakeGameOptionsModel(overrides?: RecursivePartial<GameOptionsMod
     fastModeOption: false,
     includedCards: [],
     includeFanMA: false,
+    padConsortiumMA: false,
     initialDraftVariant: false,
     preludeDraftVariant: false,
     ceosDraftVariant: false,

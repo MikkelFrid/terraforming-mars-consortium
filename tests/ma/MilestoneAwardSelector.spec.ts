@@ -147,6 +147,70 @@ describe('MilestoneAwardSelector', () => {
     expect(mas.awards).to.have.length(8);
   });
 
+  it('Consortium board has three milestones and awards by default', () => {
+    const mas = choose({
+      boardName: BoardName.CONSORTIUM,
+      consortiumExpansion: true,
+      randomMA: RandomMAOptionType.NONE,
+    });
+    expect(mas.milestones).to.deep.eq(['Mason', 'Pathfinder', 'Assayer']);
+    expect(mas.awards).to.deep.eq(['Underwriter', 'Cartographer', 'Refiner']);
+  });
+
+  it('padConsortiumMA fills Consortium to five from official boards', () => {
+    const officialMilestones = [
+      ...milestoneManifest.boards[BoardName.THARSIS],
+      ...milestoneManifest.boards[BoardName.HELLAS],
+      ...milestoneManifest.boards[BoardName.ELYSIUM],
+    ];
+    const officialAwards = [
+      ...awardManifest.boards[BoardName.THARSIS],
+      ...awardManifest.boards[BoardName.HELLAS],
+      ...awardManifest.boards[BoardName.ELYSIUM],
+    ];
+
+    for (let idx = 0; idx < 50; idx++) {
+      const mas = choose({
+        boardName: BoardName.CONSORTIUM,
+        consortiumExpansion: true,
+        padConsortiumMA: true,
+        randomMA: RandomMAOptionType.NONE,
+      });
+      expect(mas.milestones).to.have.length(5);
+      expect(mas.awards).to.have.length(5);
+      expect(mas.milestones.slice(0, 3)).to.deep.eq(['Mason', 'Pathfinder', 'Assayer']);
+      expect(mas.awards.slice(0, 3)).to.deep.eq(['Underwriter', 'Cartographer', 'Refiner']);
+      expect(intersection(mas.milestones.slice(3), officialMilestones)).to.have.length(2);
+      expect(intersection(mas.awards.slice(3), officialAwards)).to.have.length(2);
+    }
+  });
+
+  it('padConsortiumMA with Venus still appends Hoverlord and Venuphile', () => {
+    const mas = choose({
+      boardName: BoardName.CONSORTIUM_RIFT,
+      consortiumExpansion: true,
+      padConsortiumMA: true,
+      venusNextExtension: true,
+      randomMA: RandomMAOptionType.NONE,
+    });
+    expect(mas.milestones).to.have.length(6);
+    expect(mas.awards).to.have.length(6);
+    expect(mas.milestones).to.include('Hoverlord');
+    expect(mas.awards).to.include('Venuphile');
+  });
+
+  it('padConsortiumMA is ignored when Random MA is enabled', () => {
+    const mas = choose({
+      boardName: BoardName.CONSORTIUM,
+      consortiumExpansion: true,
+      padConsortiumMA: true,
+      randomMA: RandomMAOptionType.LIMITED,
+    });
+    expect(mas.milestones).to.have.length(5);
+    expect(mas.awards).to.have.length(5);
+    expect(mas.milestones).to.not.include('Mason');
+  });
+
   it('Do not select Constructor when Colonies is not selected', () => {
     for (let idx = 0; idx < 1_000; idx++) {
       const mas = chooseMilestonesAndAwards({

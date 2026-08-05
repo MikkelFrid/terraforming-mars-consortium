@@ -83,6 +83,7 @@ describe('ApiGame', () => {
           'fastModeOption': false,
           'includedCards': [],
           'includeFanMA': false,
+          'padConsortiumMA': false,
           'initialDraftVariant': false,
           'ceosDraftVariant': false,
           'politicalAgendasExtension': 'Standard',

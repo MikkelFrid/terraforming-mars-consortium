@@ -50,6 +50,7 @@ export function defaultCreateGameModel(): CreateGameModel {
     fastModeOption: false,
     removeNegativeGlobalEventsOption: false,
     includeFanMA: false,
+    padConsortiumMA: false,
     startingCorporations: 2,
     soloTR: false,
     clonedGameId: undefined,
