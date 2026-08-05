@@ -1,6 +1,16 @@
 # AGENTS.md
 
+See `CLAUDE.md` for the full architecture overview and the canonical build/lint/test/dev commands. `package.json` `scripts` is the source of truth for commands.
+
 ## Cursor Cloud specific instructions
+
+- Node 22 is the supported runtime (`package.json` `engines` = `22.x`, CI uses 22). Ignore `.nvmrc` (`v24`); the environment runs Node 22, matching `engines`/CI.
+- Generated files in `src/genfiles/` (`cards.json`, `colonies.json`, `events.json`, `milestones.json`, `awards.json`, `settings.json`, `translations.json`) and `build/styles.css` are gitignored and must be generated before the server, client build, or tests can work. The startup update script runs `npm run make:static` (CSS + `make:json`) and `npm run make:cards`, so these exist on a fresh pod.
+- `npm run test:client` fails with `Module not found: '@/genfiles/*.json'` if the card genfiles are missing. Run `npm run make:cards` first (the update script already does this).
+- When you change card definitions, regenerate card JSON with `npm run make:cards`. `npm run dev` runs a `watch:cards` watcher that does this automatically; `make:json`/`make:css` outputs (translations, settings, CSS) are only auto-rebuilt by their own watchers within `npm run dev`.
+- `npm run dev` (see `scripts/dev.sh`) starts four watchers at once: `dev:server` (tsx hot-reload), `dev:client` (webpack watch), `watch:less`, `watch:cards`. There is NO separate frontend dev server — the Node server serves the SPA and static assets. Open the app at `http://localhost:8080` (`PORT`, default 8080).
+- Default persistence is embedded SQLite at `./db/game.db` (via `better-sqlite3`); no external database is required for local dev. PostgreSQL is only used when `POSTGRES_HOST`/related env vars are set.
+- Admin/stats routes need the random `SERVER_ID` printed at server startup (or set it in `.env`; copy from `.env.sample`). Normal gameplay does not need it.
 
 ### Artwork
 
