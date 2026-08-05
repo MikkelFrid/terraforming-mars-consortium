@@ -1,8 +1,8 @@
 # Consortium — Mobile cards: next-level exploration
 
 Date: 2026-08-05  
-Status: **design exploration only — no implementation in this document**  
-Audience: product decision before C2+  
+Status: **C2★ implemented** — structured Rules panel default; Original secondary  
+Audience: product decision + implementation notes  
 Related: `26-mobile-cards.md` (C1 focus sheet = art zoom; necessary but not sufficient)
 
 ---
@@ -256,7 +256,7 @@ on phone even when rules are correct.
 |-------|------|-----|
 | **C1** | Focus sheet = scaled art | Done — pinch stopgap |
 | **C1.5** | Keep C1 as “Original card” tab inside focus | Cheap bridge |
-| **C2★** | **Structured focus panel** from `renderData` + description | Actual next-level inspect |
+| **C2★** | **Structured focus panel** from `renderData` + description | **Done** — Rules tab default; Original secondary |
 | **C3★** | **Hand decision list** in Turn / Play flow (playable reasons) | Where cards matter most |
 | **C4** | Browse tokens (not mini full cards) in Empire / draft | Density without unreadability |
 | **C5** | Setup/draft theater using tokens + C2 panel | Same system everywhere |
@@ -286,8 +286,8 @@ miss — skip it as a headline goal.
 
 Open product calls:
 
-- Default focus tab: **Rules panel** or **Original**? (Recommend Rules.)  
-- During Play: list-first or carousel-first? (Recommend list-first.)  
+- Default focus tab: **Rules** (shipped in C2).  
+- During Play: list-first or carousel-first? (Recommend list-first — C3.)  
 - How much corp logo / art identity in the token? (Recommend strong type color
   + logo mark for corps.)
 
@@ -295,13 +295,13 @@ Open product calls:
 
 ## 10. Recommendation
 
-Do **not** spend the next cycle on prettier carousels of the same art.
+C2★ ships the dual representation (Rules default, Original secondary).
 
-Next build, when coding resumes:
+Next:
 
-1. Spec the **structured focus panel** (wireframe + renderData→rows MVP list)
-2. Implement panel as default inspect; demote scaled `Card` to “Original”
-3. Only then wire hand/Play decision lists on top of that panel
+1. **C3★** Hand decision list in Turn / Play (playable reasons, not museum)
+2. Browse tokens (C4) once hand list proves the panel
+3. Optional prose generator (C6) for icon-only cards
 
 That is the Hearthstone lesson applied to TM: **same game, different best
 surface per device** — and the device is a phone, not a tiny monitor.

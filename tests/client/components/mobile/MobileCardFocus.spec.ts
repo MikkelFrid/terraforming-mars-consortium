@@ -35,4 +35,19 @@ describe('MobileCardFocusSheet', () => {
     wrapper.unmount();
     expect(document.body.classList.contains('mobile-card-focus-open')).eq(false);
   });
+
+  it('defaults to Rules tab and can switch to Original', async () => {
+    const wrapper = mount(MobileCardFocusSheet, {
+      ...globalConfig,
+      props: {card: stubCard(CardName.ALGAE)},
+      attachTo: document.body,
+    });
+    expect(wrapper.find('.mobile-card-rules').exists()).eq(true);
+    expect(wrapper.find('.mobile-card-focus__tab--active').text()).to.include('Rules');
+    const tabs = wrapper.findAll('.mobile-card-focus__tab');
+    await tabs[1].trigger('click');
+    expect(wrapper.find('.mobile-card-focus__tab--active').text()).to.include('Original');
+    expect(wrapper.find('.mobile-card-focus__body--original').isVisible()).eq(true);
+    wrapper.unmount();
+  });
 });

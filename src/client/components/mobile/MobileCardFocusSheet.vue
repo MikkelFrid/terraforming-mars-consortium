@@ -22,7 +22,33 @@
           v-i18n
         >Close</button>
       </header>
-      <div class="mobile-card-focus__body">
+
+      <div class="mobile-card-focus__tabs" role="tablist" aria-label="Card view">
+        <button
+          type="button"
+          role="tab"
+          class="mobile-card-focus__tab"
+          :class="{'mobile-card-focus__tab--active': tab === 'rules'}"
+          :aria-selected="tab === 'rules'"
+          @click="tab = 'rules'"
+          v-i18n
+        >Rules</button>
+        <button
+          type="button"
+          role="tab"
+          class="mobile-card-focus__tab"
+          :class="{'mobile-card-focus__tab--active': tab === 'original'}"
+          :aria-selected="tab === 'original'"
+          @click="tab = 'original'"
+          v-i18n
+        >Original</button>
+      </div>
+
+      <div class="mobile-card-focus__body" v-show="tab === 'rules'">
+        <MobileCardRulesPanel :card="card" />
+      </div>
+
+      <div class="mobile-card-focus__body mobile-card-focus__body--original" v-show="tab === 'original'">
         <div class="mobile-card-focus__stage" :style="stageStyle">
           <Card
             :card="card"
@@ -31,6 +57,7 @@
           />
         </div>
       </div>
+
       <p class="mobile-card-focus__hint" v-i18n>Tap outside or Close to dismiss</p>
     </div>
   </div>
@@ -39,14 +66,17 @@
 <script lang="ts">
 import {defineComponent, PropType} from 'vue';
 import Card from '@/client/components/card/Card.vue';
+import MobileCardRulesPanel from '@/client/components/mobile/MobileCardRulesPanel.vue';
 import {CardModel} from '@/common/models/CardModel';
 import {Color} from '@/common/Color';
 import {getCard} from '@/client/cards/ClientCardManifest';
 import {CARD_DESIGN_WIDTH_PX, focusCardScale} from '@/client/components/mobile/mobileCardLayout';
 
+type FocusTab = 'rules' | 'original';
+
 export default defineComponent({
   name: 'MobileCardFocusSheet',
-  components: {Card},
+  components: {Card, MobileCardRulesPanel},
   props: {
     card: {
       type: Object as () => CardModel,
@@ -65,6 +95,7 @@ export default defineComponent({
   data() {
     return {
       scale: 1.2,
+      tab: 'rules' as FocusTab,
     };
   },
   computed: {

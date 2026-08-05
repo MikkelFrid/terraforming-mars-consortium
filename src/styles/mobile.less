@@ -290,7 +290,7 @@ body.mobile-card-focus-open {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   position: sticky;
   top: 0;
   z-index: 2;
@@ -320,11 +320,44 @@ body.mobile-card-focus-open {
   cursor: pointer;
 }
 
+.mobile-card-focus__tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+  position: sticky;
+  top: 52px;
+  z-index: 2;
+  background: #12161a;
+  padding-bottom: 8px;
+}
+
+.mobile-card-focus__tab {
+  flex: 1;
+  min-height: 40px;
+  border: 1px solid #3a4450;
+  border-radius: 6px;
+  background: #1a2026;
+  color: #c5ced6;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mobile-card-focus__tab--active {
+  background: #2c343c;
+  border-color: #c45c26;
+  color: #f0f3f6;
+}
+
 .mobile-card-focus__body {
   display: flex;
   justify-content: center;
   padding: 4px 0 8px;
   overflow-x: hidden;
+}
+
+.mobile-card-focus__body--original {
+  justify-content: center;
 }
 
 .mobile-card-focus__stage {
@@ -341,6 +374,163 @@ body.mobile-card-focus-open {
   text-align: center;
   font-size: 12px;
   opacity: 0.65;
+}
+
+/* Structured rules panel (C2) — decision object, not scaled art */
+.mobile-card-rules {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  color: #e8eef3;
+}
+
+.mobile-card-rules__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.mobile-card-rules__identity {
+  flex: 1;
+  min-width: 0;
+}
+
+.mobile-card-rules__type {
+  margin: 0 0 2px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #9aa7b3;
+}
+
+.mobile-card-rules__title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.mobile-card-rules__cost {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 56px;
+  min-height: 56px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: #1e7a4a;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.15);
+}
+
+.mobile-card-rules__cost-value {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.mobile-card-rules__cost-unit {
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.mobile-card-rules__cost-was {
+  margin-top: 2px;
+  font-size: 11px;
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.mobile-card-rules__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.mobile-card-rules__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.mobile-card-rules__tag.card-tag {
+  position: static;
+  width: 36px;
+  height: 36px;
+  margin: 0;
+  border-radius: 50%;
+  background-color: #fff;
+  background-size: 46px;
+  background-position: -5px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+.mobile-card-rules__vp {
+  flex: 0 0 auto;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: #3a2f1a;
+  border: 1px solid #c9a227;
+  font-size: 14px;
+  font-weight: 700;
+  color: #f0d878;
+}
+
+.mobile-card-rules__section,
+.mobile-card-rules__req,
+.mobile-card-rules__description {
+  margin-bottom: 14px;
+  padding: 12px;
+  border-radius: 8px;
+  background: #1a2026;
+  border: 1px solid #2c343c;
+}
+
+.mobile-card-rules__section-title {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #9aa7b3;
+}
+
+.mobile-card-rules__req-list {
+  margin: 0;
+  padding-left: 1.2em;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.mobile-card-rules__icons {
+  /* Enlarge icon DSL for phone reading; keep layout from card CSS */
+  font-size: 16px;
+  transform: scale(1.15);
+  transform-origin: top left;
+  width: 87%;
+}
+
+.mobile-card-rules__icons .card-rows {
+  width: 100%;
+}
+
+.mobile-card-rules__description-body {
+  font-size: 17px;
+  line-height: 1.45;
+  color: #d7e0e8;
+}
+
+.mobile-card-rules__empty {
+  margin: 8px 0 0;
+  font-size: 14px;
+  opacity: 0.75;
+  line-height: 1.4;
 }
 
 /* Legacy scroller item (unused after C1 tiles) */
