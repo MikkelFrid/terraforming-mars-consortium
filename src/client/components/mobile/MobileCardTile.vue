@@ -2,10 +2,11 @@
   <button
     type="button"
     class="mobile-card-tile"
-    :class="'mobile-card-tile--' + size"
+    :class="sizeClass"
+    :style="tileStyle"
     @click="$emit('open', card)"
   >
-    <div class="mobile-card-tile__scale">
+    <div class="mobile-card-tile__scale" :style="scaleStyle">
       <Card :card="card" :actionUsed="actionUsed" :cubeColor="cubeColor"/>
     </div>
   </button>
@@ -16,8 +17,18 @@ import {defineComponent, PropType} from 'vue';
 import Card from '@/client/components/card/Card.vue';
 import {CardModel} from '@/common/models/CardModel';
 import {Color} from '@/common/Color';
+import {
+  CARD_DESIGN_HEIGHT_PX,
+  CARD_DESIGN_WIDTH_PX,
+  gridTileSize,
+} from '@/client/components/mobile/mobileCardLayout';
 
 export type MobileCardTileSize = 'hand' | 'thumb';
+
+const LEGACY_SCALE: Record<MobileCardTileSize, number> = {
+  hand: 0.75,
+  thumb: 0.49,
+};
 
 export default defineComponent({
   name: 'MobileCardTile',
@@ -27,9 +38,15 @@ export default defineComponent({
       type: Object as () => CardModel,
       required: true,
     },
+    /** Legacy named size — ignored when `scale` is set. */
     size: {
       type: String as PropType<MobileCardTileSize>,
       default: 'hand',
+    },
+    /** Explicit scale of the 240×335 design card (preferred for grids). */
+    scale: {
+      type: Number,
+      default: undefined,
     },
     actionUsed: {
       type: Boolean,
@@ -41,5 +58,37 @@ export default defineComponent({
     },
   },
   emits: ['open'],
+  computed: {
+    resolvedScale(): number {
+      if (typeof this.scale === 'number' && Number.isFinite(this.scale) && this.scale > 0) {
+        return this.scale;
+      }
+      return LEGACY_SCALE[this.size] ?? LEGACY_SCALE.hand;
+    },
+    sizeClass(): string {
+      if (typeof this.scale === 'number') {
+        return 'mobile-card-tile--scaled';
+      }
+      return 'mobile-card-tile--' + this.size;
+    },
+    tileStyle(): Record<string, string> | undefined {
+      if (typeof this.scale !== 'number') {
+        return undefined;
+      }
+      const box = gridTileSize(this.resolvedScale);
+      return {
+        width: `${box.width}px`,
+        height: `${box.height}px`,
+      };
+    },
+    scaleStyle(): Record<string, string> {
+      const s = this.resolvedScale;
+      return {
+        transform: `scale(${s})`,
+        width: `${CARD_DESIGN_WIDTH_PX}px`,
+        height: `${CARD_DESIGN_HEIGHT_PX}px`,
+      };
+    },
+  },
 });
 </script>

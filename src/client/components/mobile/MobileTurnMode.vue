@@ -11,19 +11,15 @@
           v-i18n
         >All cards</button>
       </div>
-      <p v-if="hand.length === 0 && tableau.length === 0" class="mobile-mode__note" v-i18n>
-        No cards yet
-      </p>
-      <div v-else class="mobile-card-scroller" data-test="mobile-turn-card-scroller">
-        <MobileCardTile
-          v-for="card in previewCards"
-          :key="card.name"
-          :card="card"
-          size="hand"
-          :cubeColor="thisPlayer.color"
-          @open="openFocus"
-        />
-      </div>
+      <MobileCardGrid
+        :cards="previewCards"
+        :cubeColor="thisPlayer.color"
+        @open="openFocus"
+      >
+        <template #empty>
+          <span v-i18n>No cards yet</span>
+        </template>
+      </MobileCardGrid>
       <p v-if="hand.length === 0 && tableau.length > 0" class="mobile-turn-cards__hint" v-i18n>
         Hand is empty — showing played cards. Buy projects on research, or open Empire.
       </p>
@@ -51,7 +47,7 @@
 <script lang="ts">
 import {defineComponent} from 'vue';
 import WaitingFor from '@/client/components/WaitingFor.vue';
-import MobileCardTile from '@/client/components/mobile/MobileCardTile.vue';
+import MobileCardGrid from '@/client/components/mobile/MobileCardGrid.vue';
 import MobileCardFocusSheet from '@/client/components/mobile/MobileCardFocusSheet.vue';
 import {CardModel} from '@/common/models/CardModel';
 import {PlayerViewModel, PublicPlayerModel} from '@/common/models/PlayerModel';
@@ -59,7 +55,7 @@ import {GameModel} from '@/common/models/GameModel';
 
 export default defineComponent({
   name: 'MobileTurnMode',
-  components: {WaitingFor, MobileCardTile, MobileCardFocusSheet},
+  components: {WaitingFor, MobileCardGrid, MobileCardFocusSheet},
   props: {
     playerView: {
       type: Object as () => PlayerViewModel,
@@ -87,7 +83,6 @@ export default defineComponent({
     tableau(): Array<CardModel> {
       return this.thisPlayer.tableau;
     },
-    /** Prefer hand; if empty (common after buying 0 projects), show played cards. */
     previewCards(): Array<CardModel> {
       if (this.hand.length > 0) {
         return this.hand;

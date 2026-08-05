@@ -3,9 +3,11 @@ import {defineComponent, h} from 'vue';
 import {mount} from '@vue/test-utils';
 import {globalConfig} from '../getLocalVue';
 import MobileTurnMode from '@/client/components/mobile/MobileTurnMode.vue';
+import MobileCardGrid from '@/client/components/mobile/MobileCardGrid.vue';
 import {CardName} from '@/common/cards/CardName';
 import {PlayerViewModel} from '@/common/models/PlayerModel';
 import {Phase} from '@/common/Phase';
+import {MOBILE_CARD_GRID_SIZE_KEY} from '@/client/components/mobile/mobileCardLayout';
 
 const WaitingForStub = defineComponent({
   name: 'WaitingFor',
@@ -42,6 +44,33 @@ function stubView(overrides: Partial<PlayerViewModel> = {}): PlayerViewModel {
   } as unknown as PlayerViewModel;
 }
 
+describe('MobileCardGrid', () => {
+  beforeEach(() => {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem(MOBILE_CARD_GRID_SIZE_KEY);
+    }
+  });
+
+  it('renders cards in a grid and changes size preset', async () => {
+    const wrapper = mount(MobileCardGrid, {
+      ...globalConfig,
+      props: {
+        cards: [{name: CardName.ALGAE}, {name: CardName.BIRDS}] as never,
+      },
+      attachTo: document.body,
+    });
+    expect(wrapper.find('[data-test="mobile-card-grid"]').exists()).eq(true);
+    expect(wrapper.findAll('.mobile-card-tile')).length(2);
+    await wrapper.find('[data-test="mobile-card-size-s"]').trigger('click');
+    if (typeof localStorage !== 'undefined') {
+      expect(localStorage.getItem(MOBILE_CARD_GRID_SIZE_KEY)).eq('s');
+    }
+    expect(wrapper.find('[data-test="mobile-card-size-s"]').classes())
+      .to.include('mobile-card-grid__size--active');
+    wrapper.unmount();
+  });
+});
+
 describe('MobileTurnMode', () => {
   it('shows played cards when hand is empty and can open Empire', async () => {
     const wrapper = mount(MobileTurnMode, {
@@ -53,7 +82,7 @@ describe('MobileTurnMode', () => {
       },
     });
     expect(wrapper.find('[data-test="mobile-turn-cards"]').exists()).eq(true);
-    expect(wrapper.find('[data-test="mobile-turn-card-scroller"]').exists()).eq(true);
+    expect(wrapper.find('[data-test="mobile-card-grid"]').exists()).eq(true);
     expect(wrapper.text()).to.include('Hand is empty');
     await wrapper.find('[data-test="mobile-turn-open-empire"]').trigger('click');
     expect(wrapper.emitted('open-empire')).to.have.length(1);

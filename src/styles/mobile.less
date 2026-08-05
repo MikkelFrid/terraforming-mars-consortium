@@ -146,7 +146,7 @@ body.mobile-client #app {
 
 .mobile-turn-cards {
   margin-bottom: 16px;
-  padding: 10px 10px 6px;
+  padding: 10px;
   border-radius: 10px;
   background: #151a1f;
   border: 1px solid #2a323a;
@@ -182,14 +182,10 @@ body.mobile-client #app {
 }
 
 .mobile-turn-cards__hint {
-  margin: 4px 0 8px;
+  margin: 8px 0 0;
   font-size: 12px;
   opacity: 0.7;
   line-height: 1.35;
-}
-
-.mobile-turn-cards .mobile-card-scroller {
-  padding-bottom: 8px;
 }
 
 /* Fixed footer — must stay above iOS/Chrome browser chrome (svh + safe-area) */
@@ -334,25 +330,66 @@ body.mobile-client .megastructure-track--bridge {
   cursor: pointer;
 }
 
-.mobile-card-scroller {
-  display: flex;
-  gap: 12px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: 4px 4px 16px;
-  scroll-snap-type: x mandatory;
+/* Card grid — no horizontal carousel; size is user-controlled (S/M/L) */
+.mobile-card-grid-wrap {
+  width: 100%;
 }
 
-.mobile-card-scroller--wrap {
-  flex-wrap: wrap;
-  overflow-x: visible;
-  scroll-snap-type: none;
-  gap: 10px 8px;
+.mobile-card-grid__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.mobile-card-grid__toolbar-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #8b959f;
+}
+
+.mobile-card-grid__sizes {
+  display: inline-flex;
+  gap: 4px;
+  padding: 2px;
+  border-radius: 8px;
+  background: #0e1216;
+  border: 1px solid #2a323a;
+}
+
+.mobile-card-grid__size {
+  min-width: 36px;
+  min-height: 32px;
+  margin: 0;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #8b959f;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.mobile-card-grid__size--active {
+  background: #2c343c;
+  color: #f0f3f6;
+}
+
+.mobile-card-grid {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  /* Prevent scaled card chrome from inventing vertical scroll height */
+  overflow: hidden;
+  justify-items: center;
 }
 
 .mobile-card-tile {
-  flex: 0 0 auto;
-  scroll-snap-align: start;
+  display: block;
   margin: 0;
   padding: 0;
   border: 0;
@@ -361,11 +398,14 @@ body.mobile-client .megastructure-track--bridge {
   text-align: left;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
+  /* Contain transform scale so parents do not grow empty scroll space */
+  contain: layout style;
 }
 
 .mobile-card-tile:focus-visible {
   outline: 2px solid #c45c26;
-  outline-offset: 4px;
+  outline-offset: 2px;
 }
 
 .mobile-card-tile--hand {
@@ -376,6 +416,10 @@ body.mobile-client .megastructure-track--bridge {
 .mobile-card-tile--thumb {
   width: 118px;
   height: 165px;
+}
+
+.mobile-card-tile--scaled {
+  /* width/height set inline from gridTileSize */
 }
 
 .mobile-card-tile__scale {
@@ -396,6 +440,15 @@ body.mobile-client .megastructure-track--bridge {
 .mobile-card-tile--thumb .mobile-card-tile__scale {
   transform: scale(0.49);
   width: 240px;
+}
+
+/* Legacy class kept for any leftover markup */
+.mobile-card-scroller {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  overflow: hidden;
+  padding: 0;
 }
 
 /* Focus sheet — inspect ritual (C1) */
