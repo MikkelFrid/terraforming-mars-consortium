@@ -43,7 +43,7 @@
       class="mobile-card-rules__section"
     >
       <h3 class="mobile-card-rules__section-title" v-i18n>{{ section.title }}</h3>
-      <div class="mobile-card-rules__icons">
+      <div class="mobile-card-rules__icons card-container">
         <CardRenderData :renderData="section.renderData" />
       </div>
     </section>

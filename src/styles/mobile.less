@@ -509,16 +509,28 @@ body.mobile-card-focus-open {
 }
 
 .mobile-card-rules__icons {
-  /* Enlarge icon DSL for phone reading; keep production-box / effect CSS intact */
+  /* Enlarge icon DSL for phone reading; keep production-box / effect CSS intact.
+   * Class `card-container` is required — cards_v2 nests icon CSS under it. */
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   padding: 4px 0;
+  position: relative;
+  color: #e8eef3;
 }
 
 /* Hide duplicate EFFECT/ACTION chrome labels — section title already names them */
-.mobile-card-rules__icons .card-corporation-box-label,
-.mobile-card-rules__icons .card-effect-box-label {
+.mobile-card-rules__icons .card-corporation-label {
   display: none;
+}
+
+/* Let icon trees expand beyond the 220×226 card-content box if nested */
+.mobile-card-rules__icons .card-content {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  overflow: visible;
+  color: inherit;
+  padding: 0;
 }
 
 .mobile-card-rules__description-body {
