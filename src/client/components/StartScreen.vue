@@ -12,8 +12,12 @@
       v-i18n
     >Resume game</a>
     <div class="start-screen-open-link">
+      <div class="start-screen-open-link__title" v-i18n>Join game</div>
+      <p class="start-screen-open-link__hint" v-i18n>
+        Paste the player link you received (the URL with player?id=…)
+      </p>
       <label class="start-screen-open-link__label" for="start-screen-player-link" v-i18n>
-        Open player link
+        Player link
       </label>
       <input
         id="start-screen-player-link"
@@ -24,7 +28,7 @@
         autocomplete="off"
         autocapitalize="off"
         spellcheck="false"
-        placeholder="Paste player?id=… link"
+        placeholder="https://…/player?id=…"
         @keydown.enter.prevent="openPastedLink"
       />
       <button
@@ -34,7 +38,7 @@
         v-i18n
         @click="openPastedLink"
       >
-        Open
+        Join
       </button>
       <p v-if="pasteError" class="start-screen-open-link__error" v-i18n>{{ pasteError }}</p>
     </div>

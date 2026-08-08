@@ -30,6 +30,7 @@ describe('StartScreen', () => {
     });
     expect(wrapper.exists()).to.be.true;
     expect(wrapper.find('.start-screen-open-link').exists()).to.be.true;
+    expect(wrapper.find('.start-screen-open-link__title').text()).to.include('Join game');
   });
 
   it('shows resume when a last player is stored', () => {
