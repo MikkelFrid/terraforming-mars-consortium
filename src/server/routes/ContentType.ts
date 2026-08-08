@@ -8,6 +8,8 @@ const CONTENT_TYPES: Map<string /* file extension */, string /* content type*/> 
   ['jpg', 'image/jpeg'],
   ['jpeg', 'image/jpeg'],
   ['png', 'image/png'],
+  ['webmanifest', 'application/manifest+json'],
+  ['json', 'application/json'],
 ]);
 
 export class ContentType {

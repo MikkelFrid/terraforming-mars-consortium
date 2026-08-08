@@ -49,6 +49,7 @@ import {Turmoil} from './turmoil/Turmoil';
 import {PathfindersExpansion} from './pathfinders/PathfindersExpansion';
 import {Iridium} from './consortium/Iridium';
 import {Megastructures} from './consortium/Megastructures';
+import {PushNotifier} from './push/PushNotifier';
 import {spaceElevatorDiscountFor} from './consortium/MegastructureEffects';
 import {MEGASTRUCTURE_BALANCE} from '../common/consortium/MegastructureConstants';
 import {ColoniesHandler} from './colonies/ColoniesHandler';
@@ -1797,6 +1798,10 @@ export class Player implements IPlayer {
     this.waitingFor = input;
     this.waitingForCb = cb;
     this.game.inputsThisRound++;
+    // Async multiplayer: ping subscribed devices when this player must act.
+    if (!input.optional) {
+      PushNotifier.notifyYourTurn(this);
+    }
   }
 
   /**

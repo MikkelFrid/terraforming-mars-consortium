@@ -164,15 +164,16 @@ export class ServeAsset extends Handler {
     case 'vendors.js.map':
       return this.toMainFile(urlPath, encodings);
 
-    // sw.js is empty. Although not confirmed, it seems sw.js is necessary
-    // for mobile notifications. If confirmed that it is not necessary, this
-    // can be removed.
+    // Service worker for Web Push "your turn" notifications.
     case 'sw.js':
     case '/sw.js':
       return this.toServiceWorkerFile(urlPath);
 
     case 'favicon.ico':
       return {file: 'assets/favicon.ico'};
+
+    case 'manifest.webmanifest':
+      return {file: 'assets/manifest.webmanifest'};
 
     default:
       // Serve JS chunks produced by webpack code splitting.

@@ -3,6 +3,24 @@
     <h2 class="mobile-mode__title" v-i18n>Log</h2>
     <LogPanel :viewModel="playerView" :color="thisPlayer.color" :step="game.step"/>
 
+    <h2 class="mobile-mode__title" v-i18n>Notifications</h2>
+    <div class="mobile-more-actions">
+      <button
+        type="button"
+        class="btn btn-lg btn-primary"
+        data-test="enable_push_notifications"
+        :disabled="pushBusy"
+        @click="togglePush"
+        v-i18n
+      >
+        {{ pushEnabled ? 'Disable turn notifications' : 'Enable turn notifications' }}
+      </button>
+      <p v-if="pushMessage" class="mobile-mode__hint">{{ pushMessage }}</p>
+      <p class="mobile-mode__hint" v-i18n>
+        iPhone: Share → Add to Home Screen, open the app icon, then enable. You get a ping when it is your turn.
+      </p>
+    </div>
+
     <h2 class="mobile-mode__title" v-i18n>Client</h2>
     <div class="mobile-more-actions">
       <label class="mobile-more-actions__label">
@@ -29,6 +47,11 @@ import LogPanel from '@/client/components/logpanel/LogPanel.vue';
 import {PlayerViewModel, PublicPlayerModel} from '@/common/models/PlayerModel';
 import {GameModel} from '@/common/models/GameModel';
 import {getPreferences, MobileClientMode, PreferencesManager} from '@/client/utils/PreferencesManager';
+import {
+  disablePushNotifications,
+  enablePushNotifications,
+  playerIdFromLocation,
+} from '@/client/utils/pushNotifications';
 
 export default defineComponent({
   name: 'MobileMoreMode',
@@ -42,6 +65,9 @@ export default defineComponent({
   data() {
     return {
       mobilePref: getPreferences().mobile_client as MobileClientMode,
+      pushEnabled: getPreferences().enable_push_notifications === true,
+      pushBusy: false,
+      pushMessage: '' as string,
     };
   },
   computed: {
@@ -61,6 +87,36 @@ export default defineComponent({
     useDesktop() {
       this.mobilePref = 'off';
       this.onMobilePref();
+    },
+    async togglePush() {
+      this.pushBusy = true;
+      this.pushMessage = '';
+      try {
+        if (this.pushEnabled) {
+          await disablePushNotifications(playerIdFromLocation());
+          PreferencesManager.INSTANCE.set('enable_push_notifications', false);
+          this.pushEnabled = false;
+          this.pushMessage = 'Turn notifications disabled.';
+          return;
+        }
+        const result = await enablePushNotifications(playerIdFromLocation());
+        if (result === 'ok') {
+          PreferencesManager.INSTANCE.set('enable_push_notifications', true);
+          this.pushEnabled = true;
+          this.pushMessage = 'Turn notifications enabled.';
+          return;
+        }
+        const messages: Record<string, string> = {
+          unsupported: 'Not supported here. On iPhone: Add to Home Screen, open the app, then try again.',
+          denied: 'Notification permission denied.',
+          'not-configured': 'Server has not configured push yet.',
+          'no-player': 'Open your player link first.',
+          error: 'Could not enable notifications.',
+        };
+        this.pushMessage = messages[result] ?? messages.error;
+      } finally {
+        this.pushBusy = false;
+      }
     },
   },
 });

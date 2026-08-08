@@ -2,9 +2,10 @@ import prometheus from 'prom-client';
 import {IDatabase, GameIdLedger} from './IDatabase';
 import {IGame, Score} from '../IGame';
 import {GameOptions} from '../game/GameOptions';
-import {GameId, ParticipantId} from '../../common/Types';
+import {GameId, ParticipantId, PlayerId} from '../../common/Types';
 import {SerializedGame} from '../SerializedGame';
 import {Session, SessionId} from '../auth/Session';
+import {StoredPushSubscription} from '../../common/push/PushTypes';
 
 // Operation names that get routed to `maintenanceLatency` instead of `operationLatency`. These are
 // batch/background jobs (purge, compress) that run on a much longer timescale than a typical
@@ -154,5 +155,17 @@ export class MetricsDelegate implements IDatabase {
 
   getSessions(): Promise<Array<Session>> {
     return withDatabaseMetrics('getSessions', () => this.delegate.getSessions());
+  }
+
+  savePushSubscription(sub: StoredPushSubscription): Promise<void> {
+    return withDatabaseMetrics('savePushSubscription', () => this.delegate.savePushSubscription(sub));
+  }
+
+  deletePushSubscription(endpoint: string): Promise<void> {
+    return withDatabaseMetrics('deletePushSubscription', () => this.delegate.deletePushSubscription(endpoint));
+  }
+
+  getPushSubscriptions(playerId: PlayerId): Promise<Array<StoredPushSubscription>> {
+    return withDatabaseMetrics('getPushSubscriptions', () => this.delegate.getPushSubscriptions(playerId));
   }
 }

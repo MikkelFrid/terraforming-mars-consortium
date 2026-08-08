@@ -3,7 +3,7 @@ import pg from 'pg';
 import {IDatabase} from './IDatabase';
 import {IGame, Score} from '../IGame';
 import {GameOptions} from '../game/GameOptions';
-import {GameId, ParticipantId, isGameId, safeCast} from '../../common/Types';
+import {GameId, ParticipantId, PlayerId, isGameId, safeCast} from '../../common/Types';
 import {SerializedGame} from '../SerializedGame';
 import {daysAgoToSeconds, stringToNumber} from './utils';
 import {GameIdLedger} from './IDatabase';
@@ -14,10 +14,11 @@ import {ThrottledCache} from './ThrottledCache';
 import {Clock} from '@/common/Timer';
 import {parseInterned} from './parseInterned';
 import {LogMessage} from '@/common/logs/LogMessage';
+import {StoredPushSubscription} from '../../common/push/PushTypes';
 
 type StoredSerializedGame = Omit<SerializedGame, 'gameOptions' | 'gameLog'> & {logLength: number};
 
-export const POSTGRESQL_TABLES = ['game', 'games', 'game_results', 'participants', 'completed_game', 'session'] as const;
+export const POSTGRESQL_TABLES = ['game', 'games', 'game_results', 'participants', 'completed_game', 'session', 'push_subscriptions'] as const;
 
 const POSTGRES_TRIM_COUNT = stringToNumber(process.env.POSTGRES_TRIM_COUNT, 10);
 
@@ -142,13 +143,49 @@ export class PostgreSQL implements IDatabase {
       expiration_time timestamp not null,
       PRIMARY KEY (session_id));
 
+    CREATE TABLE IF NOT EXISTS push_subscriptions(
+      endpoint text not null,
+      player_id varchar not null,
+      p256dh text not null,
+      auth text not null,
+      PRIMARY KEY (endpoint));
+
     CREATE INDEX IF NOT EXISTS games_i1 on games(save_id);
     CREATE INDEX IF NOT EXISTS games_i2 on games(created_time);
     CREATE INDEX IF NOT EXISTS participants_idx_ids on participants USING GIN (participants);
     CREATE INDEX IF NOT EXISTS completed_game_idx_completed_time on completed_game(completed_time);
     CREATE INDEX IF NOT EXISTS session_idx_expiration_time on session(expiration_time);
+    CREATE INDEX IF NOT EXISTS push_subscriptions_player_idx on push_subscriptions(player_id);
     `;
     await this.client.query(sql);
+  }
+
+  public async savePushSubscription(sub: StoredPushSubscription): Promise<void> {
+    await this.client.query(
+      `INSERT INTO push_subscriptions (endpoint, player_id, p256dh, auth)
+       VALUES ($1, $2, $3, $4)
+       ON CONFLICT (endpoint) DO UPDATE SET
+         player_id = EXCLUDED.player_id,
+         p256dh = EXCLUDED.p256dh,
+         auth = EXCLUDED.auth`,
+      [sub.endpoint, sub.playerId, sub.keys.p256dh, sub.keys.auth],
+    );
+  }
+
+  public async deletePushSubscription(endpoint: string): Promise<void> {
+    await this.client.query('DELETE FROM push_subscriptions WHERE endpoint = $1', [endpoint]);
+  }
+
+  public async getPushSubscriptions(playerId: PlayerId): Promise<Array<StoredPushSubscription>> {
+    const res = await this.client.query(
+      'SELECT endpoint, player_id, p256dh, auth FROM push_subscriptions WHERE player_id = $1',
+      [playerId],
+    );
+    return res.rows.map((row) => ({
+      playerId: row.player_id as PlayerId,
+      endpoint: row.endpoint as string,
+      keys: {p256dh: row.p256dh as string, auth: row.auth as string},
+    }));
   }
 
   public async getPlayerCount(gameId: GameId): Promise<number> {

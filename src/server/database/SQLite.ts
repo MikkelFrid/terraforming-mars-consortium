@@ -5,12 +5,13 @@ import BetterSqlite3 = require('better-sqlite3');
 import {GameIdLedger, IDatabase} from './IDatabase';
 import {IGame, Score} from '../IGame';
 import {GameOptions} from '../game/GameOptions';
-import {GameId, ParticipantId} from '../../common/Types';
+import {GameId, ParticipantId, PlayerId} from '../../common/Types';
 import {SerializedGame} from '../SerializedGame';
 import {daysAgoToSeconds} from './utils';
 import {MultiMap} from 'mnemonist';
 import {Session, SessionId} from '../auth/Session';
 import {toID} from '../../common/utils/utils';
+import {StoredPushSubscription} from '../../common/push/PushTypes';
 
 export const IN_MEMORY_SQLITE_PATH = ':memory:';
 
@@ -57,6 +58,15 @@ export class SQLite implements IDatabase {
         expiration_time timestamp not null,
         PRIMARY KEY (session_id)
       )`);
+    await this.asyncRun(
+      `CREATE TABLE IF NOT EXISTS push_subscriptions(
+        endpoint text not null,
+        player_id varchar not null,
+        p256dh text not null,
+        auth text not null,
+        PRIMARY KEY (endpoint)
+      )`);
+    await this.asyncRun('CREATE INDEX IF NOT EXISTS push_subscriptions_player_idx ON push_subscriptions(player_id)');
   }
 
   public async getPlayerCount(gameId: GameId): Promise<number> {
@@ -278,6 +288,34 @@ export class SQLite implements IDatabase {
         expirationTimeMillis: row.expiration_time * 1000,
       };
     });
+  }
+
+  public async savePushSubscription(sub: StoredPushSubscription): Promise<void> {
+    await this.asyncRun(
+      `INSERT INTO push_subscriptions (endpoint, player_id, p256dh, auth)
+       VALUES (?, ?, ?, ?)
+       ON CONFLICT(endpoint) DO UPDATE SET
+         player_id = excluded.player_id,
+         p256dh = excluded.p256dh,
+         auth = excluded.auth`,
+      [sub.endpoint, sub.playerId, sub.keys.p256dh, sub.keys.auth],
+    );
+  }
+
+  public async deletePushSubscription(endpoint: string): Promise<void> {
+    await this.asyncRun('DELETE FROM push_subscriptions WHERE endpoint = ?', [endpoint]);
+  }
+
+  public async getPushSubscriptions(playerId: PlayerId): Promise<Array<StoredPushSubscription>> {
+    const rows = await this.asyncAll(
+      'SELECT endpoint, player_id, p256dh, auth FROM push_subscriptions WHERE player_id = ?',
+      [playerId],
+    );
+    return rows.map((row) => ({
+      playerId: row.player_id as PlayerId,
+      endpoint: row.endpoint as string,
+      keys: {p256dh: row.p256dh as string, auth: row.auth as string},
+    }));
   }
 
   protected asyncRun(sql: string, params?: any): Promise<BetterSqlite3.RunResult> {

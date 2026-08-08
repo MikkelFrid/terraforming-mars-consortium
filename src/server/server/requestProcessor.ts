@@ -20,6 +20,8 @@ import {ApiProfile} from '../routes/ApiProfile';
 import {ApiSpectator} from '../routes/ApiSpectator';
 import {ApiStats} from '../routes/ApiStats';
 import {ApiWaitingFor} from '../routes/ApiWaitingFor';
+import {ApiPushSubscribe} from '../routes/ApiPushSubscribe';
+import {ApiPushVapidKey} from '../routes/ApiPushVapidKey';
 import {Autopass} from '../routes/Autopass';
 import {DiscordAuth} from '../routes/DiscordAuth';
 import {GameHandler} from '../routes/Game';
@@ -101,9 +103,13 @@ const handlers: Map<string, IHandler> = new Map(
     [paths.API_STATS, ApiStats.INSTANCE],
     [paths.API_SPECTATOR, ApiSpectator.INSTANCE],
     [paths.API_WAITING_FOR, ApiWaitingFor.INSTANCE],
+    [paths.API_PUSH_SUBSCRIBE, ApiPushSubscribe.INSTANCE],
+    [paths.API_PUSH_VAPID_KEY, ApiPushVapidKey.INSTANCE],
     [paths.AUTOPASS, Autopass.INSTANCE],
     [paths.CARDS, ServeApp.INSTANCE],
     ['favicon.ico', ServeAsset.INSTANCE],
+    ['manifest.webmanifest', ServeAsset.INSTANCE],
+    ['sw.js', ServeAsset.INSTANCE],
     [paths.GAME, GameHandler.INSTANCE],
     [paths.GAMES_OVERVIEW, GamesOverview.INSTANCE],
     [paths.HELP, ServeApp.INSTANCE],
