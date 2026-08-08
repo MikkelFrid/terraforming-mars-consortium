@@ -3,6 +3,7 @@ import {createApp, defineAsyncComponent} from 'vue';
 import {trimEmptyTextNodes} from '@/client/directives/TrimWhitespace';
 import App from '@/client/components/App.vue';
 import {getPreferences} from '@/client/utils/PreferencesManager';
+import {bootstrapMobileClientViewport} from '@/client/utils/mobileClient';
 
 import i18nPlugin from '@/client/plugins/i18n.plugin';
 import {startOauth} from '@/client/oauth';
@@ -15,6 +16,10 @@ declare global {
 }
 
 async function bootstrap() {
+  // Before Vue mounts: phones must not keep the desktop width=1260 viewport,
+  // or auto mobile detection (and first paint) stay stuck on desktop layout.
+  bootstrapMobileClientViewport();
+
   const lang = getPreferences().lang;
 
   if (lang !== 'en') {

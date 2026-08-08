@@ -180,9 +180,14 @@ export default defineComponent({
       }
     },
     updatePreferences(): void {
+      const previousMobile = this.preferencesManager.values().mobile_client;
       for (const k of Object.keys(this.preferencesManager.values()) as Array<Preference>) {
         const val = this.prefs[k];
         this.preferencesManager.set(k, val, /* setOnChange */ true);
+      }
+      // Mobile vs desktop shell is chosen at App mount — reload when the mode changes.
+      if (this.prefs.mobile_client !== previousMobile) {
+        window.location.reload();
       }
     },
     syncPreferences(): void {

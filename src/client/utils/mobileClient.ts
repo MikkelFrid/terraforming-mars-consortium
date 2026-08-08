@@ -24,6 +24,27 @@ export function isNarrowViewport(widthPx: number = typeof window !== 'undefined'
   return widthPx < 900;
 }
 
+/**
+ * Shortest screen side in CSS px. Unlike `window.innerWidth`, this is not
+ * inflated by the desktop `width=1260` viewport meta in index.html — so a
+ * phone still reports ~390 even before the mobile viewport is applied.
+ */
+export function deviceShortSidePx(
+  screenLike: {width: number; height: number} | undefined =
+    typeof screen !== 'undefined' ? screen : undefined,
+  fallbackLayoutPx: number = typeof window !== 'undefined' ? window.innerWidth : 1280,
+): number {
+  if (screenLike === undefined) {
+    return fallbackLayoutPx;
+  }
+  const w = screenLike.width || 0;
+  const h = screenLike.height || 0;
+  if (w <= 0 || h <= 0) {
+    return fallbackLayoutPx;
+  }
+  return Math.min(w, h);
+}
+
 export function isCoarsePointer(): boolean {
   if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
     return false;
@@ -32,16 +53,19 @@ export function isCoarsePointer(): boolean {
 }
 
 /**
- * Auto heuristic from the mobile vision doc: narrow phones always;
- * coarse pointer tablets under 1200px also qualify.
+ * Auto heuristic: phone-sized screens always; coarse-pointer tablets under
+ * 1200px also qualify. Uses min(layout, device short side) so the default
+ * desktop viewport meta cannot hide a real phone.
  */
 export function autoShouldUseMobileClient(
-  widthPx: number = typeof window !== 'undefined' ? window.innerWidth : 1280,
+  layoutWidthPx: number = typeof window !== 'undefined' ? window.innerWidth : 1280,
+  shortSidePx: number = deviceShortSidePx(undefined, layoutWidthPx),
 ): boolean {
-  if (isNarrowViewport(widthPx)) {
+  const effectiveWidth = Math.min(layoutWidthPx, shortSidePx);
+  if (isNarrowViewport(effectiveWidth)) {
     return true;
   }
-  return isCoarsePointer() && widthPx < 1200;
+  return isCoarsePointer() && effectiveWidth < 1200;
 }
 
 export function resolveMobileClientMode(mode: MobileClientMode = getPreferences().mobile_client): boolean {
@@ -84,4 +108,12 @@ export function applyClientViewport(mode: 'mobile' | 'desktop'): void {
   meta.setAttribute('content', mode === 'mobile' ? MOBILE_VIEWPORT : DESKTOP_VIEWPORT);
   document.body.classList.toggle(MOBILE_BODY_CLASS, mode === 'mobile');
   document.documentElement.classList.toggle(MOBILE_BODY_CLASS, mode === 'mobile');
+}
+
+/** Call before mounting Vue so player-home forks on a correct viewport. */
+export function bootstrapMobileClientViewport(): void {
+  if (typeof document === 'undefined') {
+    return;
+  }
+  applyClientViewport(shouldUseMobileClient() ? 'mobile' : 'desktop');
 }
