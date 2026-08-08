@@ -47,4 +47,13 @@ describe('PreferencesDialog', () => {
 
     expect(preferencesManager.values().hide_awards_and_milestones).is.true;
   });
+
+  it('shows a Use mobile layout button when mobile client is off', async () => {
+    preferencesManager.set('mobile_client', 'off');
+    const wrapper = mount(PreferencesDialog, {
+      ...globalConfig,
+      props: {preferencesManager},
+    });
+    expect(wrapper.find('[data-test=use_mobile_layout]').exists()).to.be.true;
+  });
 });

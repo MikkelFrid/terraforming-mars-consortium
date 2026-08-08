@@ -126,6 +126,17 @@
           </select>
           <span class="tooltip tooltip-left" :data-tooltip="$t('Auto uses screen size and touch. On forces the mobile shell. Off keeps the desktop layout. URL ?mobile=1 or ?mobile=0 overrides.')">&#9432;</span>
         </label>
+        <button
+          v-if="prefs.mobile_client === 'off'"
+          type="button"
+          class="btn btn-lg btn-primary"
+          style="display: block; margin-top: 10px; width: 100%;"
+          data-test="use_mobile_layout"
+          @click="useMobileLayout"
+          v-i18n
+        >
+          Use mobile layout
+        </button>
       </div>
       <div class="preferences_panel_item">
         <label class="form-switch">
@@ -198,6 +209,10 @@ export default defineComponent({
       if (this.prefs.mobile_client !== previousMobile) {
         window.location.reload();
       }
+    },
+    useMobileLayout() {
+      this.prefs.mobile_client = 'on';
+      this.updatePreferences();
     },
     async onPushPref() {
       this.updatePreferences();

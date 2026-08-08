@@ -49,6 +49,7 @@
       <LoginHome v-else-if="screen === 'login-home'"/>
       <Help v-else-if="screen === 'help'"/>
     </div>
+    <ReturnToMobileBanner/>
     <div class="notice" v-i18n>
       Not affiliated with FryxGames, Asmodee Digital or Steam in any way.
     </div>
@@ -84,6 +85,7 @@ import {hasShowModal, showModal, windowHasHTMLDialogElement} from './HTMLDialogE
 import dialogPolyfill from 'dialog-polyfill';
 import {setDocumentTitle} from '../utils/documentTitle';
 import {shouldUseMobileClient} from '@/client/utils/mobileClient';
+import ReturnToMobileBanner from '@/client/components/mobile/ReturnToMobileBanner.vue';
 
 type Screen = 'admin' |
             'create-game-form' |
@@ -163,6 +165,7 @@ export default defineComponent({
     Help,
     AdminHome,
     LoginHome,
+    ReturnToMobileBanner,
   },
   computed: {
     useMobileClient(): boolean {
