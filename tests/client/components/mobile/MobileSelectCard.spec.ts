@@ -49,6 +49,8 @@ describe('MobileSelectCard', () => {
     });
 
     expect(wrapper.find('[data-test="mobile-select-card"]').exists()).eq(true);
+    expect(wrapper.find('[data-test="mobile-select-card"]').classes()).to.include('mobile-select-card--buy');
+    expect(wrapper.find('.mobile-select-card__eyebrow').exists()).eq(true);
     expect(wrapper.find('[data-test="mobile-select-card-bar"]').exists()).eq(true);
     expect(wrapper.find('.mobile-select-card__end-spacer').exists()).eq(true);
     expect(wrapper.find('.mobile-card-grid__toolbar--split').exists()).eq(false);

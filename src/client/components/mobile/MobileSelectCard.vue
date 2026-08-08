@@ -1,5 +1,10 @@
 <template>
-  <div class="mobile-select-card" data-test="mobile-select-card">
+  <div
+    class="mobile-select-card"
+    :class="{'mobile-select-card--buy': isBuyPatents}"
+    data-test="mobile-select-card"
+  >
+    <p v-if="isBuyPatents" class="mobile-select-card__eyebrow" v-i18n>Research — buy patents</p>
     <div class="mobile-select-card__scroll">
       <MobileCardGrid
         :cards="orderedCards"
@@ -63,6 +68,13 @@ import {SelectCardResponse} from '@/common/inputs/InputResponse';
 import {LogMessageDataType} from '@/common/logs/LogMessageDataType';
 import {Message} from '@/common/logs/Message';
 import {Warning} from '@/common/cards/Warning';
+
+function inputTitleText(title: string | Message): string {
+  if (typeof title === 'string') {
+    return title;
+  }
+  return title.message ?? '';
+}
 
 export default defineComponent({
   name: 'MobileSelectCard',
@@ -134,6 +146,14 @@ export default defineComponent({
     },
     allSelected(): boolean {
       return this.selected.length === this.selectableCards.length;
+    },
+    /** Research phase: choose among the drawn patents to buy. */
+    isBuyPatents(): boolean {
+      const title = inputTitleText(this.playerinput.title).toLowerCase();
+      if (title.includes('to buy')) {
+        return true;
+      }
+      return this.playerinput.buttonLabel === 'Buy' && this.playerinput.min === 0;
     },
     buttonLabel(): string | Message {
       if (this.selectOnlyOneCard) {

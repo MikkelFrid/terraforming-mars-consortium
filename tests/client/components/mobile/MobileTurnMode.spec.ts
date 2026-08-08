@@ -113,6 +113,7 @@ describe('MobileTurnMode', () => {
           waitingFor: {
             type: 'card',
             title: 'Select card(s) to buy',
+            buttonLabel: 'Buy',
             cards: [{name: CardName.ALGAE}],
             max: 4,
             min: 0,
@@ -127,5 +128,7 @@ describe('MobileTurnMode', () => {
     expect(wrapper.find('[data-test="mobile-turn-cards"]').exists()).eq(false);
     expect(wrapper.find('[data-test="waiting-for-stub"]').exists()).eq(true);
     expect(wrapper.find('[data-test="mobile-turn-open-empire"]').exists()).eq(true);
+    expect(wrapper.classes()).to.include('mobile-mode--turn-research');
+    expect(wrapper.text()).to.include('Buy patents');
   });
 });
