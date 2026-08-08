@@ -49,6 +49,7 @@
       <LoginHome v-else-if="screen === 'login-home'"/>
       <Help v-else-if="screen === 'help'"/>
     </div>
+    <ReturnToMobileBanner/>
     <div class="notice" v-i18n>
       Not affiliated with FryxGames, Asmodee Digital or Steam in any way.
     </div>
@@ -78,11 +79,13 @@ import {PlayerViewModel, ViewModel} from '@/common/models/PlayerModel';
 import {SimpleGameModel} from '@/common/models/SimpleGameModel';
 import {SpectatorModel} from '@/common/models/SpectatorModel';
 import {isPlayerId, isSpectatorId} from '@/common/Types';
+import {rememberPlayerId} from '@/client/utils/lastPlayer';
 import {hasShowModal, showModal, windowHasHTMLDialogElement} from './HTMLDialogElementCompatibility';
 
 import dialogPolyfill from 'dialog-polyfill';
 import {setDocumentTitle} from '../utils/documentTitle';
 import {shouldUseMobileClient} from '@/client/utils/mobileClient';
+import ReturnToMobileBanner from '@/client/components/mobile/ReturnToMobileBanner.vue';
 
 type Screen = 'admin' |
             'create-game-form' |
@@ -162,6 +165,7 @@ export default defineComponent({
     Help,
     AdminHome,
     LoginHome,
+    ReturnToMobileBanner,
   },
   computed: {
     useMobileClient(): boolean {
@@ -214,6 +218,9 @@ export default defineComponent({
           if (path === paths.PLAYER) {
             app.playerView = model as PlayerViewModel;
             setTranslationContext(app.playerView);
+            if (isPlayerId(model.id)) {
+              rememberPlayerId(model.id);
+            }
           } else if (path === paths.SPECTATOR) {
             app.spectator = model as SpectatorModel;
           }
@@ -265,6 +272,10 @@ export default defineComponent({
     const currentPathname = getLastPathSegment();
     const app = this as unknown as MainAppData & {updatePlayer(): void; updateSpectator(): void};
     if (currentPathname === paths.PLAYER) {
+      const playerId = new URLSearchParams(window.location.search).get('id');
+      if (playerId !== null && isPlayerId(playerId)) {
+        rememberPlayerId(playerId);
+      }
       app.updatePlayer();
     } else if (currentPathname === paths.THE_END) {
       const urlParams = new URLSearchParams(window.location.search);
