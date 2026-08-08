@@ -49,7 +49,7 @@ All live in `src/common/consortium/MegastructureConstants.ts` as
 | `VP_PER_SEGMENT` | 1 | VP per owned segment on completion |
 | `VP_KEYSTONE_BONUS` | 2 | Extra VP for keystone player |
 
-Iridium M€ value remains `IRIDIUM_VALUE` in `src/common/constants.ts` (currently 4).
+Iridium M€ value remains `IRIDIUM_VALUE` in `src/common/constants.ts` (currently 5).
 
 ## Code map
 

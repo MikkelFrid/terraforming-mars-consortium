@@ -17,7 +17,7 @@ Merchant, Generalist, and surface a production row — unbounded correctness ris
 | Bank | Shared `game.iridiumBank`, starts **full** at `IRIDIUM_BANK_CAPACITY` (28) when Consortium is on |
 | Conservation | Total iridium in the system is conserved: bank ↔ players only. Nothing enters or leaves |
 | Spend → bank | **One place:** `Iridium.spend` (easy to invert later) |
-| MC value | `IRIDIUM_VALUE = 4` (steel 2, titanium 3) |
+| MC value | `IRIDIUM_VALUE = 5` (steel 2, titanium 3) |
 | Spendable on | Structure tag, Prospecting tag, megastructure segments (future), Core Sampling — **not** universal |
 | End of game | Held iridium = **0 VP**. Currency, not score |
 | Excluded | Alloy protection, Sol Bank, every steel/titanium-specific path |
@@ -25,7 +25,7 @@ Merchant, Generalist, and surface a production row — unbounded correctness ris
 Balance knobs (named constants in `src/common/constants.ts`):
 
 - `IRIDIUM_BANK_CAPACITY = 28`
-- `IRIDIUM_VALUE = 4`
+- `IRIDIUM_VALUE = 5`
 - `CORE_SAMPLING_COST = 6`
 
 ## Sources and sinks
