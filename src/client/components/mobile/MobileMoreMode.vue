@@ -29,7 +29,6 @@ import LogPanel from '@/client/components/logpanel/LogPanel.vue';
 import {PlayerViewModel, PublicPlayerModel} from '@/common/models/PlayerModel';
 import {GameModel} from '@/common/models/GameModel';
 import {getPreferences, MobileClientMode, PreferencesManager} from '@/client/utils/PreferencesManager';
-import {applyClientViewport} from '@/client/utils/mobileClient';
 
 export default defineComponent({
   name: 'MobileMoreMode',
@@ -56,10 +55,8 @@ export default defineComponent({
   methods: {
     onMobilePref() {
       PreferencesManager.INSTANCE.set('mobile_client', this.mobilePref);
-      if (this.mobilePref === 'off') {
-        applyClientViewport('desktop');
-        window.location.reload();
-      }
+      // Always reload — App forks PlayerHome vs MobilePlayerHome at mount.
+      window.location.reload();
     },
     useDesktop() {
       this.mobilePref = 'off';

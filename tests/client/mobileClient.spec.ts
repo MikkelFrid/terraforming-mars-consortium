@@ -1,6 +1,7 @@
 import {expect} from 'chai';
 import {
   autoShouldUseMobileClient,
+  deviceShortSidePx,
   isNarrowViewport,
   MOBILE_VIEWPORT,
   DESKTOP_VIEWPORT,
@@ -17,7 +18,19 @@ describe('mobileClient', () => {
 
   it('auto-enables on narrow viewports', () => {
     expect(autoShouldUseMobileClient(390)).eq(true);
-    expect(autoShouldUseMobileClient(1280)).eq(false);
+    expect(autoShouldUseMobileClient(1280, 1280)).eq(false);
+  });
+
+  it('auto-enables on a phone screen even when layout viewport is 1260', () => {
+    // index.html defaults to width=1260, so innerWidth reports ~1260 on iOS
+    // until the mobile viewport is applied. Detection must use screen size.
+    expect(autoShouldUseMobileClient(1260, 390)).eq(true);
+    expect(autoShouldUseMobileClient(1260, 844)).eq(true);
+  });
+
+  it('deviceShortSidePx uses the smaller screen side', () => {
+    expect(deviceShortSidePx({width: 390, height: 844}, 1260)).eq(390);
+    expect(deviceShortSidePx({width: 0, height: 0}, 1260)).eq(1260);
   });
 
   it('resolve respects on/off regardless of width', () => {
