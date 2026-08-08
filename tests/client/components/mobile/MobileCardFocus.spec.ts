@@ -20,6 +20,24 @@ describe('MobileCardTile', () => {
     await wrapper.trigger('click');
     expect(wrapper.emitted('open')?.[0]).deep.eq([card]);
   });
+
+  it('marks project cards with green / blue / red type classes', () => {
+    const green = mount(MobileCardTile, {
+      ...globalConfig,
+      props: {card: stubCard(CardName.ALGAE), size: 'hand'},
+    });
+    const blue = mount(MobileCardTile, {
+      ...globalConfig,
+      props: {card: stubCard(CardName.INDUSTRIAL_CENTER), size: 'hand'},
+    });
+    const red = mount(MobileCardTile, {
+      ...globalConfig,
+      props: {card: stubCard(CardName.RELEASE_OF_INERT_GASES), size: 'hand'},
+    });
+    expect(green.classes()).to.include('mobile-card-tile--automated');
+    expect(blue.classes()).to.include('mobile-card-tile--active');
+    expect(red.classes()).to.include('mobile-card-tile--event');
+  });
 });
 
 describe('MobileCardFocusSheet', () => {

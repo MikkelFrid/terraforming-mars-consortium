@@ -2,7 +2,7 @@
   <button
     type="button"
     class="mobile-card-tile"
-    :class="[sizeClass, {
+    :class="[sizeClass, typeClass, {
       'mobile-card-tile--selected': selected,
       'mobile-card-tile--disabled': disabled,
     }]"
@@ -21,6 +21,8 @@
 <script lang="ts">
 import {defineComponent, PropType} from 'vue';
 import Card from '@/client/components/card/Card.vue';
+import {getCard} from '@/client/cards/ClientCardManifest';
+import {CardType} from '@/common/cards/CardType';
 import {CardModel} from '@/common/models/CardModel';
 import {Color} from '@/common/Color';
 import {
@@ -81,6 +83,20 @@ export default defineComponent({
         return this.scale;
       }
       return LEGACY_SCALE[this.size] ?? LEGACY_SCALE.hand;
+    },
+    /** Project-card type → green / blue / red selection chrome. */
+    typeClass(): string | undefined {
+      const type = getCard(this.card.name)?.type;
+      switch (type) {
+      case CardType.AUTOMATED:
+        return 'mobile-card-tile--automated';
+      case CardType.ACTIVE:
+        return 'mobile-card-tile--active';
+      case CardType.EVENT:
+        return 'mobile-card-tile--event';
+      default:
+        return undefined;
+      }
     },
     sizeClass(): string {
       if (typeof this.scale === 'number') {

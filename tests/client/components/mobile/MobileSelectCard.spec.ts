@@ -3,8 +3,11 @@ import {mount, shallowMount} from '@vue/test-utils';
 import {globalConfig} from '../getLocalVue';
 import MobileSelectCard from '@/client/components/mobile/MobileSelectCard.vue';
 import SelectCard from '@/client/components/SelectCard.vue';
+import OrOptions from '@/client/components/OrOptions.vue';
+import PlayerInputFactory from '@/client/components/PlayerInputFactory.vue';
 import {CardName} from '@/common/cards/CardName';
 import {CardModel} from '@/common/models/CardModel';
+import {InputResponse} from '@/common/inputs/InputResponse';
 import {fakePlayerViewModel} from '../testHelpers';
 import {PreferencesManager} from '@/client/utils/PreferencesManager';
 import {FakeLocalStorage} from '../FakeLocalStorage';
@@ -115,5 +118,68 @@ describe('SelectCard mobile branch', () => {
       },
     });
     expect(wrapper.findComponent(MobileSelectCard).exists()).eq(true);
+  });
+
+  it('OrOptions Take action submits the tapped blue card on mobile', async () => {
+    // Regression: OrOptions owns the save button for max=1/min=1 card picks
+    // (playActionCard). MobileSelectCard held selection locally while
+    // SelectCard.saveData() read empty desktop state → "Not enough cards selected".
+    PreferencesManager.INSTANCE.set('mobile_client', 'on');
+    const industrialCenter = stubCard(CardName.INDUSTRIAL_CENTER);
+    let saved: InputResponse | undefined;
+    const wrapper = mount(OrOptions, {
+      ...globalConfig,
+      global: {
+        ...globalConfig.global,
+        components: {
+          PlayerInputFactory,
+        },
+      },
+      props: {
+        playerView: fakePlayerViewModel(),
+        playerinput: {
+          type: 'or' as const,
+          title: 'Select an action',
+          buttonLabel: 'Take action',
+          options: [{
+            type: 'card' as const,
+            title: 'Perform an action from a played card',
+            buttonLabel: 'Take action',
+            cards: [industrialCenter],
+            max: 1,
+            min: 1,
+            showOnlyInLearnerMode: false,
+            selectBlueCardAction: true,
+            showOwner: false,
+            showSelectAll: false,
+          }, {
+            type: 'option' as const,
+            title: 'Sell patents',
+            buttonLabel: 'Sell',
+          }],
+        },
+        onsave: (data: InputResponse) => {
+          saved = data;
+        },
+        showsave: true,
+        showtitle: true,
+      },
+    });
+
+    const tiles = wrapper.findAll('.mobile-card-tile');
+    expect(tiles.length).eq(1);
+    await tiles[0].trigger('click');
+    expect(tiles[0].classes()).to.include('mobile-card-tile--selected');
+
+    const takeAction = wrapper.findAllComponents({name: 'AppButton'})
+      .find((b) => b.props('title') === 'Take action' || b.text().includes('Take action'));
+    expect(takeAction).to.not.eq(undefined);
+    await takeAction!.trigger('click');
+
+    expect(saved).deep.eq({
+      type: 'or',
+      index: 0,
+      response: {type: 'card', cards: [CardName.INDUSTRIAL_CENTER]},
+    });
   });
 });
