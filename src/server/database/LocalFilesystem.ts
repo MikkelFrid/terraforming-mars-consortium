@@ -1,11 +1,12 @@
 import {GameIdLedger, IDatabase} from './IDatabase';
 import {IGame, Score} from '../IGame';
 import {GameOptions} from '../game/GameOptions';
-import {GameId, isGameId, ParticipantId} from '../../common/Types';
+import {GameId, isGameId, ParticipantId, PlayerId} from '../../common/Types';
 import {SerializedGame} from '../SerializedGame';
 import {Dirent, existsSync, mkdirSync, readdirSync, readFileSync, unlinkSync, writeFileSync} from 'fs';
 import {Session, SessionId} from '../auth/Session';
 import {toID} from '../../common/utils/utils';
+import {StoredPushSubscription} from '../../common/push/PushTypes';
 
 const path = require('path');
 const defaultDbFolder = path.resolve(process.cwd(), './db/files');
@@ -250,6 +251,44 @@ export class LocalFilesystem implements IDatabase {
       }
     }
     return Promise.resolve(sessions);
+  }
+
+  private pushSubscriptionsFilename(): string {
+    return path.resolve(this.dbFolder, 'push_subscriptions.json');
+  }
+
+  private readAllPushSubscriptions(): Array<StoredPushSubscription> {
+    const file = this.pushSubscriptionsFilename();
+    if (!existsSync(file)) {
+      return [];
+    }
+    try {
+      return JSON.parse(readFileSync(file).toString()) as Array<StoredPushSubscription>;
+    } catch (e) {
+      console.error('While reading push_subscriptions.json', e);
+      return [];
+    }
+  }
+
+  private writeAllPushSubscriptions(subs: Array<StoredPushSubscription>): void {
+    writeFileSync(this.pushSubscriptionsFilename(), JSON.stringify(subs, null, 2));
+  }
+
+  public savePushSubscription(sub: StoredPushSubscription): Promise<void> {
+    const all = this.readAllPushSubscriptions().filter((s) => s.endpoint !== sub.endpoint);
+    all.push(sub);
+    this.writeAllPushSubscriptions(all);
+    return Promise.resolve();
+  }
+
+  public deletePushSubscription(endpoint: string): Promise<void> {
+    const all = this.readAllPushSubscriptions().filter((s) => s.endpoint !== endpoint);
+    this.writeAllPushSubscriptions(all);
+    return Promise.resolve();
+  }
+
+  public getPushSubscriptions(playerId: PlayerId): Promise<Array<StoredPushSubscription>> {
+    return Promise.resolve(this.readAllPushSubscriptions().filter((s) => s.playerId === playerId));
   }
 
   private deleteVersion(gameId: GameId, version: number) {

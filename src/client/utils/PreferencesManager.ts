@@ -3,6 +3,8 @@ export type MobileClientMode = 'auto' | 'on' | 'off';
 export type Preferences = {
   learner_mode: boolean,
   enable_sounds: boolean,
+  /** Opt in to Web Push "your turn" notifications (PWA / Home Screen on iOS). */
+  enable_push_notifications: boolean,
   magnify_cards: boolean,
   show_alerts: boolean,
   hide_hand: boolean,
@@ -43,6 +45,7 @@ export type BooleanPreference = Exclude<Preference, 'lang' | 'consortium_board_s
 const defaults: Preferences = {
   learner_mode: true,
   enable_sounds: true,
+  enable_push_notifications: false,
   magnify_cards: true,
   show_alerts: true,
   lang: 'en',

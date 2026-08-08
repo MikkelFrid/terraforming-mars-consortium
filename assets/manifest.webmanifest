@@ -1,0 +1,17 @@
+{
+  "name": "Terraforming Mars Consortium",
+  "short_name": "TM Consortium",
+  "description": "Terraforming Mars — Consortium expansion",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0b1a24",
+  "theme_color": "#0b1a24",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ]
+}

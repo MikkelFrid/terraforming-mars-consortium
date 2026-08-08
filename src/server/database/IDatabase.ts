@@ -1,8 +1,9 @@
 import {IGame, Score} from '../IGame';
 import {GameOptions} from '../game/GameOptions';
-import {GameId, ParticipantId} from '../../common/Types';
+import {GameId, ParticipantId, PlayerId} from '../../common/Types';
 import {SerializedGame} from '../SerializedGame';
 import {Session, SessionId} from '../auth/Session';
+import {StoredPushSubscription} from '../../common/push/PushTypes';
 
 export type GameIdLedger = {gameId: GameId, participantIds: Array<ParticipantId>}
 
@@ -135,4 +136,9 @@ export interface IDatabase {
     createSession(session: Session): Promise<void>;
     deleteSession(sessionId: SessionId): Promise<void>;
     getSessions(): Promise<Array<Session>>;
+
+    /** Web Push subscriptions keyed by player id / endpoint. */
+    savePushSubscription(sub: StoredPushSubscription): Promise<void>;
+    deletePushSubscription(endpoint: string): Promise<void>;
+    getPushSubscriptions(playerId: PlayerId): Promise<Array<StoredPushSubscription>>;
 }

@@ -58,6 +58,14 @@
       </div>
       <div class="preferences_panel_item">
         <label class="form-switch">
+          <input type="checkbox" @change="onPushPref" v-model="prefs.enable_push_notifications" data-test="enable_push_notifications">
+          <i class="form-icon"></i>
+          <span v-i18n>Turn push notifications</span>
+          <span class="tooltip tooltip-left" :data-tooltip="$t('On iPhone: Add to Home Screen first, then enable. Notifies you when it is your turn even if the app is closed.')">&#9432;</span>
+        </label>
+      </div>
+      <div class="preferences_panel_item">
+        <label class="form-switch">
           <input type="checkbox" @change="updatePreferences" v-model="prefs.hide_animated_sidebar" data-test="hide_animated_sidebar">
           <i class="form-icon"></i> <span v-i18n>Hide sidebar notification</span>
         </label>
@@ -140,6 +148,7 @@
 import {defineComponent} from 'vue';
 
 import {getPreferences, PreferencesManager, Preference, BooleanPreference} from '@/client/utils/PreferencesManager';
+import {disablePushNotifications, enablePushNotifications} from '@/client/utils/pushNotifications';
 import BugReportDialog from '@/client/components/BugReportDialog.vue';
 
 
@@ -188,6 +197,26 @@ export default defineComponent({
       // Mobile vs desktop shell is chosen at App mount — reload when the mode changes.
       if (this.prefs.mobile_client !== previousMobile) {
         window.location.reload();
+      }
+    },
+    async onPushPref() {
+      this.updatePreferences();
+      if (this.prefs.enable_push_notifications) {
+        const result = await enablePushNotifications();
+        if (result !== 'ok') {
+          this.prefs.enable_push_notifications = false;
+          this.updatePreferences();
+          const messages: Record<string, string> = {
+            unsupported: 'Push notifications are not supported in this browser. On iPhone, add the site to your Home Screen first.',
+            denied: 'Notification permission was denied.',
+            'not-configured': 'This server has not configured push notifications yet.',
+            'no-player': 'Open your player link before enabling notifications.',
+            error: 'Could not enable push notifications.',
+          };
+          alert(messages[result] ?? messages.error);
+        }
+      } else {
+        await disablePushNotifications();
       }
     },
     syncPreferences(): void {
