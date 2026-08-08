@@ -1136,6 +1136,50 @@ body.mobile-card-focus-open {
   font-variant-numeric: tabular-nums;
 }
 
+/* Opponent / self tags — reuse PlayerTags, hide TR/VP/cards (already in meta). */
+.mobile-player-sheet__tags {
+  margin: 0 0 10px;
+  min-width: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+body.mobile-client .mobile-player-sheet__tags .player-tags {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: flex-start;
+  gap: 4px 2px;
+  margin: 0;
+  padding: 0;
+}
+
+body.mobile-client .mobile-player-sheet__tags .player-tags-main {
+  display: none;
+}
+
+body.mobile-client .mobile-player-sheet__tags .player-tags-secondary {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: flex-start;
+  gap: 4px 6px;
+  margin: 0;
+  position: relative;
+}
+
+body.mobile-client .mobile-player-sheet__tags .tag-count-container {
+  flex: 0 0 auto;
+}
+
+body.mobile-client .mobile-player-sheet__tags .tag-separator {
+  display: none;
+}
+
+body.mobile-client .mobile-player-sheet__tags .tag-display {
+  transform: scale(0.85);
+  transform-origin: top left;
+  margin: 0 2px 2px 0;
+}
+
 .mobile-player-sheet__resources {
   overflow: visible;
   width: 100%;
