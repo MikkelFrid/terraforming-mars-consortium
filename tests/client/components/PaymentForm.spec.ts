@@ -371,4 +371,24 @@ describe('PaymentForm', () => {
     expect(wrapper.emitted('save')).to.not.exist;
     expect(wrapper.find('.tm-warning').text()).to.include('Keystone requires at least 2 iridium');
   });
+
+  it('allows keystone overpay when min iridium exceeds discounted cost', async () => {
+    // Bridge keystone 8 M€ with −2 discount → 6 M€, but min 2 Ir × 4 = 8.
+    const wrapper = mountPaymentForm({
+      cost: 6,
+      order: ['iridium', 'megacredits'],
+      minIridium: 2,
+      ledger: {
+        'iridium': {available: 8, rate: 4},
+        'megacredits': {available: 20, rate: 1},
+      },
+    });
+    await wrapper.vm.$nextTick();
+    expect(wrapper.vm.payment.iridium).eq(2);
+    expect(wrapper.vm.payment.megacredits).eq(0);
+    await wrapper.find('[data-test=save]').trigger('click');
+    await wrapper.vm.$nextTick();
+    expect(wrapper.emitted('save')).to.exist;
+    expect(wrapper.find('.tm-warning').exists()).is.false;
+  });
 });
