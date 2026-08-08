@@ -9,12 +9,19 @@ import {
   fakeGameOptionsModel,
 } from '../testHelpers';
 import {CardName} from '@/common/cards/CardName';
+import {Tag} from '@/common/cards/Tag';
+import {emptyTags} from '../testHelpers';
 
 describe('MobileRivalsMode', () => {
   function mountRivals(overrides: {
     alice?: Parameters<typeof fakePublicPlayerModel>[0],
     bob?: Parameters<typeof fakePublicPlayerModel>[0],
   } = {}) {
+    const aliceTags = emptyTags();
+    aliceTags[Tag.SCIENCE] = 2;
+    const bobTags = emptyTags();
+    bobTags[Tag.EARTH] = 3;
+    bobTags[Tag.BUILDING] = 1;
     const alice = fakePublicPlayerModel({
       color: 'blue',
       name: 'Alice',
@@ -23,6 +30,7 @@ describe('MobileRivalsMode', () => {
       steel: 2,
       iridium: 1,
       terraformRating: 21,
+      tags: aliceTags,
       tableau: [{name: CardName.INVENTRIX} as any],
       ...overrides.alice,
     });
@@ -34,6 +42,7 @@ describe('MobileRivalsMode', () => {
       heat: 3,
       heatProduction: 2,
       terraformRating: 20,
+      tags: bobTags,
       tableau: [
         {name: CardName.TERACTOR} as any,
         {name: CardName.STRIP_MINE} as any,
@@ -91,6 +100,19 @@ describe('MobileRivalsMode', () => {
     expect(wrapper.find('.mobile-player-sheet__icon--tr').exists()).eq(true);
     expect(wrapper.find('.mobile-player-sheet__icon--vp').exists()).eq(true);
     expect(wrapper.find('.mobile-player-sheet__stat--tr').text()).to.match(/21/);
+    wrapper.unmount();
+  });
+
+  it('shows opponent tag counts on each player sheet', () => {
+    const {wrapper} = mountRivals();
+    const bobSheet = wrapper.find('[data-test="mobile-player-sheet-red"]');
+    expect(bobSheet.find('[data-test="mobile-player-tags"]').exists()).eq(true);
+    expect(bobSheet.find('.player-tags-secondary').exists()).eq(true);
+    // Non-zero tags only (hideZeroTags): Earth 3, Building 1
+    const tagCounts = bobSheet.findAll('.player-tags-secondary .tag-count-display');
+    const numbers = tagCounts.map((n) => n.text().trim()).filter((t) => t.length > 0);
+    expect(numbers).to.include('3');
+    expect(numbers).to.include('1');
     wrapper.unmount();
   });
 

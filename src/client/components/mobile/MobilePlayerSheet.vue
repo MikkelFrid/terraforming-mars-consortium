@@ -60,6 +60,15 @@
       <span v-if="showColonies && player.coloniesCount > 0" class="mobile-player-sheet__stat"><span v-i18n>Colonies</span> {{ player.coloniesCount }}</span>
     </div>
 
+    <div class="mobile-player-sheet__tags" data-test="mobile-player-tags">
+      <PlayerTags
+        :player="player"
+        :playerView="playerView"
+        :hideZeroTags="true"
+        :conciseTagsViewDefaultValue="true"
+      />
+    </div>
+
     <div class="mobile-player-sheet__resources" data-test="mobile-player-resources">
       <PlayerResources :player="player"/>
     </div>
@@ -69,13 +78,14 @@
 <script lang="ts">
 import {defineComponent} from 'vue';
 import PlayerResources from '@/client/components/overview/PlayerResources.vue';
+import PlayerTags from '@/client/components/overview/PlayerTags.vue';
 import {PublicPlayerModel, ViewModel} from '@/common/models/PlayerModel';
 import {CardType} from '@/common/cards/CardType';
 import {getCard} from '@/client/cards/ClientCardManifest';
 
 export default defineComponent({
   name: 'MobilePlayerSheet',
-  components: {PlayerResources},
+  components: {PlayerResources, PlayerTags},
   props: {
     player: {
       type: Object as () => PublicPlayerModel,
