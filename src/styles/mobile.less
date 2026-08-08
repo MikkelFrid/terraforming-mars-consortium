@@ -434,6 +434,7 @@ body.mobile-client .megastructure-track--bridge {
 }
 
 .mobile-card-tile {
+  --mobile-card-mark: #c45c26;
   position: relative;
   display: block;
   margin: 0;
@@ -453,14 +454,39 @@ body.mobile-client .megastructure-track--bridge {
   flex-shrink: 0;
 }
 
+/* Type-colored outer mark: green / blue / red project cards */
+.mobile-card-tile--automated {
+  --mobile-card-mark: #0ac20a;
+}
+
+.mobile-card-tile--active {
+  --mobile-card-mark: #208cdf;
+}
+
+.mobile-card-tile--event {
+  --mobile-card-mark: #e53935;
+}
+
+.mobile-card-tile--automated::before,
+.mobile-card-tile--active::before,
+.mobile-card-tile--event::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: 3px;
+  box-shadow: inset 0 0 0 2px var(--mobile-card-mark);
+}
+
 .mobile-card-tile:focus-visible {
-  outline: 2px solid #c45c26;
+  outline: 2px solid var(--mobile-card-mark);
   outline-offset: 2px;
 }
 
-/* Inset ring sits on the card face — no floating outline gap */
+/* Selected ring is thicker and matches the card type color */
 .mobile-card-tile--selected {
-  box-shadow: inset 0 0 0 3px #c45c26;
+  box-shadow: inset 0 0 0 3px var(--mobile-card-mark);
 }
 
 .mobile-card-tile--selected::after {
@@ -469,7 +495,7 @@ body.mobile-client .megastructure-track--bridge {
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  box-shadow: inset 0 0 0 3px #c45c26;
+  box-shadow: inset 0 0 0 3px var(--mobile-card-mark);
   border-radius: 3px;
 }
 
@@ -481,7 +507,7 @@ body.mobile-client .megastructure-track--bridge {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: #c45c26;
+  background: var(--mobile-card-mark);
   color: #fff;
   font-size: 13px;
   font-weight: 700;
