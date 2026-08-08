@@ -3,11 +3,12 @@
         <div v-if="showtitle === true" class="nofloat wf-component-title">{{ $t(playerinput.title) }}</div>
         <MobileSelectCard
           v-if="isMobile"
+          ref="mobileSelectCard"
           :playerView="playerView"
           :playerinput="playerinput"
           :onsave="onsave"
           :showsave="showsave"
-          @cardschanged="$emit('cardschanged', $event)"
+          @cardschanged="onMobileCardsChanged"
         />
         <template v-else>
         <label v-for="card in getOrderedCards()" :key="card.name" :class="getCardBoxClass(card)">
@@ -162,15 +163,38 @@ export default defineComponent({
 
     canSave() {
       const len = this.getData().length;
-      if (len > this.playerinput.min) {
+      if (len < this.playerinput.min) {
         return false;
       }
-      if (len < this.playerinput.max) {
+      if (len > this.playerinput.max) {
         return false;
       }
       return true;
     },
+    /**
+     * Keep parent selection in sync with MobileSelectCard so OrOptions /
+     * PlayerInputFactory can call saveData() on this component and still
+     * submit the tapped cards (blue-card actions use showsave=false).
+     */
+    onMobileCardsChanged(names: Array<CardName>) {
+      const selected = names
+        .map((name) => this.playerinput.cards.find((card) => card.name === name))
+        .filter((card): card is CardModel => card !== undefined);
+      if (this.selectOnlyOneCard) {
+        this.cards = selected[0] ?? [];
+      } else {
+        this.cards = selected;
+      }
+    },
     saveData() {
+      // Prefer the mobile child's save path when mounted; fall back to synced state.
+      if (this.isMobile) {
+        const mobile = this.$refs.mobileSelectCard as {saveData?: () => void} | undefined;
+        if (mobile?.saveData !== undefined) {
+          mobile.saveData();
+          return;
+        }
+      }
       this.onsave({type: 'card', cards: this.getData()});
     },
     getCardBoxClass(card: CardModel): string {
