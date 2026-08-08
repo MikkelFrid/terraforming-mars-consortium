@@ -110,7 +110,7 @@ export default defineComponent({
           unsupported: 'Not supported here. On iPhone: Add to Home Screen, open the app, then try again.',
           denied: 'Notification permission denied.',
           'not-configured': 'Server has not configured push yet.',
-          'no-player': 'Open your player link first.',
+          'no-player': 'Open your player link first (home screen → Resume / paste link).',
           error: 'Could not enable notifications.',
         };
         this.pushMessage = messages[result] ?? messages.error;

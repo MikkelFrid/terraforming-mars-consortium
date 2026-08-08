@@ -22,5 +22,6 @@ describe('SelectColony', () => {
       },
     });
     expect(wrapper.exists()).to.be.true;
+    expect(wrapper.classes()).to.include('wf-component--select-colony');
   });
 });

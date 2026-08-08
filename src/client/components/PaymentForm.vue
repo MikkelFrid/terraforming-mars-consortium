@@ -135,12 +135,47 @@ export default defineComponent({
       },
     },
   },
+  mounted() {
+    // Keystone: seed at least minIridium (may exceed cost when discounts apply).
+    if (
+      this.minIridium !== undefined &&
+      this.minIridium > 0 &&
+      this.order.includes('iridium') &&
+      this.ledger.iridium !== undefined
+    ) {
+      this.payment.iridium = Math.min(
+        this.ledger.iridium.available,
+        Math.max(this.payment.iridium, this.minIridium),
+      );
+      this.setRemainingMCValue();
+    }
+  },
   methods: {
     /**
      * Returns the most MC necessary, capped by the cost of the payment.
      */
     getMegaCreditsMax(): number {
       return Math.min(this.ledger['megacredits'].available, this.cost);
+    },
+    minSpendable(unit: SpendableResource): number {
+      if (unit === 'iridium' && this.minIridium !== undefined) {
+        return this.minIridium;
+      }
+      return 0;
+    },
+    /**
+     * True when min iridium alone forces paying more than `cost` (e.g. discounted
+     * keystone at 6 M€ with min 2 Ir × 5 M€). Server already accepts overpay.
+     */
+    isKeystoneIridiumOverpay(): boolean {
+      if (this.minIridium === undefined || this.minIridium <= 0) {
+        return false;
+      }
+      if (this.payment.iridium < this.minIridium) {
+        return false;
+      }
+      const iridiumRate = this.ledger.iridium?.rate ?? 0;
+      return this.minIridium * iridiumRate > this.cost;
     },
     addValue(unit: SpendableResource): void {
       // MC is special-cased because it's the currency being spent.
@@ -156,7 +191,7 @@ export default defineComponent({
       }
     },
     reduceValue(unit: SpendableResource): void {
-      if (this.payment[unit] > 0) {
+      if (this.payment[unit] > this.minSpendable(unit)) {
         this.payment[unit] -= 1;
         if (unit !== 'megacredits') {
           this.setRemainingMCValue();
@@ -175,7 +210,11 @@ export default defineComponent({
       this.payment.megacredits = megacredits;
     },
     maxValue(unit: SpendableResource): void {
-      const target = Math.min(this.ledger[unit].available, Math.floor(this.cost / this.ledger[unit].rate));
+      let target = Math.min(this.ledger[unit].available, Math.floor(this.cost / this.ledger[unit].rate));
+      if (unit === 'iridium' && this.minIridium !== undefined) {
+        // Floor(cost/rate) can be below the keystone minimum after discounts.
+        target = Math.min(this.ledger[unit].available, Math.max(target, this.minIridium));
+      }
 
       if (this.payment[unit] < target) {
         this.payment[unit] = target;
@@ -215,12 +254,22 @@ export default defineComponent({
         return;
       }
       if (delta > 0) {
+        const keystoneForced = this.isKeystoneIridiumOverpay();
         for (const unit of this.order) {
+          // Iridium may unavoidably overshoot when minIridium × rate > cost.
+          if (keystoneForced && unit === 'iridium') {
+            continue;
+          }
           if (this.payment[unit] > 0 && delta >= this.ledger[unit].rate) {
             // TODO(kberg): Make this a Message
             this.warning = `You cannot overspend ${unit}`;
             return;
           }
+        }
+        if (keystoneForced) {
+          // Server accepts amountPaid >= cost; skip the overpay confirm.
+          this.$emit('save', this.payment);
+          return;
         }
         if (getPreferences().show_alerts) {
           if (!confirm('Warning: You are overpaying by ' + delta + ' M€')) {
