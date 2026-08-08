@@ -1,8 +1,11 @@
 <template>
-  <section class="mobile-mode mobile-mode--turn">
+  <section
+    class="mobile-mode mobile-mode--turn"
+    :class="{'mobile-mode--turn-research': isBuyPatentsPending}"
+  >
     <!-- Buy/select takes the screen — don't stack a huge tableau above it -->
     <template v-if="isCardSelectPending">
-      <h2 class="mobile-mode__title" v-i18n>Actions</h2>
+      <h2 class="mobile-mode__title" v-i18n>{{ isBuyPatentsPending ? 'Buy patents' : 'Actions' }}</h2>
       <WaitingFor
         :playerView="playerView"
         :waitingfor="playerView.waitingFor"
@@ -74,6 +77,17 @@ import MobileCardFocusSheet from '@/client/components/mobile/MobileCardFocusShee
 import {CardModel} from '@/common/models/CardModel';
 import {PlayerViewModel, PublicPlayerModel} from '@/common/models/PlayerModel';
 import {GameModel} from '@/common/models/GameModel';
+import {Message} from '@/common/logs/Message';
+
+function waitingForTitleText(title: string | Message | undefined): string {
+  if (title === undefined) {
+    return '';
+  }
+  if (typeof title === 'string') {
+    return title;
+  }
+  return title.message ?? '';
+}
 
 export default defineComponent({
   name: 'MobileTurnMode',
@@ -114,6 +128,17 @@ export default defineComponent({
     /** Research buy / draft-style SelectCard — give it the full Turn surface. */
     isCardSelectPending(): boolean {
       return this.playerView.waitingFor?.type === 'card';
+    },
+    isBuyPatentsPending(): boolean {
+      const waiting = this.playerView.waitingFor;
+      if (waiting?.type !== 'card') {
+        return false;
+      }
+      const title = waitingForTitleText(waiting.title).toLowerCase();
+      if (title.includes('to buy')) {
+        return true;
+      }
+      return waiting.buttonLabel === 'Buy' && waiting.min === 0;
     },
   },
   methods: {
