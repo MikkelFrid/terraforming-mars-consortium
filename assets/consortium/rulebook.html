@@ -226,10 +226,24 @@
       vertical-align: -1px;
       margin-right: .25rem;
     }
-    .t-chasm { background: #2a2a2a; }
-    .t-crater { background: #c45c26; }
-    .t-highland { background: #6b8f71; }
+    /* Swatches match board hex overlays in assets/hex_*.png */
+    .t-chasm { background: #121212; }
+    .t-crater { background: #1a3a5c; }
+    .t-highland { background: #6b3f1e; }
     .t-frontier { background: #7a6bb0; }
+    .terrain-hex {
+      width: 46px;
+      height: 50px;
+      vertical-align: middle;
+      image-rendering: pixelated;
+      margin-right: .4rem;
+    }
+    .terrain-look {
+      display: flex;
+      align-items: center;
+      gap: .35rem;
+      min-width: 12rem;
+    }
     footer {
       margin-top: 2.5rem;
       padding-top: 1rem;
@@ -451,54 +465,64 @@
     <h3>Terrain</h3>
     <table>
       <thead>
-        <tr><th>Terrain</th><th>Look</th><th>Rules</th></tr>
+        <tr><th>Terrain</th><th>Look on the board</th><th>Rules</th></tr>
       </thead>
       <tbody>
         <tr>
           <td><span class="terrain t-chasm"></span> Chasm</td>
-          <td>Dark / restricted</td>
-          <td>Nothing may be placed until its sector’s Bridge converts those spaces (see megastructures). Uses the restricted-space mechanism.</td>
+          <td class="terrain-look">
+            <img class="terrain-hex" src="/assets/hex_chasm.png" alt="Chasm hex" width="46" height="50" />
+            Black empty hex
+          </td>
+          <td>Nothing may be placed. When that sector’s <strong>Bridge</strong> completes, those chasms convert to normal land (and the locked frontier unlocks).</td>
         </tr>
         <tr>
           <td><span class="terrain t-crater"></span> Crater field</td>
-          <td>Orange / crater</td>
-          <td>When you claim the space (city, greenery, special tile, etc.), gain <strong>1 iridium</strong> from the bank <em>once</em>.</td>
+          <td class="terrain-look">
+            <img class="terrain-hex" src="/assets/hex_crater_field.png" alt="Crater field hex" width="46" height="50" />
+            Blue hex with white crater circles
+          </td>
+          <td>When you claim the space (city, greenery, special tile, etc.), gain <strong>2 iridium</strong> from the bank <em>once</em> per space.</td>
         </tr>
         <tr>
           <td><span class="terrain t-highland"></span> Highland</td>
-          <td>Green / elevated</td>
+          <td class="terrain-look">
+            <img class="terrain-hex" src="/assets/hex_highland.png" alt="Highland hex" width="46" height="50" />
+            Brown hex with white elevation arcs
+          </td>
           <td>No ocean. Some grand megastructures require you to own a highland tile before your first contribution.</td>
         </tr>
         <tr>
           <td><span class="terrain t-frontier"></span> Frontier</td>
-          <td>Locked sectors</td>
+          <td class="terrain-look">Padlock on locked hexes</td>
           <td>Spaces start locked. Completing the matching <strong>Bridge</strong> unlocks that sector for normal play.</td>
         </tr>
       </tbody>
     </table>
-    <p>Oceans, cities, greenery, and adjacency work as in the base game unless a card says otherwise.</p>
+    <p>Oceans, cities, greenery, and adjacency work as in the base game unless a card says otherwise. The base-game card <em>Domed Crater</em> places a normal city — it is <strong>not</strong> a Consortium crater field.</p>
 
     <h2 id="iridium">3. Iridium</h2>
     <div class="icon-row">
       <div class="icon-card">
         <img src="/assets/resources/iridium.png" alt="Iridium resource icon" width="64" height="64" />
-        <strong>Iridium</strong><br />Player resource · 4 M€
+        <strong>Iridium</strong><br />Player resource · 5 M€
       </div>
     </div>
     <ul>
       <li><strong>Bank:</strong> 28 tokens. When empty, you cannot gain more until some returns.</li>
-      <li><strong>Value:</strong> 1 iridium = <strong>4 M€</strong> when paying for eligible cards and megastructure segments.</li>
+      <li><strong>Value:</strong> 1 iridium = <strong>5 M€</strong> when paying for eligible cards and megastructure segments.</li>
       <li><strong>Who may spend it:</strong> only cards/effects with a <strong>Structure</strong> tag, a <strong>Prospecting</strong> tag, or megastructure segment costs.</li>
-      <li><strong>No general production.</strong> The only production source is <em>Siderophile Extraction</em> (deliberately <strong>no building tag</strong> — Robotic Workforce does not copy it).</li>
+      <li><strong>No iridium production.</strong> Recurring gains come from effects such as <em>Siderophile Extraction</em> (1 iridium at generation start if the bank has any — deliberately <strong>no building tag</strong>, so Robotic Workforce does not copy it) and Mohole contributors.</li>
     </ul>
     <div class="callout warn">
       Iridium is not steel or titanium. It does not pay for arbitrary space or building cards.
     </div>
     <h3>Typical ways to get iridium</h3>
     <ul>
-      <li>Claiming a crater-field space</li>
+      <li>Claiming a crater-field space (<strong>2 iridium</strong>, once per space)</li>
       <li>Card effects (Prospecting tags, events, corporation abilities)</li>
       <li>Contributor rewards on megastructures (especially Mohole)</li>
+      <li>Standard project <em>Core Sampling</em> (6 M€ → 1 iridium)</li>
     </ul>
 
     <h2 id="tags">4. New tags</h2>
@@ -539,38 +563,38 @@
         <tr>
           <td><strong>Bridge</strong> (×3)</td>
           <td>4 (keystone last)</td>
-          <td>Unlocks that frontier sector</td>
-          <td>+1 M€ production per segment owned</td>
+          <td>Unlocks that frontier sector; chasms in the sector become land</td>
+          <td>+2 M€ production per segment owned</td>
         </tr>
         <tr>
           <td><strong>Space Elevator</strong></td>
           <td>6</td>
           <td>All: −2 M€ on space-tag cards</td>
-          <td>Titanium production from segments</td>
+          <td>+1 titanium production per 2 segments owned (min 1)</td>
         </tr>
         <tr>
           <td><strong>L1 Magnetic Shield</strong></td>
           <td>6</td>
-          <td>All: −1 plant for greenery</td>
-          <td>Plant production from segments</td>
+          <td>All: greenery costs 1 fewer plant</td>
+          <td>+1 plant production per 2 segments owned (min 1)</td>
         </tr>
         <tr>
           <td><strong>Mohole</strong></td>
           <td>6</td>
           <td>All: +1 heat production</td>
-          <td>Iridium now + each generation</td>
+          <td>+2 iridium per segment now; +1 iridium each generation</td>
         </tr>
         <tr>
           <td><strong>Solar Mirror</strong></td>
           <td>6</td>
           <td>Temperature +1 step</td>
-          <td>Heat production from segments</td>
+          <td>+1 heat production per 2 segments owned (min 1)</td>
         </tr>
         <tr>
           <td><strong>Arcology</strong></td>
           <td>6</td>
           <td>All: +1 M€ production</td>
-          <td>Extra VP per segment at end</td>
+          <td>+2 extra VP per segment at end (stacks with base segment VP)</td>
         </tr>
       </tbody>
     </table>
@@ -580,7 +604,7 @@
     </div>
     <ul>
       <li>Pay the segment cost (M€ / steel / titanium / iridium as allowed) → place your marker → take that segment’s contributor reward when the structure completes.</li>
-      <li>On completion: contributors score <strong>1 VP per segment</strong> they paid for; the keystone player scores <strong>+2 VP</strong>.</li>
+      <li>On completion: contributors score <strong>2 VP per segment</strong> they paid for; the keystone player scores an extra <strong>+3 VP</strong>.</li>
       <li><strong>Incomplete structures score 0 VP</strong> at game end (sunk cost).</li>
       <li>Space Elevator, Mohole and Solar Mirror require a highland tile you own before your <em>first</em> contribution on that track.</li>
     </ul>
@@ -593,11 +617,13 @@
     <h3>Can I pay iridium for a normal building or space card?</h3>
     <p>No — unless it has Structure or Prospecting (or is a megastructure segment).</p>
     <h3>Does Robotic Workforce copy Siderophile Extraction?</h3>
-    <p>No. That card has no building tag on purpose.</p>
+    <p>No. That card has no building tag on purpose. It also has no production box — its recurring iridium is a generation-start effect.</p>
+    <h3>Is Domed Crater a crater field?</h3>
+    <p>No. <em>Domed Crater</em> is a base-game city card. Consortium crater fields are the blue hexes with white crater circles on the map.</p>
     <h3>What if the iridium bank is empty?</h3>
     <p>You cannot gain iridium until tokens return (spending puts them back).</p>
     <h3>Is the frontier optional?</h3>
-    <p>Each sector stays locked until its Bridge is finished, then those spaces are in play.</p>
+    <p>Each sector stays locked until its Bridge is finished. Then the frontier unlocks and that sector’s chasms become land.</p>
     <h3>Where do I browse card art in the app?</h3>
     <p><a href="/cards#consortium">Card gallery — filter “consortium”</a></p>
 
