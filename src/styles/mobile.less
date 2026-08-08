@@ -454,7 +454,7 @@ body.mobile-client .megastructure-track--bridge {
   flex-shrink: 0;
 }
 
-/* Type-colored outer mark: green / blue / red project cards */
+/* Selection chrome color by project type (only when --selected) */
 .mobile-card-tile--automated {
   --mobile-card-mark: #0ac20a;
 }
@@ -467,24 +467,12 @@ body.mobile-client .megastructure-track--bridge {
   --mobile-card-mark: #e53935;
 }
 
-.mobile-card-tile--automated::before,
-.mobile-card-tile--active::before,
-.mobile-card-tile--event::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  border-radius: 3px;
-  box-shadow: inset 0 0 0 2px var(--mobile-card-mark);
-}
-
 .mobile-card-tile:focus-visible {
   outline: 2px solid var(--mobile-card-mark);
   outline-offset: 2px;
 }
 
-/* Selected ring is thicker and matches the card type color */
+/* Type-colored ring + check only while selected */
 .mobile-card-tile--selected {
   box-shadow: inset 0 0 0 3px var(--mobile-card-mark);
 }
