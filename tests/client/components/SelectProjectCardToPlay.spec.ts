@@ -24,6 +24,35 @@ describe('SelectProjectCardToPlay', () => {
   });
   afterEach(() => {
     FakeLocalStorage.deregister(localStorage);
+    PreferencesManager.resetForTest();
+  });
+
+  it('mobile play uses a 3-column card grid by default', async () => {
+    PreferencesManager.INSTANCE.set('mobile_client', 'on');
+    const wrapper = setupCardForPurchase(
+      CardName.BIRDS, 10,
+      {heat: 0, megacredits: 10, titaniumValue: 1, steelValue: 1},
+      {
+        cards: [
+          {name: CardName.BIRDS, calculatedCost: 10},
+          {name: CardName.ANTS, calculatedCost: 3},
+          {name: CardName.ALGAE, calculatedCost: 5},
+        ],
+      });
+
+    expect(wrapper.find('.payments_cont--mobile-play').exists()).eq(true);
+    expect(wrapper.find('[data-test="mobile-play-card-grid"]').exists()).eq(true);
+    expect(wrapper.find('[data-test="mobile-card-grid"]').classes())
+      .to.include('mobile-card-grid--m');
+    expect(wrapper.findAll('.mobile-card-tile')).has.length(3);
+    expect(wrapper.find('.payments_cards').exists()).eq(false);
+
+    const tiles = wrapper.findAll('.mobile-card-tile');
+    expect(tiles[0].classes()).to.include('mobile-card-tile--selected');
+    await tiles[1].trigger('click');
+    await wrapper.vm.$nextTick();
+    expect((wrapper.vm as unknown as {cardName: CardName}).cardName).eq(CardName.ANTS);
+    expect(tiles[1].classes()).to.include('mobile-card-tile--selected');
   });
 
   it('using sort order for cards', async () => {

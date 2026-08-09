@@ -1,10 +1,20 @@
 <template>
-<div class="payments_cont">
+<div class="payments_cont" :class="{'payments_cont--mobile-play': isMobile}">
   <div v-if="showtitle === true">{{ $t(playerinput.title) }}</div>
-  <label v-for="availableCard in cards" class="payments_cards" :key="availableCard.name">
-    <input v-if="!availableCard.isDisabled" class="hidden" type="radio" v-model="cardName" :value="availableCard.name" >
-    <Card class="cardbox" :card="availableCard" />
-  </label>
+  <MobileCardGrid
+    v-if="isMobile"
+    data-test="mobile-play-card-grid"
+    :cards="cards"
+    :selected-names="selectedNames"
+    :show-size-control="true"
+    @toggle="onMobileToggle"
+  />
+  <template v-else>
+    <label v-for="availableCard in cards" class="payments_cards" :key="availableCard.name">
+      <input v-if="!availableCard.isDisabled" class="hidden" type="radio" v-model="cardName" :value="availableCard.name" >
+      <Card class="cardbox" :card="availableCard" />
+    </label>
+  </template>
   <template v-if="card !== undefined && card.additionalProjectCosts">
     <div v-if="card.additionalProjectCosts.aeronGenomicsResources" class="card-warning"
       v-i18n="[$t(card.name), card.additionalProjectCosts.aeronGenomicsResources, 'animals', $t(CardName.AERON_GENOMICS)]"
@@ -39,6 +49,7 @@
 import {defineComponent} from 'vue';
 import {SpendableResource} from '@/common/inputs/Spendable';
 import Card from '@/client/components/card/Card.vue';
+import MobileCardGrid from '@/client/components/mobile/MobileCardGrid.vue';
 import {getCardOrThrow} from '@/client/cards/ClientCardManifest';
 import {CardModel} from '@/common/models/CardModel';
 import {CardOrderStorage} from '@/client/utils/CardOrderStorage';
@@ -52,6 +63,7 @@ import {SelectProjectCardToPlayResponse} from '@/common/inputs/InputResponse';
 import WarningsComponent from '@/client/components/WarningsComponent.vue';
 import PaymentForm from '@/client/components/PaymentForm.vue';
 import {Ledger} from '@/client/components/PaymentLedger';
+import {shouldUseMobileClient} from '@/client/utils/mobileClient';
 
 export default defineComponent({
   name: 'SelectProjectCardToPlay',
@@ -77,6 +89,12 @@ export default defineComponent({
     },
   },
   computed: {
+    isMobile(): boolean {
+      return shouldUseMobileClient();
+    },
+    selectedNames(): Array<CardName> {
+      return this.cardName !== undefined ? [this.cardName] : [];
+    },
     order(): ReadonlyArray<SpendableResource> {
       return ([
         'steel',
@@ -142,6 +160,7 @@ export default defineComponent({
   },
   components: {
     Card,
+    MobileCardGrid,
     PaymentForm,
     WarningsComponent,
   },
@@ -152,6 +171,13 @@ export default defineComponent({
     this.updateAvailableUnits();
   },
   methods: {
+    /** Single-select: tap switches card; keep selection so payment stays usable. */
+    onMobileToggle(card: CardModel) {
+      if (card.isDisabled === true) {
+        return;
+      }
+      this.cardName = card.name;
+    },
     getCard() {
       const card = this.cards.find((c) => c.name === this.cardName);
       if (card === undefined) {

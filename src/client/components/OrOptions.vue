@@ -8,7 +8,11 @@
         <i class="form-icon" ></i>
         <span>{{ $t(option.title) }}</span>
       </label>
-      <div v-if="selectedIdx === idx" style="margin-left: 30px">
+      <div
+        v-if="selectedIdx === idx"
+        class="wf-options__child"
+        :class="{'wf-options__child--flush': isMobile}"
+      >
         <PlayerInputFactory ref="inputfactory"
                               :playerView="playerView"
                               :playerinput="option"
@@ -34,6 +38,7 @@ import {PlayerViewModel} from '@/common/models/PlayerModel';
 import {OrOptionsModel, PlayerInputModel} from '@/common/models/PlayerInputModel';
 import {getPreferences} from '@/client/utils/PreferencesManager';
 import {InputResponse, OrOptionsResponse} from '@/common/inputs/InputResponse';
+import {shouldUseMobileClient} from '@/client/utils/mobileClient';
 
 let unique = 0;
 
@@ -61,6 +66,11 @@ export default defineComponent({
   },
   components: {
     AppButton,
+  },
+  computed: {
+    isMobile(): boolean {
+      return shouldUseMobileClient();
+    },
   },
   data() {
     const displayedOptions: Array<PlayerInputModel> = [];

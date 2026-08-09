@@ -7,6 +7,44 @@ import {InputResponse} from '@/common/inputs/InputResponse';
 import PlayerInputFactory from '@/client/components/PlayerInputFactory.vue';
 
 describe('OrOptions', () => {
+  afterEach(() => {
+    PreferencesManager.resetForTest();
+  });
+
+  it('uses flush child layout on mobile', () => {
+    PreferencesManager.INSTANCE.set('mobile_client', 'on');
+    const component = mount(OrOptions, {
+      ...globalConfig,
+      global: {
+        ...globalConfig.global,
+        components: {
+          'PlayerInputFactory': PlayerInputFactory,
+        },
+      },
+      props: {
+        playerView: {},
+        playerinput: {
+          type: 'or',
+          title: 'Take your action',
+          options: [{
+            type: 'option',
+            title: 'Play project card',
+            buttonLabel: 'Play card',
+          }, {
+            type: 'option',
+            title: 'Pass',
+            buttonLabel: 'Pass',
+          }],
+        },
+        onsave: () => {},
+        showsave: true,
+        showtitle: true,
+      },
+    });
+    expect(component.find('.wf-options__child--flush').exists()).eq(true);
+    expect(component.find('.wf-options__child').classes()).to.include('wf-options__child--flush');
+  });
+
   it('saves the options ignoring hidden', async () => {
     let savedData: InputResponse | undefined;
     PreferencesManager.INSTANCE.set('learner_mode', false);
