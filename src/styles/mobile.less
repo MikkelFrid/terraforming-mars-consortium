@@ -65,25 +65,92 @@ body.mobile-client #app {
   margin-top: 6px;
 }
 
+.mobile-hud__row--meta {
+  flex-wrap: nowrap;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.mobile-hud__meta-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
 .mobile-hud__gen,
 .mobile-hud__phase,
 .mobile-hud__tr {
   font-weight: 600;
 }
 
+/* Whose-turn chip — pinned to the top-right of the HUD */
 .mobile-hud__acting {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 46%;
   margin-left: auto;
-  padding: 2px 8px;
-  border-radius: 4px;
-  background: #2c343c;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: #1c242c;
+  border: 1px solid #33404a;
+  color: #e8eaed;
   font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  line-height: 1.15;
+  text-align: left;
 }
 
 .mobile-hud__acting--you {
-  background: #c45c26;
+  background: linear-gradient(165deg, #d46a2e 0%, #c45c26 55%, #a84b1c 100%);
+  border-color: #e08a4a;
   color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow:
+    0 0 0 1px rgba(196, 92, 38, 0.35),
+    0 4px 12px rgba(196, 92, 38, 0.28);
+}
+
+.mobile-hud__acting--other {
+  padding-right: 12px;
+}
+
+.mobile-hud__acting-pip {
+  flex: 0 0 auto;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+}
+
+.mobile-hud__acting-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 1px;
+}
+
+.mobile-hud__acting-kicker {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8b959f;
+}
+
+.mobile-hud__acting-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 700;
+  color: #f0f3f6;
 }
 
 .mobile-hud__param {
@@ -259,17 +326,6 @@ body.mobile-client #app {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.mobile-bottom-nav__badge {
-  position: absolute;
-  top: 6px;
-  right: calc(50% - 18px);
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #c45c26;
-  box-shadow: 0 0 0 2px #0c1014;
 }
 
 /* Board camera (B1) — pan/pinch viewport; chrome stays outside */

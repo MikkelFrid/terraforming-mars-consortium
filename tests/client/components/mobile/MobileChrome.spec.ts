@@ -9,14 +9,14 @@ import {GameModel} from '@/common/models/GameModel';
 import {PublicPlayerModel} from '@/common/models/PlayerModel';
 
 describe('MobileBottomNav', () => {
-  it('emits mode updates and shows turn badge', async () => {
+  it('emits mode updates without a turn badge on the Turn tab', async () => {
     const wrapper = mount(MobileBottomNav, {
       ...globalConfig,
-      props: {mode: 'table', turnBadge: true},
+      props: {mode: 'table'},
     });
     expect(wrapper.findAll('.mobile-bottom-nav__item')).length(5);
     expect(wrapper.findAll('.mobile-bottom-nav__icon')).length(5);
-    expect(wrapper.find('.mobile-bottom-nav__item--badge').exists()).eq(true);
+    expect(wrapper.find('.mobile-bottom-nav__badge').exists()).eq(false);
     expect(wrapper.find('.mobile-bottom-nav__item--active').text()).to.include('Table');
     await wrapper.findAll('.mobile-bottom-nav__item')[0].trigger('click');
     expect(wrapper.emitted('update:mode')?.[0]).deep.eq(['turn']);
@@ -52,7 +52,7 @@ describe('MobileHud', () => {
     } as PublicPlayerModel;
   }
 
-  it('shows iridium when consortium is on', () => {
+  it('pins Your turn in the top-right chip', () => {
     const wrapper = mount(MobileHud, {
       ...globalConfig,
       props: {
@@ -63,6 +63,29 @@ describe('MobileHud', () => {
     });
     expect(wrapper.find('.mobile-hud__res--iridium').exists()).eq(true);
     expect(wrapper.find('.mobile-hud__res--iridium').text()).to.contain('3');
-    expect(wrapper.find('.mobile-hud__acting--you').exists()).eq(true);
+    const turn = wrapper.find('[data-test="mobile-hud-turn"]');
+    expect(turn.exists()).eq(true);
+    expect(turn.classes()).to.include('mobile-hud__acting--you');
+    expect(turn.text()).to.match(/your turn/i);
+    // TR stays in the left meta cluster; turn chip is the trailing sibling.
+    expect(wrapper.find('.mobile-hud__meta-main .mobile-hud__tr').exists()).eq(true);
+    expect(wrapper.find('.mobile-hud__row--meta > [data-test="mobile-hud-turn"]').exists()).eq(true);
+  });
+
+  it('shows the active opponent in the top-right when waiting', () => {
+    const wrapper = mount(MobileHud, {
+      ...globalConfig,
+      props: {
+        game: stubGame(),
+        player: stubPlayer(),
+        isYourTurn: false,
+        activePlayerName: 'Alice',
+        activePlayerColor: 'red' as Color,
+      },
+    });
+    const turn = wrapper.find('[data-test="mobile-hud-turn"]');
+    expect(turn.classes()).to.include('mobile-hud__acting--other');
+    expect(turn.text()).to.include('Alice');
+    expect(turn.find('.player_bg_color_red').exists()).eq(true);
   });
 });

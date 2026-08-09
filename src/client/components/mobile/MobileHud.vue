@@ -1,15 +1,32 @@
 <template>
   <header class="mobile-hud" :class="'mobile-hud--' + player.color">
     <div class="mobile-hud__row mobile-hud__row--meta">
-      <span class="mobile-hud__gen"><span v-i18n>Gen</span> {{ game.generation }}</span>
-      <span class="mobile-hud__phase">{{ phaseLabel }}</span>
+      <div class="mobile-hud__meta-main">
+        <span class="mobile-hud__gen"><span v-i18n>Gen</span> {{ game.generation }}</span>
+        <span class="mobile-hud__phase">{{ phaseLabel }}</span>
+        <span class="mobile-hud__tr">TR {{ player.terraformRating }}</span>
+      </div>
       <span
-        class="mobile-hud__acting"
-        :class="{'mobile-hud__acting--you': isYourTurn}"
-        v-if="actingLabel"
+        v-if="isYourTurn"
+        class="mobile-hud__acting mobile-hud__acting--you"
+        data-test="mobile-hud-turn"
         v-i18n
-      >{{ actingLabel }}</span>
-      <span class="mobile-hud__tr">TR {{ player.terraformRating }}</span>
+      >Your turn</span>
+      <span
+        v-else-if="activePlayerName"
+        class="mobile-hud__acting mobile-hud__acting--other"
+        data-test="mobile-hud-turn"
+      >
+        <span
+          class="mobile-hud__acting-pip"
+          :class="'player_bg_color_' + activePlayerColor"
+          aria-hidden="true"
+        ></span>
+        <span class="mobile-hud__acting-text">
+          <span class="mobile-hud__acting-kicker" v-i18n>Turn</span>
+          <span class="mobile-hud__acting-name">{{ activePlayerName }}</span>
+        </span>
+      </span>
     </div>
     <div class="mobile-hud__row mobile-hud__row--params">
       <span class="mobile-hud__param">T {{ game.temperature }}°</span>
@@ -48,7 +65,8 @@
 </template>
 
 <script lang="ts">
-import {defineComponent} from 'vue';
+import {defineComponent, PropType} from 'vue';
+import {Color} from '@/common/Color';
 import {GameModel} from '@/common/models/GameModel';
 import {PublicPlayerModel} from '@/common/models/PlayerModel';
 
@@ -67,6 +85,14 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    activePlayerName: {
+      type: String,
+      default: '',
+    },
+    activePlayerColor: {
+      type: String as PropType<Color | ''>,
+      default: '',
+    },
   },
   computed: {
     showIridium(): boolean {
@@ -74,12 +100,6 @@ export default defineComponent({
     },
     phaseLabel(): string {
       return this.game.phase;
-    },
-    actingLabel(): string {
-      if (this.isYourTurn) {
-        return 'Your turn';
-      }
-      return '';
     },
   },
 });
