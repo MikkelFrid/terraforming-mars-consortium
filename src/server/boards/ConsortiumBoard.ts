@@ -3,6 +3,7 @@ import {isConsortiumBoard} from '../../common/boards/ConsortiumBoards';
 import {SpaceBonus} from '../../common/boards/SpaceBonus';
 import {SpaceName} from '../../common/boards/SpaceName';
 import {SpaceType} from '../../common/boards/SpaceType';
+import {CRATER_FIELD_IRIDIUM_GRANT} from '../../common/constants';
 import {SpaceId, isSpaceId, safeCast} from '../../common/Types';
 import {Random} from '../../common/utils/Random';
 import {GameOptions} from '../game/GameOptions';
@@ -54,10 +55,17 @@ function spaceId(id: number): SpaceId {
 }
 
 /**
- * TODO(consortium): Space bonuses are not assigned yet. When designing the
- * bonus layout, populate `bonus` here (or in the JSON) instead of leaving [].
+ * Crater fields show iridium placement-bonus icons (same language as plant/steel).
+ * The one-time bank grant still runs via {@link Game.grantPlacementBonuses}
+ * + `craterBonusClaimed` — not via `grantSpaceBonuses` — so Survey Mission
+ * cannot drain the bank twice from the same crater.
+ *
+ * TODO(consortium): plant / steel / titanium / card layout for land & ocean.
  */
-function spaceBonuses(_entry: ConsortiumSpaceJson): Array<SpaceBonus> {
+function spaceBonuses(entry: ConsortiumSpaceJson): Array<SpaceBonus> {
+  if (entry.type === 'crater') {
+    return Array(CRATER_FIELD_IRIDIUM_GRANT).fill(SpaceBonus.IRIDIUM);
+  }
   return [];
 }
 

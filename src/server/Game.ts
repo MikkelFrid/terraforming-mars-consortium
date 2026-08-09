@@ -1511,6 +1511,11 @@ export class Game implements IGame, Logger {
   public grantSpaceBonuses(player: IPlayer, space: Space) {
     const bonuses = MultiSet.from(space.bonus);
     bonuses.forEachMultiplicity((count: number, bonus: SpaceBonus) => {
+      // Consortium crater iridium icons are board chrome; the one-time bank
+      // grant is handled in grantPlacementBonuses via craterBonusClaimed.
+      if (bonus === SpaceBonus.IRIDIUM && space.spaceType === SpaceType.CRATER_FIELD) {
+        return;
+      }
       this.grantSpaceBonus(player, bonus, count);
     });
   }
@@ -1528,6 +1533,9 @@ export class Game implements IGame, Logger {
       break;
     case SpaceBonus.TITANIUM:
       player.stock.add(Resource.TITANIUM, count, {log: true});
+      break;
+    case SpaceBonus.IRIDIUM:
+      Iridium.grant(player, count);
       break;
     case SpaceBonus.HEAT:
       player.stock.add(Resource.HEAT, count, {log: true});

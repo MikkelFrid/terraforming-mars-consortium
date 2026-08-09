@@ -1,7 +1,9 @@
 import {expect} from 'chai';
 import {testGame} from '../TestGame';
 import {BoardName} from '../../src/common/boards/BoardName';
+import {SpaceBonus} from '../../src/common/boards/SpaceBonus';
 import {SpaceType} from '../../src/common/boards/SpaceType';
+import {CRATER_FIELD_IRIDIUM_GRANT} from '../../src/common/constants';
 import {TileType} from '../../src/common/TileType';
 import {unlockBridgeSector} from '../../src/server/boards/ConsortiumBoard';
 
@@ -22,6 +24,11 @@ describe('ConsortiumMapOverlay', () => {
     expect(craters.length).to.be.at.least(4);
     expect(chasms.length).to.eq(9);
     expect(locked.length).to.eq(12);
+
+    for (const crater of craters) {
+      const iridiumIcons = crater.bonus.filter((b) => b === SpaceBonus.IRIDIUM).length;
+      expect(iridiumIcons).to.eq(CRATER_FIELD_IRIDIUM_GRANT);
+    }
 
     for (const space of locked) {
       expect(space.bridge).to.be.oneOf([0, 1, 2]);
