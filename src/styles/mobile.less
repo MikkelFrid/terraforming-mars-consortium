@@ -326,6 +326,7 @@ body.mobile-client .mobile-table-colonies .player_home_colony_cont {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
   width: 100%;
+  max-width: 400px;
   overflow: visible;
 }
 
@@ -349,6 +350,8 @@ body.mobile-client .wf-component--select-colony .select-colony__grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
   width: 100%;
+  /* Keep tiles phone-sized even if the mobile shell is on a wider window */
+  max-width: 400px;
 }
 
 body.mobile-client .wf-component--select-colony .select-colony__option {
