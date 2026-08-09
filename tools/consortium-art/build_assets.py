@@ -188,12 +188,12 @@ def _contours(img):
 
 # ---------------------------------------------------------------- resources
 #
-# Resource icons are 331x331 fully opaque squares with a dark plate, not
+# Resource icons are 331x331 fully opaque squares with a framed plate, not
 # transparent cut-outs. Steel and titanium both follow that convention, so
 # iridium does too. The chunk is drawn as a hard-edged polyhedron with six
-# facets running bright to dark, because at 48px on a card the silhouette and
-# the facet contrast are the only things that survive - a soft blob reads as a
-# hole in the card rather than as metal.
+# facets running bright to dark, because at 16px on the board and 48px on a
+# card the silhouette and facet contrast are the only things that survive —
+# a soft grey blob on pure black disappears into crater-field terrain.
 
 RES_S, RES_SS = 331, 6
 RES_W = RES_S * RES_SS
@@ -206,49 +206,73 @@ _IR_LR = (0.50, 0.40)
 _IR_BOT = (0.02, 0.68)
 _IR_C = (0.01, -0.03)
 
+# Cool cyan-silver facets — brighter than the old slate greys so the gem still
+# reads when the whole icon is scaled to a 16px board bonus token.
 _IR_FACETS = [
-    ([_IR_TOP, _IR_UL, _IR_C], (250, 252, 254)),
-    ([_IR_TOP, _IR_C, _IR_UR], (216, 224, 234)),
-    ([_IR_UL, _IR_LL, _IR_C], (188, 198, 210)),
-    ([_IR_UR, _IR_C, _IR_LR], (150, 160, 175)),
-    ([_IR_LL, _IR_BOT, _IR_C], (124, 134, 149)),
-    ([_IR_BOT, _IR_LR, _IR_C], (98, 107, 122)),
+    ([_IR_TOP, _IR_UL, _IR_C], (255, 255, 255)),
+    ([_IR_TOP, _IR_C, _IR_UR], (210, 236, 248)),
+    ([_IR_UL, _IR_LL, _IR_C], (168, 214, 232)),
+    ([_IR_UR, _IR_C, _IR_LR], (120, 178, 206)),
+    ([_IR_LL, _IR_BOT, _IR_C], (78, 132, 164)),
+    ([_IR_BOT, _IR_LR, _IR_C], (48, 92, 122)),
 ]
 
 
 def _ir_px(p):
-    return (RES_W / 2 + p[0] * RES_W * 0.5,
-            RES_W / 2 + p[1] * RES_W * 0.5)
+    return (RES_W / 2 + p[0] * RES_W * 0.42,
+            RES_W / 2 + p[1] * RES_W * 0.42)
 
 
 def build_iridium(path):
-    img = Image.new('RGBA', (RES_W, RES_W), (0, 0, 0, 255))
+    # Framed plate (titanium-style): light upper sheen on a teal-slate field so
+    # the token stays legible on dark crater hexes, not a pure-black square.
+    img = Image.new('RGBA', (RES_W, RES_W), (10, 14, 20, 255))
     d = ImageDraw.Draw(img)
 
-    for i in range(140, 0, -1):
-        t = i / 140.0
-        v = int(6 + 30 * (1 - t))
-        r = RES_W * 0.72 * t
-        d.ellipse([RES_W / 2 - r, RES_W / 2 - r, RES_W / 2 + r, RES_W / 2 + r],
-                  fill=(v, v, v + 3, 255))
+    inset = int(14 * RES_SS)
+    frame = int(18 * RES_SS)
+    d.rounded_rectangle(
+        [inset, inset, RES_W - inset, RES_W - inset],
+        radius=int(22 * RES_SS),
+        fill=(62, 88, 108, 255),
+        outline=(18, 24, 32, 255),
+        width=int(3 * RES_SS),
+    )
+    d.rounded_rectangle(
+        [inset + frame, inset + frame, RES_W - inset - frame, RES_W - inset - frame],
+        radius=int(14 * RES_SS),
+        fill=(36, 52, 68, 255),
+    )
+    # Upper sheen (same language as steel/titanium resource tiles).
+    sheen = Image.new('RGBA', (RES_W, RES_W), (0, 0, 0, 0))
+    sd = ImageDraw.Draw(sheen)
+    sd.pieslice(
+        [inset + frame, inset + frame - RES_W * 0.15,
+         RES_W - inset - frame, RES_W * 0.55],
+        200, 340,
+        fill=(120, 160, 185, 70),
+    )
+    sheen = sheen.filter(ImageFilter.GaussianBlur(RES_SS * 4))
+    img = Image.alpha_composite(img, sheen)
+    d = ImageDraw.Draw(img)
 
     body = [_IR_TOP, _IR_UR, _IR_LR, _IR_BOT, _IR_LL, _IR_UL]
-    d.polygon([_ir_px(p) for p in body], fill=(24, 27, 34, 255))
+    d.polygon([_ir_px(p) for p in body], fill=(20, 32, 44, 255))
 
     for pts, col in _IR_FACETS:
         d.polygon([_ir_px(p) for p in pts], fill=col + (255,))
 
     for pts, _ in _IR_FACETS:
         d.line([_ir_px(p) for p in pts] + [_ir_px(pts[0])],
-               fill=(26, 29, 36, 255), width=int(2.2 * RES_SS))
+               fill=(28, 40, 54, 255), width=int(2.0 * RES_SS))
     d.line([_ir_px(p) for p in body] + [_ir_px(body[0])],
-           fill=(14, 16, 21, 255), width=int(5.0 * RES_SS))
+           fill=(12, 18, 26, 255), width=int(4.5 * RES_SS))
 
     spec = Image.new('RGBA', (RES_W, RES_W), (0, 0, 0, 0))
     sd = ImageDraw.Draw(spec)
-    a, b = _ir_px((-0.30, -0.34)), _ir_px((-0.10, -0.16))
-    sd.ellipse([a[0], a[1], b[0], b[1]], fill=(255, 255, 255, 210))
-    spec = spec.filter(ImageFilter.GaussianBlur(RES_SS * 1.5))
+    a, b = _ir_px((-0.28, -0.32)), _ir_px((-0.06, -0.12))
+    sd.ellipse([a[0], a[1], b[0], b[1]], fill=(255, 255, 255, 230))
+    spec = spec.filter(ImageFilter.GaussianBlur(RES_SS * 1.2))
     img = Image.alpha_composite(img, spec)
 
     img.resize((RES_S, RES_S), Image.LANCZOS).save(path)
