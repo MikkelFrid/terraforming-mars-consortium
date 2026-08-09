@@ -31,12 +31,22 @@
           <option value="off" v-i18n>Off (desktop)</option>
         </select>
       </label>
+      <button
+        type="button"
+        class="btn btn-lg btn-primary"
+        data-test="mobile-hard-refresh"
+        :disabled="hardRefreshBusy"
+        @click="hardRefresh"
+        v-i18n
+      >
+        Hard refresh
+      </button>
       <button type="button" class="btn btn-lg btn-primary" @click="useDesktop" v-i18n>
         Use desktop layout
       </button>
     </div>
     <p class="mobile-mode__hint" v-i18n>
-      P0 shell: Turn uses the existing action UI; Table / Empire / Rivals are native surfaces. Play-card and place-tile flows come next.
+      Hard refresh clears this app’s cache and reloads — use if the UI looks stuck or outdated.
     </p>
   </section>
 </template>
@@ -68,6 +78,7 @@ export default defineComponent({
       pushEnabled: getPreferences().enable_push_notifications === true,
       pushBusy: false,
       pushMessage: '' as string,
+      hardRefreshBusy: false,
     };
   },
   computed: {
@@ -87,6 +98,37 @@ export default defineComponent({
     useDesktop() {
       this.mobilePref = 'off';
       this.onMobilePref();
+    },
+    buildHardRefreshUrl(href: string = window.location.href): string {
+      const url = new URL(href);
+      url.searchParams.set('r', String(Date.now()));
+      return url.href;
+    },
+    navigateTo(url: string) {
+      window.location.replace(url);
+    },
+    /**
+     * PWA-friendly hard refresh: drop Cache Storage + service workers, then
+     * navigate with a cache-busting query so the shell cannot stay sticky.
+     */
+    async hardRefresh() {
+      if (this.hardRefreshBusy) {
+        return;
+      }
+      this.hardRefreshBusy = true;
+      try {
+        if (typeof caches !== 'undefined') {
+          const keys = await caches.keys();
+          await Promise.all(keys.map((key) => caches.delete(key)));
+        }
+        if ('serviceWorker' in navigator) {
+          const regs = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(regs.map((reg) => reg.unregister()));
+        }
+      } catch {
+        // Still reload even if cache cleanup fails.
+      }
+      this.navigateTo(this.buildHardRefreshUrl());
     },
     async togglePush() {
       this.pushBusy = true;
