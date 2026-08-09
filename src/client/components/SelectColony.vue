@@ -1,10 +1,18 @@
 <template>
-  <div class="wf-component wf-component--select-card">
+  <div class="wf-component wf-component--select-card wf-component--select-colony">
     <div v-if="showtitle === true" class="nofloat wf-component-title">{{ $t(playerinput.title) }}</div>
-    <label v-for="colony in (playerinput.coloniesModel || [])" class="cardbox" :key="colony.name">
-      <input type="radio" v-model="selectedColony" :value="colony.name" >
-      <Colony :colony="colony"/>
-    </label>
+    <div class="select-colony__grid">
+      <label
+        v-for="colony in (playerinput.coloniesModel || [])"
+        class="cardbox select-colony__option"
+        :key="colony.name"
+      >
+        <input type="radio" v-model="selectedColony" :value="colony.name" >
+        <div class="select-colony__tile">
+          <Colony :colony="colony"/>
+        </div>
+      </label>
+    </div>
     <div v-if="showsave === true" class="nofloat">
       <AppButton @click="saveData" :title="playerinput.buttonLabel" :disabled="!canSave()"/>
     </div>

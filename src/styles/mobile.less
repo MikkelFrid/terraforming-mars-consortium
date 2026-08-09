@@ -314,17 +314,64 @@ body.mobile-client #app {
   margin-top: 12px;
 }
 
-/* Keep colony tiles readable in the Table scroll stack */
+/*
+ * Desktop colony cards are 418×275 landscape. Full size on a phone shows ~1
+ * tile. Use a 2-up grid and scale the face into each cell (container query).
+ */
+@colony-design-w: 418;
+@colony-design-h: 275;
+
 body.mobile-client .mobile-table-colonies .player_home_colony_cont {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+  overflow: visible;
 }
 
 body.mobile-client .mobile-table-colonies .player_home_colony {
-  max-width: 100%;
+  container-type: inline-size;
+  width: 100%;
+  max-width: none;
+  aspect-ratio: @colony-design-w / @colony-design-h;
+  overflow: hidden;
+  margin: 0;
+}
+
+body.mobile-client .mobile-table-colonies .player_home_colony .colony-card {
+  transform: scale(calc(100cqw / @colony-design-w));
+  transform-origin: top left;
+}
+
+/* Trade / build colony prompts (SelectColony) — same 2-up scale */
+body.mobile-client .wf-component--select-colony .select-colony__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+}
+
+body.mobile-client .wf-component--select-colony .select-colony__option {
+  display: block;
+  margin: 0;
+  width: 100%;
+}
+
+body.mobile-client .wf-component--select-colony .select-colony__tile {
+  container-type: inline-size;
+  width: 100%;
+  aspect-ratio: @colony-design-w / @colony-design-h;
+  overflow: hidden;
+  border-radius: 6px;
+}
+
+body.mobile-client .wf-component--select-colony .select-colony__tile .colony-card {
+  transform: scale(calc(100cqw / @colony-design-w));
+  transform-origin: top left;
+}
+
+body.mobile-client .wf-component--select-colony .select-colony__option:has(input:checked) .select-colony__tile {
+  box-shadow: inset 0 0 0 3px #c45c26;
 }
 
 /* Neutralize desktop Consortium preference scale inside the camera */
