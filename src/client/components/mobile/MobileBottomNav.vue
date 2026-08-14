@@ -5,16 +5,12 @@
       :key="item.mode"
       type="button"
       class="mobile-bottom-nav__item"
-      :class="{
-        'mobile-bottom-nav__item--active': mode === item.mode,
-        'mobile-bottom-nav__item--badge': item.badge,
-      }"
+      :class="{'mobile-bottom-nav__item--active': mode === item.mode}"
       :aria-current="mode === item.mode ? 'page' : undefined"
       @click="$emit('update:mode', item.mode)"
     >
       <span class="mobile-bottom-nav__icon" aria-hidden="true" v-html="item.icon"></span>
       <span class="mobile-bottom-nav__label" v-i18n>{{ item.label }}</span>
-      <span v-if="item.badge" class="mobile-bottom-nav__badge" aria-hidden="true"></span>
     </button>
   </nav>
 </template>
@@ -23,7 +19,7 @@
 import {defineComponent, PropType} from 'vue';
 import {MobileMode} from '@/client/components/mobile/mobileModes';
 
-type NavItem = {mode: MobileMode, label: string, badge: boolean, icon: string};
+type NavItem = {mode: MobileMode, label: string, icon: string};
 
 const ICON = {
   turn: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l6 3.5-6 3.5V8.5z"/></svg>`,
@@ -40,20 +36,16 @@ export default defineComponent({
       type: String as PropType<MobileMode>,
       required: true,
     },
-    turnBadge: {
-      type: Boolean,
-      default: false,
-    },
   },
   emits: ['update:mode'],
   computed: {
     items(): Array<NavItem> {
       return [
-        {mode: 'turn', label: 'Turn', badge: this.turnBadge, icon: ICON.turn},
-        {mode: 'table', label: 'Table', badge: false, icon: ICON.table},
-        {mode: 'empire', label: 'Empire', badge: false, icon: ICON.empire},
-        {mode: 'rivals', label: 'Rivals', badge: false, icon: ICON.rivals},
-        {mode: 'more', label: 'More', badge: false, icon: ICON.more},
+        {mode: 'turn', label: 'Turn', icon: ICON.turn},
+        {mode: 'table', label: 'Table', icon: ICON.table},
+        {mode: 'empire', label: 'Empire', icon: ICON.empire},
+        {mode: 'rivals', label: 'Rivals', icon: ICON.rivals},
+        {mode: 'more', label: 'More', icon: ICON.more},
       ];
     },
   },

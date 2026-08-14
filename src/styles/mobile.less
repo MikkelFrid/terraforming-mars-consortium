@@ -65,25 +65,92 @@ body.mobile-client #app {
   margin-top: 6px;
 }
 
+.mobile-hud__row--meta {
+  flex-wrap: nowrap;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.mobile-hud__meta-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
 .mobile-hud__gen,
 .mobile-hud__phase,
 .mobile-hud__tr {
   font-weight: 600;
 }
 
+/* Whose-turn chip — pinned to the top-right of the HUD */
 .mobile-hud__acting {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 46%;
   margin-left: auto;
-  padding: 2px 8px;
-  border-radius: 4px;
-  background: #2c343c;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: #1c242c;
+  border: 1px solid #33404a;
+  color: #e8eaed;
   font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  line-height: 1.15;
+  text-align: left;
 }
 
 .mobile-hud__acting--you {
-  background: #c45c26;
+  background: linear-gradient(165deg, #d46a2e 0%, #c45c26 55%, #a84b1c 100%);
+  border-color: #e08a4a;
   color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow:
+    0 0 0 1px rgba(196, 92, 38, 0.35),
+    0 4px 12px rgba(196, 92, 38, 0.28);
+}
+
+.mobile-hud__acting--other {
+  padding-right: 12px;
+}
+
+.mobile-hud__acting-pip {
+  flex: 0 0 auto;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+}
+
+.mobile-hud__acting-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 1px;
+}
+
+.mobile-hud__acting-kicker {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8b959f;
+}
+
+.mobile-hud__acting-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 700;
+  color: #f0f3f6;
 }
 
 .mobile-hud__param {
@@ -261,17 +328,6 @@ body.mobile-client #app {
   white-space: nowrap;
 }
 
-.mobile-bottom-nav__badge {
-  position: absolute;
-  top: 6px;
-  right: calc(50% - 18px);
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #c45c26;
-  box-shadow: 0 0 0 2px #0c1014;
-}
-
 /* Board camera (B1) — pan/pinch viewport; chrome stays outside */
 .board-camera {
   position: relative;
@@ -314,17 +370,67 @@ body.mobile-client #app {
   margin-top: 12px;
 }
 
-/* Keep colony tiles readable in the Table scroll stack */
+/*
+ * Desktop colony cards are 418×275 landscape. Full size on a phone shows ~1
+ * tile. Use a 2-up grid and scale the face into each cell (container query).
+ */
+@colony-design-w: 418;
+@colony-design-h: 275;
+
 body.mobile-client .mobile-table-colonies .player_home_colony_cont {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+  max-width: 400px;
+  overflow: visible;
 }
 
 body.mobile-client .mobile-table-colonies .player_home_colony {
-  max-width: 100%;
+  container-type: inline-size;
+  width: 100%;
+  max-width: none;
+  aspect-ratio: @colony-design-w / @colony-design-h;
+  overflow: hidden;
+  margin: 0;
+}
+
+body.mobile-client .mobile-table-colonies .player_home_colony .colony-card {
+  transform: scale(calc(100cqw / @colony-design-w));
+  transform-origin: top left;
+}
+
+/* Trade / build colony prompts (SelectColony) — same 2-up scale */
+body.mobile-client .wf-component--select-colony .select-colony__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+  /* Keep tiles phone-sized even if the mobile shell is on a wider window */
+  max-width: 400px;
+}
+
+body.mobile-client .wf-component--select-colony .select-colony__option {
+  display: block;
+  margin: 0;
+  width: 100%;
+}
+
+body.mobile-client .wf-component--select-colony .select-colony__tile {
+  container-type: inline-size;
+  width: 100%;
+  aspect-ratio: @colony-design-w / @colony-design-h;
+  overflow: hidden;
+  border-radius: 6px;
+}
+
+body.mobile-client .wf-component--select-colony .select-colony__tile .colony-card {
+  transform: scale(calc(100cqw / @colony-design-w));
+  transform-origin: top left;
+}
+
+body.mobile-client .wf-component--select-colony .select-colony__option:has(input:checked) .select-colony__tile {
+  box-shadow: inset 0 0 0 3px #c45c26;
 }
 
 /* Neutralize desktop Consortium preference scale inside the camera */
@@ -508,6 +614,22 @@ body.mobile-client .megastructure-track--bridge {
 .mobile-card-tile--disabled:not(.mobile-card-tile--selected) {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+/* OrOptions: no nested indent — full width for 3-up play grid */
+body.mobile-client .wf-options__child--flush {
+  margin-left: 0;
+}
+
+/* Play project card — same MobileCardGrid as research buy (default M = 3 cols) */
+body.mobile-client .payments_cont--mobile-play {
+  width: 100%;
+  max-width: none;
+  margin-bottom: 12px;
+}
+
+body.mobile-client .payments_cont--mobile-play .mobile-card-grid-wrap {
+  margin-bottom: 10px;
 }
 
 /* Select card(s) to buy / draft — grid + sticky confirm */

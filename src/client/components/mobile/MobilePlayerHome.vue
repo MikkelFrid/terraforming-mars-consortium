@@ -4,6 +4,8 @@
       :game="game"
       :player="thisPlayer"
       :isYourTurn="isYourTurn"
+      :activePlayerName="activePlayer?.name ?? ''"
+      :activePlayerColor="activePlayer?.color ?? ''"
     />
 
     <main class="mobile-player-home__main">
@@ -41,7 +43,6 @@
     <MobileBottomNav
       v-if="thisPlayer.tableau.length > 0"
       :mode="mode"
-      :turnBadge="isYourTurn"
       @update:mode="setMode"
     />
   </div>
@@ -108,6 +109,9 @@ export default defineComponent({
     isYourTurn(): boolean {
       const w = this.playerView.waitingFor;
       return w !== undefined && w.optional !== true;
+    },
+    activePlayer(): PublicPlayerModel | undefined {
+      return this.playerView.players.find((p) => p.isActive === true);
     },
     canContributeMegastructure(): boolean {
       return this.isYourTurn && this.game.phase === Phase.ACTION;
