@@ -81,11 +81,32 @@ describe('Consortium megastructures', () => {
 
     player.iridium = BALANCE.BRIDGE_KEYSTONE_MIN_IRIDIUM;
     player.game.iridiumBank -= BALANCE.BRIDGE_KEYSTONE_MIN_IRIDIUM;
-    // 2 iridium = 8 M€ — exact keystone cost.
+    // Min iridium may exceed keystone cost at current IRIDIUM_VALUE — server allows that overpay.
     player.megaCredits = 0;
     Megastructures.placeSegment(player, bridge, Payment.of({iridium: BALANCE.BRIDGE_KEYSTONE_MIN_IRIDIUM}));
     expect(bridge.completed).is.true;
     expect(bridge.keystonePlayer).eq(player.id);
+  });
+
+  it('discounted keystone still accepts min iridium that overshoots the MC cost', () => {
+    const [/* game */, player] = testGame(1, {consortiumExpansion: true});
+    const bridge = player.game.megastructuresData!.structures.find((s) => s.id === 'bridge-0')!;
+    for (let i = 0; i < 3; i++) {
+      player.megaCredits = BALANCE.BRIDGE_SEGMENT_COST_MC;
+      Megastructures.placeSegment(player, bridge, Payment.of({megacredits: BALANCE.BRIDGE_SEGMENT_COST_MC}));
+    }
+
+    // One-shot −3 M€ (same shape as Keystone Consortium) → effective cost 5; 2×iridium value > 5.
+    player.nextMegastructureSegmentDiscount = BALANCE.KEYSTONE_CONSORTIUM_DISCOUNT;
+    const cost = Megastructures.effectiveSegmentCostMc(player, bridge, 3);
+    expect(cost).eq(BALANCE.BRIDGE_KEYSTONE_COST_MC - BALANCE.KEYSTONE_CONSORTIUM_DISCOUNT);
+    expect(cost).to.be.lessThan(BALANCE.BRIDGE_KEYSTONE_MIN_IRIDIUM * player.getIridiumValue());
+
+    player.megaCredits = 0;
+    player.iridium = BALANCE.BRIDGE_KEYSTONE_MIN_IRIDIUM;
+    player.game.iridiumBank -= BALANCE.BRIDGE_KEYSTONE_MIN_IRIDIUM;
+    Megastructures.placeSegment(player, bridge, Payment.of({iridium: BALANCE.BRIDGE_KEYSTONE_MIN_IRIDIUM}));
+    expect(bridge.completed).is.true;
   });
 
   it('foundation-gated structure rejects first contribution without highland, accepts with one', () => {

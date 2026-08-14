@@ -13,6 +13,7 @@ import {Ledger} from '@/client/components/PaymentLedger';
  * @param order - Spendable resources in priority order.
  * @param ledger - Available amounts and exchange rates for each resource.
  * @param reserveMegacredits - If true, MC are pre-committed and non-MC resources fill the gap.
+ * @param minIridium - Consortium keystone: seed at least this many iridium (may overshoot cost).
  * @returns A Payment allocating resources to cover the cost.
  */
 export function computeDefaultPayment(
@@ -20,17 +21,42 @@ export function computeDefaultPayment(
   order: ReadonlyArray<SpendableResource>,
   ledger: Ledger,
   reserveMegacredits: boolean,
+  minIridium: number = 0,
 ): Payment {
   const payment = {...Payment.EMPTY};
   const mcAvailable = ledger['megacredits'].available;
 
-  let amountCovered = reserveMegacredits ? mcAvailable : 0;
+  // Keystone gate: lock in the minimum iridium first. Its MC value may exceed
+  // `cost` after segment discounts — that overspend is intentional.
+  const forcedIridium = Math.min(
+    Math.max(0, minIridium),
+    ledger['iridium']?.available ?? 0,
+  );
+  const iridiumRate = ledger['iridium']?.rate ?? 0;
+  if (forcedIridium > 0) {
+    payment.iridium = forcedIridium;
+  }
+  const forcedIridiumValue = forcedIridium * iridiumRate;
+
+  let amountCovered = (reserveMegacredits ? mcAvailable : 0) + forcedIridiumValue;
   // resourcesAlreadyCovered tracks only the MC value of resources committed so far,
   // not the reserved MC. This prevents the greedy condition from double-counting the
   // reserved MC ceiling, which would cause under-allocation when reserveMegacredits=true.
-  let resourcesAlreadyCovered = 0;
+  let resourcesAlreadyCovered = forcedIridiumValue;
   for (const unit of order) {
     if (unit === 'megacredits') {
+      continue;
+    }
+    if (unit === 'iridium') {
+      // Start from the forced minimum; greedy may add more without exceeding cost.
+      const count = unitContribution(cost, unit, ledger, resourcesAlreadyCovered - forcedIridiumValue, forcedIridium);
+      const added = count - forcedIridium;
+      if (added > 0) {
+        payment.iridium = count;
+        const mcValue = iridiumRate * added;
+        amountCovered += mcValue;
+        resourcesAlreadyCovered += mcValue;
+      }
       continue;
     }
     const count = unitContribution(cost, unit, ledger, resourcesAlreadyCovered);
@@ -43,13 +69,15 @@ export function computeDefaultPayment(
 
   // Post-pass: if resources overspent (can happen when two high-rate resources
   // combine), reduce units in reverse order until overspend is gone.
+  // Never drop iridium below the keystone minimum.
   if (amountCovered > cost) {
     for (const unit of [...order].reverse()) {
       if (unit === 'megacredits') {
         continue;
       }
       const rate = ledger[unit].rate;
-      while (payment[unit] > 0 && amountCovered - rate >= cost) {
+      const floor = unit === 'iridium' ? forcedIridium : 0;
+      while (payment[unit] > floor && amountCovered - rate >= cost) {
         payment[unit] --;
         amountCovered -= rate;
       }
@@ -73,17 +101,20 @@ export function computeDefaultPayment(
  * @param cost - Total MC cost to cover.
  * @param unit - The specific spendable resource being evaluated.
  * @param ledger - Available amounts and exchange rates for each resource.
- * @param mcAlreadyCovered - The MC value already committed by previously processed non-MC resources.
- * @returns The number of units of the resource to allocate.
+ * @param mcAlreadyCovered - The MC value already committed by previously processed non-MC resources
+ *   (excluding units of `unit` represented by `alreadyCommitted`).
+ * @param alreadyCommitted - Units of this resource already allocated (e.g. keystone min iridium).
+ * @returns The number of units of the resource to allocate (including alreadyCommitted).
  */
 function unitContribution(
   cost: number,
   unit: SpendableResource,
   ledger: Ledger,
   mcAlreadyCovered: number,
+  alreadyCommitted: number = 0,
 ): number {
   const entry = ledger[unit];
-  if (entry.available <= 0) {
+  if (entry.available <= 0 && alreadyCommitted <= 0) {
     return 0;
   }
 
@@ -94,6 +125,7 @@ function unitContribution(
     Math.ceil(Math.max(cost - mcAvailable - mcAlreadyCovered, 0) / rate),
     available,
   );
+  count = Math.max(count, alreadyCommitted);
 
   // Greedy: add more units as long as we don't push the total past the cost.
   // Heat is non-greedy: only use the minimum needed.

@@ -371,4 +371,47 @@ describe('PaymentForm', () => {
     expect(wrapper.emitted('save')).to.not.exist;
     expect(wrapper.find('.tm-warning').text()).to.include('Keystone requires at least 2 iridium');
   });
+
+  it('allows keystone min iridium even when its MC value exceeds a discounted cost', async () => {
+    // Live bug: Keystone Consortium (−3) → Bridge keystone costs 5 M€, but min 2
+    // iridium at rate 5 = 10 M€. Overspend check must not deadlock the player.
+    const wrapper = mountPaymentForm({
+      cost: 5,
+      order: ['iridium', 'megacredits'],
+      minIridium: 2,
+      ledger: {
+        'iridium': {available: 3, rate: 5},
+        'megacredits': {available: 20, rate: 1},
+      },
+    });
+
+    expect(wrapper.vm.payment.iridium).eq(2);
+    expect(wrapper.vm.payment.megacredits).eq(0);
+
+    await wrapper.find('[data-test=save]').trigger('click');
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find('.tm-warning').exists()).is.false;
+    expect(wrapper.emitted('save')).to.exist;
+    expect(wrapper.emitted('save')![0][0]).to.deep.include({iridium: 2, megacredits: 0});
+  });
+
+  it('still rejects extra iridium beyond the keystone minimum when it overshoots', async () => {
+    const wrapper = mountPaymentForm({
+      cost: 5,
+      order: ['iridium', 'megacredits'],
+      minIridium: 2,
+      ledger: {
+        'iridium': {available: 4, rate: 5},
+        'megacredits': {available: 20, rate: 1},
+      },
+    });
+
+    wrapper.vm.payment = {...wrapper.vm.payment, iridium: 3, megacredits: 0};
+    await wrapper.find('[data-test=save]').trigger('click');
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.emitted('save')).to.not.exist;
+    expect(wrapper.find('.tm-warning').text()).to.include('You cannot overspend iridium');
+  });
 });

@@ -51,7 +51,7 @@ describe('KeystoneConsortium', () => {
     player.iridium = BALANCE.BRIDGE_KEYSTONE_MIN_IRIDIUM;
     player.megaCredits = 20;
     const prodBefore = player.production.megacredits;
-    // effective cost = 8 - 3 = 5; pay 2 iridium (min) + 5 MC? iridium worth 4 → 8, enough alone
+    // effective cost = 8 - 3 = 5; min 2 iridium covers it (may overshoot at IRIDIUM_VALUE).
     Megastructures.placeSegment(player, bridge, Payment.of({
       iridium: BALANCE.BRIDGE_KEYSTONE_MIN_IRIDIUM,
       megacredits: 0,

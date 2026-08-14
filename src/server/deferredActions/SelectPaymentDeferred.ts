@@ -68,7 +68,9 @@ export class SelectPaymentDeferred extends DeferredAction<Payment> {
   }
 
   public execute() {
-    if (this.amount === 0) {
+    // Segment discounts can reduce keystone cost to 0, but the min-iridium gate
+    // still applies — do not auto-resolve with an empty payment.
+    if (this.amount === 0 && (this.options.minIridium ?? 0) <= 0) {
       this.cb(Payment.of({}));
       return undefined;
     }

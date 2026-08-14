@@ -117,7 +117,13 @@ export default defineComponent({
   emits: ['save', 'change'],
   data(): DataModel {
     return {
-      payment: computeDefaultPayment(this.cost, this.order, this.ledger, /* reserveMegacredits=*/ false),
+      payment: computeDefaultPayment(
+        this.cost,
+        this.order,
+        this.ledger,
+        /* reserveMegacredits=*/ false,
+        this.minIridium ?? 0,
+      ),
       warning: undefined,
     };
   },
@@ -175,7 +181,11 @@ export default defineComponent({
       this.payment.megacredits = megacredits;
     },
     maxValue(unit: SpendableResource): void {
-      const target = Math.min(this.ledger[unit].available, Math.floor(this.cost / this.ledger[unit].rate));
+      let target = Math.min(this.ledger[unit].available, Math.floor(this.cost / this.ledger[unit].rate));
+      // Keystone: Max must still be able to reach the mandatory iridium gate.
+      if (unit === 'iridium' && this.minIridium !== undefined) {
+        target = Math.max(target, Math.min(this.ledger[unit].available, this.minIridium));
+      }
 
       if (this.payment[unit] < target) {
         this.payment[unit] = target;
@@ -184,7 +194,13 @@ export default defineComponent({
           this.setRemainingMCValue();
         } else {
           const saved = this.payment.megacredits;
-          this.payment = computeDefaultPayment(this.cost, this.order, this.ledger, /* reserveMegacredits=*/ true);
+          this.payment = computeDefaultPayment(
+            this.cost,
+            this.order,
+            this.ledger,
+            /* reserveMegacredits=*/ true,
+            this.minIridium ?? 0,
+          );
           this.payment.megacredits = saved;
         }
       }
@@ -192,9 +208,22 @@ export default defineComponent({
     totalSpent(): number {
       return sum(this.order.map((unit) => this.payment[unit] * this.ledger[unit].rate));
     },
+    /**
+     * Overspend beyond `cost` that is forced by the keystone min-iridium gate.
+     * With segment discounts, minIridium × rate can exceed the discounted cost;
+     * that excess must remain payable.
+     */
+    keystoneOverspendFloor(): number {
+      if (this.minIridium === undefined || this.minIridium <= 0) {
+        return this.cost;
+      }
+      const rate = this.ledger['iridium']?.rate ?? 0;
+      return Math.max(this.cost, this.minIridium * rate);
+    },
     handleSave(): void {
       this.warning = undefined;
-      if (this.cost === 0) {
+      // cost === 0 still needs the keystone iridium gate when minIridium is set.
+      if (this.cost === 0 && (this.minIridium === undefined || this.minIridium <= 0)) {
         this.$emit('save', this.payment);
         return;
       }
@@ -209,8 +238,9 @@ export default defineComponent({
         this.warning = `Keystone requires at least ${this.minIridium} iridium`;
         return;
       }
-      const delta = this.totalSpent() - this.cost;
-      if (delta < 0) {
+      const floor = this.keystoneOverspendFloor();
+      const delta = this.totalSpent() - floor;
+      if (this.totalSpent() < this.cost) {
         this.warning = 'Haven\'t spent enough';
         return;
       }

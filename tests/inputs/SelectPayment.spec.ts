@@ -38,6 +38,38 @@ describe('SelectPayment', () => {
     expect(selected).deep.eq(Payment.of({megacredits: 6, steel: 2}));
   });
 
+  it('keystone: accepts min iridium that overshoots a discounted amount', () => {
+    player.megaCredits = 0;
+    player.iridium = 2;
+    const selectPayment = new SelectPayment(
+      '',
+      5,
+      {iridium: true},
+      undefined,
+      /* minIridium */ 2,
+    ).andThen(cb);
+
+    // 2 iridium × 5 = 10 ≥ cost 5; server only rejects underspend / missing min.
+    selectPayment.process({type: 'payment', payment: Payment.of({iridium: 2})}, player);
+    expect(selected).deep.eq(Payment.of({iridium: 2}));
+  });
+
+  it('keystone: rejects payment below minIridium', () => {
+    player.megaCredits = 20;
+    player.iridium = 1;
+    const selectPayment = new SelectPayment(
+      '',
+      5,
+      {iridium: true},
+      undefined,
+      /* minIridium */ 2,
+    ).andThen(cb);
+
+    expect(() => selectPayment.process(
+      {type: 'payment', payment: Payment.of({megacredits: 5, iridium: 1})}, player))
+      .to.throw(/Keystone requires at least/);
+  });
+
   for (const run of [
     {mc: 10, titanium: 2, heat: 2, corp: undefined, payment: {megacredits: 8}, expected: true},
     {mc: 9, titanium: 2, heat: 2, corp: undefined, payment: {megacredits: 8}, expected: false},
