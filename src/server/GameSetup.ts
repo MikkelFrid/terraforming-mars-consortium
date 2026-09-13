@@ -24,6 +24,7 @@ import {HollandiaBoard} from './boards/HollandiaBoard';
 import {ConsortiumBoard} from './boards/ConsortiumBoard';
 import {isConsortiumBoard} from '../common/boards/ConsortiumBoards';
 import {applyConsortiumOverlay} from './consortium/ConsortiumMapOverlay';
+import {addExpansionColonySpaces} from './boards/addExpansionColonySpaces';
 
 type BoardFactory = (new (spaces: ReadonlyArray<Space>) => MarsBoard) & {newInstance: (gameOptions: GameOptions, rng: Random) => MarsBoard};
 
@@ -69,6 +70,9 @@ export class GameSetup {
   public static deserializeBoard(players: Array<IPlayer>, gameOptions: GameOptions, d: SerializedGame) {
     const playersForBoard = players.length !== 1 ? players : [players[0], GameSetup.neutralPlayerFor(d.id)];
     const deserialized = Board.deserialize(d.board, playersForBoard).spaces;
+    // Older Consortium saves omitted Venus/Pathfinders/Promo colony spaces.
+    // Re-add them so reserved-city cards (e.g. Luna Metropolis, id "70") load.
+    addExpansionColonySpaces(deserialized, gameOptions);
     const Factory: BoardFactory = boards[gameOptions.boardName];
     return new Factory(deserialized);
   }
