@@ -323,8 +323,38 @@ body.mobile-client .mobile-table-colonies .player_home_colony_cont {
   -webkit-overflow-scrolling: touch;
 }
 
+/*
+ * Desktop colony cards are 418×275. On a phone that fills the viewport and
+ * only shows ~1 tile. Scale like .small_colony and collapse layout box.
+ */
+@mobile-colony-scale: 0.66;
+@mobile-colony-layout-width: 276px; /* 418 * 0.66 */
+@mobile-colony-layout-height: 182px; /* 275 * 0.66 */
+
 body.mobile-client .mobile-table-colonies .player_home_colony {
   max-width: 100%;
+  width: @mobile-colony-layout-width;
+  height: @mobile-colony-layout-height;
+  overflow: hidden;
+}
+
+body.mobile-client .mobile-table-colonies .player_home_colony .colony-card {
+  transform: scale(@mobile-colony-scale);
+  transform-origin: top left;
+}
+
+/* Trade / build colony prompts (SelectColony) */
+body.mobile-client .wf-component--select-colony .select-colony__option {
+  display: block;
+  width: @mobile-colony-layout-width;
+  height: @mobile-colony-layout-height;
+  margin: 0 0 10px;
+  overflow: hidden;
+}
+
+body.mobile-client .wf-component--select-colony .select-colony__option .colony-card {
+  transform: scale(@mobile-colony-scale);
+  transform-origin: top left;
 }
 
 /* Neutralize desktop Consortium preference scale inside the camera */
