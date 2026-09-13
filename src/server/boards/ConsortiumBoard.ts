@@ -8,6 +8,7 @@ import {Random} from '../../common/utils/Random';
 import {GameOptions} from '../game/GameOptions';
 import {MarsBoard} from './MarsBoard';
 import {Space} from './Space';
+import {addExpansionColonySpaces} from './addExpansionColonySpaces';
 import consortiumSpaces from './consortiumSpaces.json';
 import consortiumRiftSpaces from './consortiumRiftSpaces.json';
 import consortiumArchipelagoSpaces from './consortiumArchipelagoSpaces.json';
@@ -121,6 +122,11 @@ export class ConsortiumBoard extends MarsBoard {
       }
       spaces.push(space);
     }
+
+    // Same reserved colony spaces as BoardBuilder (Venus / Pathfinders / Promo).
+    // ConsortiumBoard builds from JSON and historically omitted these — without
+    // them Luna Metropolis etc. throw "Can't find space with id 70" on load.
+    addExpansionColonySpaces(spaces, gameOptions);
 
     return new ConsortiumBoard(spaces);
   }

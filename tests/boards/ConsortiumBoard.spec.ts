@@ -3,12 +3,52 @@ import {DEFAULT_GAME_OPTIONS} from '../../src/server/game/GameOptions';
 import {ConsortiumBoard, isFrontierUnlocked} from '../../src/server/boards/ConsortiumBoard';
 import {SeededRandom} from '../../src/common/utils/Random';
 import {SpaceType} from '../../src/common/boards/SpaceType';
+import {SpaceName} from '../../src/common/boards/SpaceName';
 import {TileType} from '../../src/common/TileType';
 import {testGame} from '../TestGame';
 import {BoardName} from '../../src/common/boards/BoardName';
 import {Board} from '../../src/server/boards/Board';
+import {addExpansionColonySpaces} from '../../src/server/boards/addExpansionColonySpaces';
 
 describe('ConsortiumBoard', () => {
+  it('includes Venus colony spaces when Venus Next is on', () => {
+    const board = ConsortiumBoard.newInstance(
+      {
+        ...DEFAULT_GAME_OPTIONS,
+        boardName: BoardName.CONSORTIUM,
+        consortiumExpansion: true,
+        venusNextExtension: true,
+        expansions: {...DEFAULT_GAME_OPTIONS.expansions, venus: true, consortium: true},
+      },
+      new SeededRandom(0),
+    );
+    expect(board.getSpaceOrThrow(SpaceName.LUNA_METROPOLIS).spaceType).eq(SpaceType.COLONY);
+    expect(board.getSpaceOrThrow(SpaceName.DAWN_CITY).spaceType).eq(SpaceType.COLONY);
+    expect(board.getSpaceOrThrow(SpaceName.MAXWELL_BASE).spaceType).eq(SpaceType.COLONY);
+    expect(board.getSpaceOrThrow(SpaceName.STRATOPOLIS).spaceType).eq(SpaceType.COLONY);
+  });
+
+  it('deserialize migrates missing Luna Metropolis space id 70', () => {
+    const options = {
+      ...DEFAULT_GAME_OPTIONS,
+      boardName: BoardName.CONSORTIUM,
+      consortiumExpansion: true,
+      venusNextExtension: true,
+      expansions: {...DEFAULT_GAME_OPTIONS.expansions, venus: true, consortium: true},
+    };
+    // Simulate an older save that only had Ganymede + Phobos + land hexes.
+    const legacy = ConsortiumBoard.newInstance(
+      {...options, expansions: {...options.expansions, venus: false}, venusNextExtension: false},
+      new SeededRandom(0),
+    );
+    expect(() => legacy.getSpaceOrThrow(SpaceName.LUNA_METROPOLIS)).to.throw(/id 70/);
+
+    const spaces = legacy.spaces.map((s) => ({...s}));
+    addExpansionColonySpaces(spaces, options);
+    const repaired = new ConsortiumBoard(spaces);
+    expect(repaired.getSpaceOrThrow(SpaceName.LUNA_METROPOLIS).id).eq('70');
+  });
+
   it('loads all 127 spaces with expected type counts', () => {
     const board = ConsortiumBoard.newInstance(
       {...DEFAULT_GAME_OPTIONS, boardName: BoardName.CONSORTIUM, consortiumExpansion: true},
