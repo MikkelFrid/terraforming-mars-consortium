@@ -2,7 +2,9 @@ import {expect} from 'chai';
 import {DEFAULT_GAME_OPTIONS} from '../../src/server/game/GameOptions';
 import {ConsortiumBoard, isFrontierUnlocked} from '../../src/server/boards/ConsortiumBoard';
 import {SeededRandom} from '../../src/common/utils/Random';
+import {SpaceBonus} from '../../src/common/boards/SpaceBonus';
 import {SpaceType} from '../../src/common/boards/SpaceType';
+import {CRATER_FIELD_IRIDIUM_GRANT} from '../../src/common/constants';
 import {TileType} from '../../src/common/TileType';
 import {testGame} from '../TestGame';
 import {BoardName} from '../../src/common/boards/BoardName';
@@ -154,5 +156,21 @@ describe('ConsortiumBoard', () => {
     const center = board.spaces.find((s) => s.q === 0 && s.r === 0);
     expect(center).to.not.be.undefined;
     expect(board.getAdjacentSpaces(center!)).to.have.length(6);
+  });
+
+  it('crater fields show iridium placement-bonus icons', () => {
+    const board = ConsortiumBoard.newInstance(
+      {...DEFAULT_GAME_OPTIONS, boardName: BoardName.CONSORTIUM, consortiumExpansion: true},
+      new SeededRandom(0),
+    );
+    const craters = board.spaces.filter((s) => s.spaceType === SpaceType.CRATER_FIELD);
+    expect(craters.length).to.be.greaterThan(0);
+    const expected = Array(CRATER_FIELD_IRIDIUM_GRANT).fill(SpaceBonus.IRIDIUM);
+    for (const crater of craters) {
+      expect(crater.bonus).to.deep.eq(expected);
+    }
+    // Non-crater spaces stay empty until the general bonus layout lands.
+    const land = board.spaces.find((s) => s.spaceType === SpaceType.LAND)!;
+    expect(land.bonus).to.deep.eq([]);
   });
 });

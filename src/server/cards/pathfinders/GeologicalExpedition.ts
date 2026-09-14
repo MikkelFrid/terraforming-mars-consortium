@@ -26,6 +26,7 @@ const VALID_BONUSES: Array<SpaceBonus> = [
   SpaceBonus.ENERGY,
   SpaceBonus.DATA,
   SpaceBonus.SCIENCE,
+  SpaceBonus.IRIDIUM,
 ];
 
 export class GeologicalExpedition extends Card implements IProjectCard {

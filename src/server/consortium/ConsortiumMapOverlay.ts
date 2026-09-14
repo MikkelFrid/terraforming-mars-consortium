@@ -1,6 +1,8 @@
 import {MarsBoard} from '../boards/MarsBoard';
 import {Space} from '../boards/Space';
+import {SpaceBonus} from '../../common/boards/SpaceBonus';
 import {SpaceType} from '../../common/boards/SpaceType';
+import {CRATER_FIELD_IRIDIUM_GRANT} from '../../common/constants';
 import {Random} from '../../common/utils/Random';
 import {inplaceShuffle} from '../utils/shuffle';
 
@@ -110,5 +112,9 @@ export function applyConsortiumOverlay(board: MarsBoard, rng: Random): void {
   }
   for (const space of take(openInterior, OVERLAY_COUNTS.craterFields)) {
     space.spaceType = SpaceType.CRATER_FIELD;
+    // Keep any existing plant/steel icons; append iridium so the crater yield is obvious.
+    for (let i = 0; i < CRATER_FIELD_IRIDIUM_GRANT; i++) {
+      space.bonus.push(SpaceBonus.IRIDIUM);
+    }
   }
 }

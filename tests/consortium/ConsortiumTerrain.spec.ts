@@ -1,6 +1,8 @@
 import {expect} from 'chai';
 import {TileType} from '../../src/common/TileType';
+import {SpaceBonus} from '../../src/common/boards/SpaceBonus';
 import {SpaceType} from '../../src/common/boards/SpaceType';
+import {CRATER_FIELD_IRIDIUM_GRANT, IRIDIUM_BANK_CAPACITY} from '../../src/common/constants';
 import {Board} from '../../src/server/boards/Board';
 import {testGame} from '../TestGame';
 
@@ -69,6 +71,25 @@ describe('Consortium terrain', () => {
     game.addTile(player, space, {tileType: TileType.GREENERY});
     expect(setCount).eq(0);
     expect(space.tile?.tileType).eq(TileType.GREENERY);
+  });
+
+  it('crater iridium icons do not double-grant with the terrain hook', () => {
+    const [game, player] = testGame(1, {consortiumExpansion: true});
+    const space = game.board.getAvailableSpacesOnLand(player)[0];
+    space.spaceType = SpaceType.CRATER_FIELD;
+    space.bonus = Array(CRATER_FIELD_IRIDIUM_GRANT).fill(SpaceBonus.IRIDIUM);
+    game.iridiumBank = IRIDIUM_BANK_CAPACITY;
+    player.iridium = 0;
+
+    game.addTile(player, space, {tileType: TileType.CITY});
+
+    expect(player.iridium).eq(CRATER_FIELD_IRIDIUM_GRANT);
+    expect(game.iridiumBank).eq(IRIDIUM_BANK_CAPACITY - CRATER_FIELD_IRIDIUM_GRANT);
+    expect(space.craterBonusClaimed).is.true;
+
+    // Survey-style re-grant of space.bonus must not pull more crater iridium.
+    game.grantSpaceBonuses(player, space);
+    expect(player.iridium).eq(CRATER_FIELD_IRIDIUM_GRANT);
   });
 
   it('serializes craterBonusClaimed', () => {
