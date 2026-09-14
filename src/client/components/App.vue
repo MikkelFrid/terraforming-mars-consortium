@@ -78,6 +78,7 @@ import {PlayerViewModel, ViewModel} from '@/common/models/PlayerModel';
 import {SimpleGameModel} from '@/common/models/SimpleGameModel';
 import {SpectatorModel} from '@/common/models/SpectatorModel';
 import {isPlayerId, isSpectatorId} from '@/common/Types';
+import {rememberPlayerId} from '@/client/utils/lastPlayer';
 import {hasShowModal, showModal, windowHasHTMLDialogElement} from './HTMLDialogElementCompatibility';
 
 import dialogPolyfill from 'dialog-polyfill';
@@ -214,6 +215,9 @@ export default defineComponent({
           if (path === paths.PLAYER) {
             app.playerView = model as PlayerViewModel;
             setTranslationContext(app.playerView);
+            if (isPlayerId(model.id)) {
+              rememberPlayerId(model.id);
+            }
           } else if (path === paths.SPECTATOR) {
             app.spectator = model as SpectatorModel;
           }
@@ -265,6 +269,10 @@ export default defineComponent({
     const currentPathname = getLastPathSegment();
     const app = this as unknown as MainAppData & {updatePlayer(): void; updateSpectator(): void};
     if (currentPathname === paths.PLAYER) {
+      const playerId = new URLSearchParams(window.location.search).get('id');
+      if (playerId !== null && isPlayerId(playerId)) {
+        rememberPlayerId(playerId);
+      }
       app.updatePlayer();
     } else if (currentPathname === paths.THE_END) {
       const urlParams = new URLSearchParams(window.location.search);

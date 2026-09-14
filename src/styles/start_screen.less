@@ -81,6 +81,71 @@
   font-size: 30px;
 }
 
+.start-screen-link--resume-game {
+  background-position: 0px -90px;
+  filter: saturate(1.15) brightness(1.08);
+  border: 1px solid rgba(218, 171, 99, 0.55);
+  box-shadow: inset 0 0 0 1px #333, 0 0 0 1px rgba(218, 171, 99, 0.35);
+}
+
+.start-screen-open-link {
+  width: 369px;
+  margin: 0 0 10px;
+  padding: 12px 14px 14px;
+  border-radius: 10px;
+  background: rgba(8, 18, 28, 0.88);
+  box-shadow: inset 0 0 0 1px rgba(218, 171, 99, 0.45);
+  color: #eee;
+  box-sizing: border-box;
+}
+
+.start-screen-open-link__label {
+  display: block;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #daab63;
+  text-shadow: 0 0 2px black, 0 1px 1px black;
+  margin-bottom: 8px;
+}
+
+.start-screen-open-link__input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #445;
+  border-radius: 6px;
+  background: #0f1c28;
+  color: #eee;
+  font-size: 15px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+
+.start-screen-open-link__button {
+  width: 100%;
+  border: 0;
+  border-radius: 6px;
+  background: #daab63;
+  color: #1a1208;
+  font-weight: bold;
+  font-size: 16px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+.start-screen-open-link__button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.start-screen-open-link__error {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: #f0a0a0;
+}
+
 .start-screen-link--new-game {
   background-position: 0px -90px;
 }

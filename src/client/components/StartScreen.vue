@@ -5,6 +5,39 @@
       <div class="start-screen-title-top">TERRAFORMING</div>
       <div class="start-screen-title-bottom">MARS</div>
     </div>
+    <a
+      v-if="lastPlayerHref"
+      class="start-screen-link start-screen-link--resume-game"
+      :href="lastPlayerHref"
+      v-i18n
+    >Resume game</a>
+    <div class="start-screen-open-link">
+      <label class="start-screen-open-link__label" for="start-screen-player-link" v-i18n>
+        Open player link
+      </label>
+      <input
+        id="start-screen-player-link"
+        v-model="pasteText"
+        class="start-screen-open-link__input"
+        type="url"
+        inputmode="url"
+        autocomplete="off"
+        autocapitalize="off"
+        spellcheck="false"
+        placeholder="Paste player?id=… link"
+        @keydown.enter.prevent="openPastedLink"
+      />
+      <button
+        type="button"
+        class="start-screen-open-link__button"
+        :disabled="parsedPasteId === undefined"
+        v-i18n
+        @click="openPastedLink"
+      >
+        Open
+      </button>
+      <p v-if="pasteError" class="start-screen-open-link__error" v-i18n>{{ pasteError }}</p>
+    </div>
     <a class="start-screen-link start-screen-link--new-game" href="new-game" v-i18n>New game</a>
     <a class="start-screen-link start-screen-link--how-to-play" href="https://github.com/terraforming-mars/terraforming-mars/wiki/Rulebooks" target="_blank" v-i18n>How to Play</a>
     <a class="start-screen-link start-screen-link--cards-list" href="cards" target="_blank" v-i18n>Cards list</a>
@@ -42,6 +75,15 @@ import PreferencesIcon from '@/client/components/PreferencesIcon.vue';
 
 import raw_settings from '@/genfiles/settings.json';
 import * as constants from '@/common/constants';
+import {
+  getLastPlayerId,
+  isStandaloneDisplay,
+  parsePlayerIdFromText,
+  playerHref,
+  rememberPlayerId,
+  setSkipResume,
+  shouldSkipResume,
+} from '@/client/utils/lastPlayer';
 
 export default defineComponent({
   name: 'StartScreen',
@@ -50,12 +92,52 @@ export default defineComponent({
     LanguageIcon,
     PreferencesIcon,
   },
+  data() {
+    return {
+      pasteText: '',
+      pasteError: '' as string,
+      lastPlayerId: getLastPlayerId(),
+    };
+  },
   computed: {
     raw_settings(): typeof raw_settings {
       return raw_settings;
     },
     DISCORD_INVITE(): string {
       return constants.DISCORD_INVITE;
+    },
+    lastPlayerHref(): string | undefined {
+      return this.lastPlayerId === undefined ? undefined : playerHref(this.lastPlayerId);
+    },
+    parsedPasteId() {
+      return parsePlayerIdFromText(this.pasteText);
+    },
+  },
+  mounted() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('menu')) {
+      setSkipResume(true);
+      return;
+    }
+    if (
+      isStandaloneDisplay() &&
+      this.lastPlayerId !== undefined &&
+      !shouldSkipResume()
+    ) {
+      window.location.replace(playerHref(this.lastPlayerId));
+    }
+  },
+  methods: {
+    openPastedLink() {
+      const id = this.parsedPasteId;
+      if (id === undefined) {
+        this.pasteError = 'Paste a full player link (with id=…).';
+        return;
+      }
+      this.pasteError = '';
+      rememberPlayerId(id);
+      setSkipResume(false);
+      window.location.href = playerHref(id);
     },
   },
 });
